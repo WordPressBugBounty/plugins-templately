@@ -47,7 +47,21 @@ class WPContent extends BaseRunner {
 			return $carry + count( $item );
 		}, 0 );
 
+		$processed_templates = $this->origin->get_progress();
+
+		if(empty($processed_templates)){
+			$this->log( 0 );
+			$processed_templates = ["__started__"];
+			$this->origin->update_progress( $processed_templates);
+		}
+
 		foreach ( $post_types as $type ) {
+			if (in_array($type, $processed_templates)) {
+				continue;
+			}
+			// Add the template to the processed templates and update the session data
+			$processed_templates[] = $type;
+			$this->origin->update_progress( $processed_templates);
 			if(empty($data['import_demo_content']) && !in_array($type, ['wp_navigation', 'nav_menu_item'])) {
 				continue;
 			}
@@ -59,6 +73,19 @@ class WPContent extends BaseRunner {
 			$results['wp-content'][ $type ] = $import['posts'];
 			$results['terms'][ $type ]      = $import['terms'];
 			$imported_data                  = array_merge( $imported_data, $results );
+
+			// Add the template to the processed templates and update the session data
+			$this->origin->update_progress( null, $results);
+
+			// If it's not the last item, send the SSE message and exit
+			if( end($post_types) !== $type) {
+				$this->sse_message( [
+					'type'    => 'continue',
+					'action'  => 'continue',
+					'results' => __METHOD__ . '::' . __LINE__,
+				] );
+				exit;
+			}
 		}
 
 		$this->import_actions( true );
@@ -95,6 +122,7 @@ class WPContent extends BaseRunner {
 	private function import_type_data( $type, $path, $imported_data, $taxonomies, $terms ): array {
 		$args = [
 			'fetch_attachments' => true,
+			'origin'            => $this->origin,
 			'posts'             => Utils::map_old_new_post_ids( $imported_data ),
 			'terms'             => Utils::map_old_new_term_ids( $imported_data ),
 			'taxonomies'        => ! empty( $taxonomies[ $type ] ) ? $taxonomies[ $type ] : [],

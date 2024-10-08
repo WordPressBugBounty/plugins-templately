@@ -1,5 +1,12 @@
 == Changelog ==
 
+= 3.1.6 – 08-10-2024 =
+Fixed: Template import issue on Lightspeed server.
+Fixed: Broken Gutenberg header and footer on Single Post pages.
+Enhanced: Security improvements (reported by Patchstack).
+Improved: Template import feature.
+Few minor bug fixes & improvements
+
 = 3.1.5 – 03-09-2024 =
 Fixed: Header/Footer issues with Gutenberg templates in Templately Theme Builder.
 Fixed: FSI revert functionality when Elementor is deactivated.

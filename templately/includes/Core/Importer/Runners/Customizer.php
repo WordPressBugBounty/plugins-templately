@@ -38,6 +38,8 @@ class Customizer extends BaseRunner {
 		$params = $this->origin->get_request_params();
 		$customizer = [];
 
+		$this->log( 0 );
+
 		if( ! empty( $params['title'] ) ) {
 			$customizer[] = 'title';
 			// set_theme_mod( 'blogname', $params['title'] );

@@ -63,6 +63,11 @@ class WPImport extends WP_Importer {
 	private $args;
 
 	/**
+	 * @var FullSiteImport
+	 */
+	private $origin;
+
+	/**
 	 * @var array
 	 */
 	private $output = [
@@ -577,14 +582,25 @@ class WPImport extends WP_Importer {
 	 * @return array the ids of succeed/failed imported posts.
 	 */
 	private function process_posts(): array {
-		$result = [
+		$params = $this->origin->get_request_params();
+		$result = $params["imported_data"]["wp_import"] ?? [
 			'succeed' => [],
 			'failed'  => [],
 		];
 
 		$this->posts = apply_filters( 'wp_import_posts', $this->posts );
 
-		foreach ( $this->posts as $post ) {
+		$processed_templates = $this->origin->get_progress();
+
+		foreach ( $this->posts as $key => $post ) {
+			if (in_array($key, $processed_templates)) {
+				continue;
+			}
+
+			// Add the template to the processed templates and update the session data
+			$processed[] = $key;
+			$this->origin->update_progress( $processed);
+
 			$post = apply_filters( 'wp_import_post_data_raw', $post );
 
 			if ( ! post_type_exists( $post['post_type'] ) ) {
@@ -697,6 +713,18 @@ class WPImport extends WP_Importer {
 
 				$this->output['errors'][] = $error;
 
+				// Add the template to the processed templates and update the session data
+				$this->origin->update_progress( null, ['wp_import' => $result]);
+
+				// If it's not the last item, send the SSE message and exit
+				if( end($this->posts) !== $post) {
+					$this->origin->sse_message( [
+						'type'    => 'continue',
+						'action'  => 'continue',
+						'results' => __METHOD__ . '::' . __LINE__,
+					] );
+					exit;
+				}
 				continue;
 			}
 
@@ -853,6 +881,19 @@ class WPImport extends WP_Importer {
 			}
 
 			do_action( 'templately_import.process_post', $post, $result, $this );
+
+			// Add the template to the processed templates and update the session data
+			$this->origin->update_progress( null, ['wp_import' => $result]);
+
+			// If it's not the last item, send the SSE message and exit
+			if( end($this->posts) !== $post) {
+				$this->origin->sse_message( [
+					'type'    => 'continue',
+					'action'  => 'continue',
+					'results' => __METHOD__ . '::' . __LINE__,
+				] );
+				exit;
+			}
 		}
 
 		unset( $this->posts );
@@ -1569,6 +1610,7 @@ class WPImport extends WP_Importer {
 
 		$this->requested_file_path = $file;
 		$this->args                = $args;
+		$this->origin              = $args['origin'];
 
 		if ( ! empty( $this->args['fetch_attachments'] ) ) {
 			$this->fetch_attachments = true;

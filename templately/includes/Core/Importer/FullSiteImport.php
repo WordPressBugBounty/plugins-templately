@@ -3,6 +3,7 @@
 namespace Templately\Core\Importer;
 
 use Elementor\Plugin;
+use Error;
 use Exception;
 use Templately\Core\Importer\Utils\Utils;
 use Templately\Utils\Base;
@@ -35,15 +36,18 @@ class FullSiteImport extends Base {
 		$this->dev_mode = defined('TEMPLATELY_DEV') && TEMPLATELY_DEV;
 		$this->api_key  = Options::get_instance()->get('api_key');
 
-		add_action('wp_ajax_templately_import_settings', [$this, 'import_settings']);
-		add_action('wp_ajax_templately_pack_import_status', [$this, 'import_status']);
-		add_action('wp_ajax_templately_pack_import', [$this, 'import']);
-		add_action('wp_ajax_templately_pack_import_revert', [$this, 'import_revert']);
-		add_action('wp_ajax_templately_pack_import_info', [$this, 'import_info']);
+		$this->add_ajax_action('import_settings', $this);
+		$this->add_ajax_action('import_status', $this);
+		$this->add_ajax_action('import', $this);
+		$this->add_ajax_action('import_revert', $this);
+		$this->add_ajax_action('import_info', $this);
+		$this->add_ajax_action('import_close_feedback_modal', $this);
+		$this->add_ajax_action('feedback_form', $this);
+
 		add_action('admin_init', [$this, 'admin_init']);
 		// add_action('admin_notices', [$this, 'add_revert_button']);
 
-		if (isset($_GET['action']) && $_GET['action'] == 'templately_pack_import') {
+		if(isset($_GET['action']) && ($_GET['action'] == 'templately_pack_import' || $_GET['action'] == 'templately_pack_import_status')) {
 			add_filter('wp_redirect', '__return_false', 999);
 		}
 
@@ -57,6 +61,32 @@ class FullSiteImport extends Base {
 		}
 	}
 
+	public function add_ajax_action($action, $object) {
+		add_action("wp_ajax_templately_pack_$action", function() use ($action, $object) {
+			// Check nonce
+			$nonce = null;
+			if(isset($_POST['nonce'])){
+				$nonce = $_POST['nonce'];
+			}
+			if(isset($_GET['nonce'])){
+				$nonce = $_GET['nonce'];
+			}
+			if (!$nonce || !wp_verify_nonce($nonce, 'templately_nonce')) {
+				wp_send_json_error(['message' => __('Invalid nonce', 'templately')]);
+				wp_die();
+			}
+
+			// Check user capability
+			if (!current_user_can('install_plugins') || !current_user_can('install_themes')) {
+				wp_send_json_error(['message' => __('Insufficient permissions', 'templately')]);
+				wp_die();
+			}
+
+			// Call the actual handler method
+			call_user_func([$object, $action]);
+		});
+	}
+
 	public function admin_init() {
 		if (get_option('templately_flush_rewrite_rules', false)) {
 			flush_rewrite_rules();
@@ -65,20 +95,70 @@ class FullSiteImport extends Base {
 	}
 
 	public function import_settings() {
-		if (!current_user_can('edit_posts')) {
-			// @todo show error in ui. Currently getting stack.
-			wp_send_json_error(__('Unauthorized action.', 'templately'));
-		}
-
 		$data = wp_unslash($_POST);
 
 		update_option(self::SESSION_OPTION_KEY, $data);
 
+		delete_option('templately_fsi_imported_list');
 		delete_transient('templately_fsi_log');
 
 		wp_send_json_success([
 			'is_lightspeed' => !Helper::should_flush(),
 		]);
+	}
+
+	public function import_close_feedback_modal() {
+		update_user_meta(get_current_user_id(), 'templately_fsi_complete', 'done');
+		wp_send_json_success();
+	}
+	public function feedback_form() {
+		// Get data from $_POST
+		$review_description = isset($_POST['review-description']) ? sanitize_textarea_field($_POST['review-description']) : '';
+		$review_email       = isset($_POST['review-email']) ? sanitize_email($_POST['review-email']) : '';
+		$rating             = isset($_POST['rating']) ? sanitize_text_field($_POST['rating']) : '';
+
+		// Prepare the body of the request
+		$body = json_encode([
+			'description' => $review_description,
+			'email'       => $review_email,
+			'rating'      => (int) $rating,
+		]);
+
+		// Send the request to the API
+		$response = wp_remote_post($this->get_api_url('v2', 'feedback/store'), [
+			'timeout' => 30,
+			'headers' => [
+				'Content-Type'         => 'application/json',
+				'Authorization'        => 'Bearer ' . $this->api_key,
+				'x-templately-ip'      => Helper::get_ip(),
+				'x-templately-url'     => home_url('/'),
+				'x-templately-version' => TEMPLATELY_VERSION,
+			],
+			'body' => $body,
+		]);
+
+		if (is_wp_error($response)) {
+			wp_send_json_error($response->get_error_message());
+		}
+
+		if (wp_remote_retrieve_response_code($response) != 200 && wp_remote_retrieve_response_code($response) != 201) {
+			wp_send_json_error('API request failed with response code ' . wp_remote_retrieve_response_code($response));
+		}
+
+		$body = wp_remote_retrieve_body($response);
+		$data = json_decode($body, true);
+
+		if (!isset($data['status']) || $data['status'] !== 'success') {
+			wp_send_json_error('API response indicates failure.');
+		}
+
+		if (!isset($data['message'])) {
+			wp_send_json_error('API response missing data.');
+		}
+
+		$result = $data['message'];
+
+		wp_send_json_success($result);
 	}
 
 	private function update_session_data($data): bool {
@@ -87,15 +167,75 @@ class FullSiteImport extends Base {
 		return update_option(self::SESSION_OPTION_KEY, wp_parse_args($data, $old_data));
 	}
 
+	protected function CallingFunctionName() {
+		$trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+
+		// Check if the trace has at least three elements
+		if (isset($trace[2])) {
+			$final_call = $trace[2];
+
+			// Check if 'class' and 'function' indexes exist
+			if (isset($final_call['class']) && isset($final_call['function'])) {
+				return "{$final_call['class']}::{$final_call['function']}";
+			}
+			else if(isset($final_call['function'])){
+				return $final_call['function'];
+			}
+		}
+
+		// Return a default value if 'class' or 'function' index does not exist, or if the trace doesn't have at least three elements
+		return 'unknown';
+	}
+
+
+	public function get_progress($defaults = []) {
+		$calling_class = $this->CallingFunctionName();
+		if(isset($this->request_params['progress'][$calling_class])){
+			return $this->request_params['progress'][$calling_class];
+		}
+		return $defaults;
+	}
+
+
+	public function update_progress( $progress, $imported_data = null ): bool {
+		$calling_class = $this->CallingFunctionName();
+		$old_data = get_option( self::SESSION_OPTION_KEY, [] );
+		$new_data = [];
+
+		if($progress !== null){
+			$new_data['progress'] = [$calling_class => $progress];
+		}
+		if($imported_data !== null){
+			$new_data['imported_data'] = $imported_data;
+		}
+
+		$this->request_params = $this->recursive_wp_parse_args( $new_data, $old_data );
+		return update_option( self::SESSION_OPTION_KEY, $this->request_params );
+	}
+
+	public function recursive_wp_parse_args( $args, $defaults ) {
+		$args     = (array) $args;
+		$defaults = (array) $defaults;
+		$r = $defaults;
+		foreach ( $args as $key => $value ) {
+			if ( is_array( $value ) && isset( $r[ $key ] ) ) {
+				$r[ $key ] = $this->recursive_wp_parse_args( $value, $r[ $key ] );
+			} else {
+				$r[ $key ] = $value;
+			}
+		}
+		return $r;
+	}
+
 	public function get_session_data(): array {
 		$data = get_option(self::SESSION_OPTION_KEY, []);
 
 		$options = [];
 
-		if (is_array($data) && !empty($data)) {
-			foreach ($data as $key => $value) {
-				$json            = json_decode($value, true);
-				$options[$key] = $json !== null ? $json : $value;
+		if ( is_array( $data ) && ! empty( $data ) ) {
+			foreach ( $data as $key => $value ) {
+				$json            = is_string($value) ? json_decode( $value, true ) : null;
+				$options[ $key ] = $json !== null ? $json : $value;
 			}
 		}
 
@@ -122,52 +262,57 @@ class FullSiteImport extends Base {
 		return delete_site_option(self::SESSION_OPTION_KEY);
 	}
 
-	public function import() {
-		if (!$this->dev_mode && !wp_doing_ajax()) {
-			exit;
-		}
+	private function finishRequestHeaders() {
+		header( "Cache-Control: no-store, no-cache" );
+		// header( 'Content-Type: text/event-stream, charset=UTF-8' );
+		// header( "Connection: Keep-Alive" );
 
-		delete_transient('templately_fsi_log');
-		delete_option('templately_fsi_imported_list');
-
-		if (Helper::should_flush()) {
-			header("Cache-Control: no-store, no-cache");
-			header('Content-Type: text/event-stream, charset=UTF-8');
-			header("Connection: Keep-Alive");
-		}
-
-		if ($GLOBALS['is_nginx']) {
-			header('X-Accel-Buffering: no');
-			header('Content-Encoding: none');
-		}
-
-		register_shutdown_function([$this, 'register_shutdown']);
-		$this->add_revert_hooks();
-
-		// Ignore user aborts and allow the script
-		// to run forever
+		// Ignore user aborts and allow the script to run forever
+		// (Use with caution, consider progress updates or timeouts)
 		ignore_user_abort(true);
 
-		// Time to run the import!
+		// Time to run the import!  Set no limit
 		set_time_limit(0);
 
 
+		if ( !empty($GLOBALS['is_nginx']) ) {
+			header( 'X-Accel-Buffering: no' );
+			header( 'Content-Encoding: none' );
+		}
 
-		// // Don't run cron until the request finishes, if possible.
-		// if ( PHP_VERSION_ID >= 70016 && function_exists( 'fastcgi_finish_request' ) ) {
-		// 	fastcgi_finish_request();
-		// } elseif ( function_exists( 'litespeed_finish_request' ) ) {
-		// 	litespeed_finish_request();
-		// }
-		if (Helper::should_flush()) {
-			flush();
+		// Send output as soon as possible during long-running process
+		if (function_exists('fastcgi_finish_request')) {
+			fastcgi_finish_request();
+		} elseif (function_exists('litespeed_finish_request')) {
+			litespeed_finish_request();
+		} else {
 			wp_ob_end_flush_all();
 		}
+	}
+
+	public function import() {
+		if ( ! $this->dev_mode && ! wp_doing_ajax() ) {
+			exit;
+		}
+
+		// delete_transient( 'templately_fsi_log' );
+
+		$this->sse_message( [
+			'type'    => 'start',
+			'action'  => 'eventLog',
+			'results' => __METHOD__ . '::' . __LINE__,
+		] );
+
+		register_shutdown_function( [ $this, 'register_shutdown' ] );
+
+		$this->finishRequestHeaders();
 
 		try {
 			// TODO: Need to check if user is connected or not
 
 			$this->request_params = $this->get_session_data();
+			$this->initialize_props();
+			$progress = $this->request_params['progress'] ?? [];
 
 			$_id = isset($this->request_params['id']) ? (int) $this->request_params['id'] : null;
 
@@ -175,72 +320,76 @@ class FullSiteImport extends Base {
 				$this->throw(__('Invalid Pack ID.', 'templately'));
 			}
 
-			if (!isset($_GET['part'])) {
-				$this->throw(__('Invalid request.', 'templately'));
+			if(empty($progress['download_zip'])){
+				/**
+				 * Check Writing Permission
+				 */
+				$this->check_writing_permission();
+
+				/**
+				 * Download the zip
+				 */
+				$this->download_zip( $_id );
+
+				$progress['download_zip'] = true;
+				$this->update_session_data( [
+					'progress' => $progress,
+				] );
+				$this->sse_message( [
+					'type'    => 'continue',
+					'action'  => 'continue',
+					'info'    => 'download_zip',
+					'results' => __METHOD__ . '::' . __LINE__,
+				] );
+				exit;
 			}
 
-			switch ($_GET['part']) {
-				case 'download':
-					/**
-					 * Check Writing Permission
-					 */
-					$this->check_writing_permission();
 
-					/**
-					 * Download the zip
-					 */
-					$this->download_zip($_id);
+			if(empty($progress['download_dependencies'])){
+				/**
+				 * Checking & Installing Plugin Dependencies
+				 */
+				$this->install_dependencies();
 
-					/**
-					 * Reading Manifest File
-					 */
-					$this->read_manifest();
-
-					/**
-					 * Version Check
-					 */
-					if (!empty($this->manifest['version']) && version_compare($this->manifest['version'], $this->version, '>')) {
-						/**
-						 * FIXME: The message should be re-written (by content/support team).
-						 */
-						$this->throw(__('Please update the templately plugin.', 'templately'));
-					}
-
-					/**
-					 * Checking & Installing Plugin Dependencies
-					 */
-					$this->install_dependencies();
-
-					$this->sse_message([
-						'type'    => 'complete',
-						'action'  => 'downloadComplete',
-						'results' => '',
-					]);
-					break;
-				case 'import':
-					/**
-					 * Should Revert Old Data
-					 */
-					$this->revert();
-
-
-					$this->initialize_props();
-
-					/**
-					 * Reading Manifest File
-					 */
-					$this->read_manifest();
-
-					/**
-					 * Platform Based Templates Import
-					 */
-					$this->start_content_import();
-					break;
-				default:
-					$this->throw(__('Invalid request.', 'templately'));
-					break;
+				$progress['download_dependencies'] = true;
+				$this->update_session_data( [
+					'progress' => $progress,
+				] );
+				$this->sse_message( [
+					'type'    => 'continue',
+					'action'  => 'continue',
+					'results' => 'download_dependencies',
+				] );
+				exit;
 			}
-		} catch (Exception $e) {
+
+
+			/**
+			 * Reading Manifest File
+			 */
+			$this->read_manifest();
+
+			/**
+			 * Version Check
+			 */
+			if ( ! empty( $this->manifest['version'] ) && version_compare( $this->manifest['version'], $this->version, '>' ) ) {
+				/**
+				 * FIXME: The message should be re-written (by content/support team).
+				 */
+				$this->throw( __( 'Please update the templately plugin.', 'templately' ) );
+			}
+
+			/**
+			 * Should Revert Old Data
+			 */
+			$this->revert();
+
+			/**
+			 * Platform Based Templates Import
+			 */
+			$this->start_content_import();
+
+		} catch ( Exception $e ) {
 			$this->handle_import_status('failed', $e->getMessage());
 			$this->sse_message([
 				'action'   => 'error',
@@ -251,25 +400,20 @@ class FullSiteImport extends Base {
 			]);
 		}
 
-		if ($_GET['part'] === 'import') {
+		// if($_GET['part'] === 'import'){
 			// TODO: cleanup
 			$this->clear_session_data();
-		}
+		// }
 	}
 
-	public function import_status() {
-		$log = get_transient('templately_fsi_log');
-		if (!empty($log) && is_array($log)) {
-			$lastLogIndex = isset($_GET['lastLogIndex']) ? (int) $_GET['lastLogIndex'] : 0;
-			$log = array_slice($log, $lastLogIndex);
+	public function import_status(){
+		$log = get_transient( 'templately_fsi_log' );
 
-			// delete log after complete
-			$data = end($log);
-			if (isset($data, $data['action']) && ($data['action'] === 'complete' || $data['action'] === 'downloadComplete' || $data['action'] === 'error')) {
-				delete_transient('templately_fsi_log');
-			}
+		if(!empty($log) && is_array($log) && isset($_GET['lastLogIndex'])){
+			$lastLogIndex = (int) $_GET['lastLogIndex'];
+			$log = array_slice($log, $lastLogIndex);
 		}
-		wp_send_json(['log' => $log]);
+		wp_send_json( ['count' => $log ? count($log) : 0, 'log' => $log] );
 	}
 
 	/**
@@ -312,9 +456,9 @@ class FullSiteImport extends Base {
 	/**
 	 * @throws Exception
 	 */
-	private function download_zip($id) {
-		// $this->sse_log( 'download', __( 'Downloading Template Pack', 'templately' ), 1 );
-		$response = wp_remote_get($this->get_api_url("v2", "import/pack/$id"), [
+	private function download_zip( $id ) {
+		$this->sse_log( 'download', __( 'Downloading Template Pack', 'templately' ), 1 );
+		$response = wp_remote_get( $this->get_api_url( "v2", "import/pack/$id" ), [
 			'timeout' => 30,
 			'headers' => [
 				'Content-Type'         => 'application/json',
@@ -451,15 +595,15 @@ class FullSiteImport extends Base {
 	}
 
 	private function install_dependencies() {
-		$allowed_themes  = ['hello-elementor', 'twentytwentyfour'];
+		$progress = $this->request_params['progress'] ?? [];
 
-		if (!empty($this->request_params['theme']) && is_array($this->request_params['theme'])) {
+		if ( empty($progress['theme_dependency']) && ! empty( $this->request_params['theme'] ) && is_array( $this->request_params['theme'] ) ) {
 			// activate theme
 			$theme = $this->request_params['theme'];
 
-			$this->before_install_hook();
+			// $this->before_install_hook();
 
-			if (isset($theme['stylesheet']) && in_array($theme['stylesheet'], $allowed_themes)) {
+			if (isset($theme['stylesheet'])) {
 				// do_action('before_theme_activation', $theme); // Trigger action before theme activation
 				$this->sse_log('theme', 'Installing and activating theme: ' . $theme['name'], 0);
 				if (!get_option("__templately_stylesheet")) {
@@ -483,6 +627,9 @@ class FullSiteImport extends Base {
 						'slug'    => $theme['stylesheet'],
 						'message' => $plugin_status['message'] ?? ''
 					];
+					$this->update_session_data( [
+						'dependency_data'   => $this->dependency_data,
+					] );
 				} else {
 					// do_action('after_theme_activation', $theme); // Trigger action after theme activation
 
@@ -499,24 +646,46 @@ class FullSiteImport extends Base {
 						'slug'    => $theme['stylesheet'],
 						'message' => $plugin_status['message'] ?? ''
 					];
+					$this->update_session_data( [
+						'dependency_data'   => $this->dependency_data,
+					] );
+
+					$progress['theme_dependency'] = true;
+					$this->update_session_data( [
+						'progress' => $progress,
+					] );
 				}
+
+				// If it's not the last item, send the SSE message and exit
+				$this->sse_message( [
+					'type'    => 'continue',
+					'action'  => 'continue',
+					'results' => __METHOD__ . '::' . __LINE__,
+				] );
+				exit;
 			}
 
-			$this->after_install_hook();
-		} else {
-			$this->removeLog('theme');
+			// $this->after_install_hook();
 		}
-		if (!empty($this->request_params['plugins']) && is_array($this->request_params['plugins'])) {
+		else if(empty($progress['theme_dependency'])) {
+			$this->removeLog( 'theme' );
+		}
+		if ( ! empty( $this->request_params['plugins'] ) && is_array( $this->request_params['plugins'] ) ) {
 			// $this->sse_log( 'plugin', 'Installing Plugins', 1 );
 			$total_plugin = count($this->request_params['plugins']);
 
-			$total_plugin_installed = $total_plugin;
-			$_installed_plugins     = 0;
+			// $total_plugin_installed = $total_plugin;
+			$_installed_plugins     = $this->dependency_data['_installed_plugins'] ?? 0;
+			$progress['plugin_dependency'] = $progress['plugin_dependency'] ?? [];
 
-			$this->before_install_hook();
+			// $this->before_install_hook();
 
-			foreach ($this->request_params['plugins'] as $dependency) {
-				$this->sse_log('plugin', 'Installing required plugins: ' . $dependency['name'], floor((100 * $_installed_plugins / $total_plugin)));
+			foreach ( $this->request_params['plugins'] as $dependency ) {
+				if(in_array($dependency['plugin_original_slug'], $progress['plugin_dependency'])){
+					continue;
+				}
+				$_dependency = $dependency;
+				$this->sse_log( 'plugin', 'Installing required plugins: ' . $dependency['name'], floor( ( 100 * $_installed_plugins / $total_plugin ) ) );
 
 				$dependency['slug'] = $dependency['plugin_original_slug'];
 				$plugin_status      = Installer::get_instance()->install($dependency);
@@ -544,11 +713,32 @@ class FullSiteImport extends Base {
 					];
 				} else {
 					$_installed_plugins++;
-					$total_plugin_installed--;
+					// $total_plugin_installed--;
+
+					$this->dependency_data['_installed_plugins'] = $_installed_plugins;
+				}
+
+				$this->update_session_data( [
+					'dependency_data'   => $this->dependency_data,
+				] );
+
+				$progress['plugin_dependency'][] = $dependency['slug'];
+				$this->update_session_data( [
+					'progress' => $progress,
+				] );
+
+				// If it's not the last item, send the SSE message and exit
+				if( end($this->request_params['plugins']) !== $_dependency ) {
+					$this->sse_message( [
+						'type'    => 'continue',
+						'action'  => 'continue',
+						'results' => __METHOD__ . '::' . __LINE__,
+					] );
+					exit;
 				}
 			}
 
-			$this->after_install_hook();
+			// $this->after_install_hook();
 
 			$this->sse_message([
 				'action'   => 'updateLog',
@@ -606,6 +796,13 @@ class FullSiteImport extends Base {
 			'action'  => 'complete',
 			'results' => $this->normalize_imported_data($imported_data)
 		]);
+
+
+
+		$is_fsi_complete = get_user_meta(get_current_user_id(), 'templately_fsi_complete', true);
+		if(!$is_fsi_complete){
+			update_user_meta(get_current_user_id(), 'templately_fsi_complete', true);
+		}
 	}
 
 	private function normalize_imported_data($data) {

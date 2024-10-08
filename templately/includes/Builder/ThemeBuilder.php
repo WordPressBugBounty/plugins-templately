@@ -99,6 +99,12 @@ class ThemeBuilder extends Base {
 	public function create_template() {
 		check_admin_referer( 'templately_create_template' );
 
+		// Check user capability
+		if (!current_user_can('delete_posts')) {
+			wp_send_json_error(['message' => 'Insufficient permissions']);
+			wp_die();
+		}
+
 		$_type = sanitize_text_field( wp_unslash( $_POST['template_type'] ) );
 
 		$_meta = [];

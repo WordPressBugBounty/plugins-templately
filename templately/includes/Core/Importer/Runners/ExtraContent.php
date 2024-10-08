@@ -37,9 +37,21 @@ class ExtraContent extends BaseRunner {
 	public function import( $data, $imported_data ): array {
 		$extra_content = [];
 		$contents      = $this->manifest['extra-content'];
+		$progress      = $this->origin->get_progress();
+
+		if(empty($progress)){
+			$this->log( 0 );
+			$progress = ["__started__"];
+			$this->origin->update_progress( $progress);
+		}
 
 		if( ! empty( $contents ) ) {
 			foreach( $contents as $type => $content ) {
+				// If the template has been processed, skip it
+				if (in_array($type, $progress)) {
+					continue;
+				}
+
 				switch ( $type ) {
 					case 'form':
 						$import                = $this->import_form( $content );
@@ -48,11 +60,20 @@ class ExtraContent extends BaseRunner {
 					case 'data':
 						break;
 				}
+
+				$progress[] = $type;
+				$this->origin->update_progress($progress, [ 'extra-content' => $extra_content ]);
+
+				if( end( $contents ) !== $content){
+					$this->sse_message( [
+						'type'    => 'continue',
+						'action'  => 'continue',
+						'results' => __METHOD__ . '::' . __LINE__,
+					] );
+					exit;
+				}
 			}
-
-			// $imported_data = array_merge( $imported_data, [ 'extra-content' => $this->extra_content ] );
 		}
-
 
 		return  [ 'extra-content' => $extra_content ];
 	}

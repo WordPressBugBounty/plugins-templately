@@ -31,9 +31,9 @@ class ConditionManager {
 		$this->builder = $builder;
 
 		add_action( 'wp_loaded', [ $this, 'register' ] );
-		add_action( 'wp_ajax_templately_conditions', [ $this, 'get_conditions' ] );
-		add_action( 'wp_ajax_templately_save_conditions', [ $this, 'save_conditions' ] );
-		add_action( 'wp_ajax_templately_check_conditions', [ $this, 'check_conditions' ] );
+		// add_action( 'wp_ajax_templately_conditions', [ $this, 'get_conditions' ] );
+		// add_action( 'wp_ajax_templately_save_conditions', [ $this, 'save_conditions' ] );
+		// add_action( 'wp_ajax_templately_check_conditions', [ $this, 'check_conditions' ] );
 	}
 
 	public function get_conditions() {

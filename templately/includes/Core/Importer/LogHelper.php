@@ -42,18 +42,18 @@ trait LogHelper {
 		$log[] = $data;
 		set_transient( 'templately_fsi_log', $log, 15 * MINUTE_IN_SECONDS );
 
-		if(Helper::should_flush()){
-			echo "event: message\n";
-			echo 'data: ' . wp_json_encode( $data ) . "\n\n";
+		// if(Helper::should_flush()){
+		// 	echo "event: message\n";
+		// 	echo 'data: ' . wp_json_encode( $data ) . "\n\n";
 
-			// Extra padding.
-			echo esc_html( ':' . str_repeat( ' ', 2048 ) . "\n\n" );
+		// 	// Extra padding.
+		// 	echo esc_html( ':' . str_repeat( ' ', 2048 ) . "\n\n" );
 
-			flush();
-		}
-		else if($data['action'] === 'complete' || $data['action'] === 'downloadComplete' || $data['action'] === 'error'){
-			wp_send_json( $data );
-		}
+		// 	flush();
+		// }
+		// else if($data['action'] === 'complete' || $data['action'] === 'downloadComplete' || $data['action'] === 'error'){
+		// 	wp_send_json( $data );
+		// }
 	}
 
 	/**

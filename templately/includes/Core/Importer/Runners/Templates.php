@@ -33,16 +33,32 @@ class Templates extends BaseRunner {
 	 * @throws Exception
 	 */
 	public function import( $data, $imported_data ): array {
-		$results   = [];
+		$results  = $data["imported_data"]["templates"] ?? [];
 		$templates = $this->manifest['templates'];
 		$path      = $this->dir_path . 'templates' . DIRECTORY_SEPARATOR;
 
 		$_extra_pages = [];
 
+		// Get the processed templates from the session data
+		$processed_templates = $this->origin->get_progress();
+
+		if(empty($processed_templates)){
+			$this->log( 0 );
+			$processed_templates = ["__started__"];
+			$this->origin->update_progress( $processed_templates);
+		}
+
 		$total     = count( $templates );
-		$processed = 0;
+
 		$this->create_page_template();
+
 		foreach ( $templates as $id => $template_settings ) {
+			// Broadcast Log
+			// If the template has been processed, skip it
+			if (in_array($id, $processed_templates)) {
+				continue;
+			}
+
 			$template_content = Utils::read_json_file( $path . $id . '.json' );
 
 			$import = $this->import_template( $id, $template_settings, $template_content );
@@ -66,9 +82,27 @@ class Templates extends BaseRunner {
 			}
 
 			// Broadcast Log
-			$processed += 1;
+			$processed = 0;
+			array_walk_recursive($results, function($item) use (&$processed) {
+				$processed++;
+			});
 			$progress  = floor( ( 100 * $processed ) / $total );
 			$this->log( $progress );
+
+			// Add the template to the processed templates and update the session data
+			$processed_templates[] = $id;
+			$this->origin->update_progress( $processed_templates, array_merge( [ 'templates' => $results ], $_extra_pages ));
+
+			// If it's not the last item, send the SSE message and exit
+			if( end($templates) !== $template_settings ) {
+				$this->sse_message( [
+					'type'    => 'continue',
+					'action'  => 'continue',
+					'i'       => $id,
+					'results' => __METHOD__ . '::' . __LINE__,
+				] );
+				exit;
+			}
 		}
 
 		return array_merge( [ 'templates' => $results ], $_extra_pages );

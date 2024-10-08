@@ -58,17 +58,22 @@ class Import {
 
 	public function run( $callable = null ): array {
 		$data = $this->full_site_import->get_request_params();
+		$progress = $this->full_site_import->get_progress();
+
+		// Get the cached imported_data
+		$this->imported_data = $data['imported_data'] ?? [];
 
 		/**
 		 * @var BaseRunner $runner
 		 */
-		foreach ( $this->runners as $runner ) {
+		foreach ( $this->runners as $id => $runner ) {
+			$import = null;
+			// If the template has been processed, skip it
+			if (in_array($id, $progress)) {
+				continue;
+			}
 			try{
 				if ( $runner->should_run( $data, $this->imported_data ) ) {
-					if( $runner->get_name() != 'finalize' ) {
-						$runner->log();
-					}
-
 					$import              = $runner->import( $data, $this->imported_data );
 					$this->imported_data = array_merge_recursive( $this->imported_data, $import );
 
@@ -80,6 +85,23 @@ class Import {
 				}
 			}catch (Exception $e){
 				error_log($e->getMessage());
+			}
+
+			// Update the progress
+			$progress[] = $id;
+			$this->full_site_import->update_progress($progress, $import);
+
+			if(end($this->runners) !== $runner) {
+				// $_runner = $this->runners[$id + 1];
+				// if($_runner){
+				// 	$_runner->log();
+				// }
+				$this->sse_message( [
+					'type'    => 'continue',
+					'action'  => 'continue',
+					'results' => $runner->get_label(),
+				] );
+				exit;
 			}
 		}
 

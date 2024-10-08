@@ -42,7 +42,7 @@ class TemplateLoader {
 	}
 
 	public function get_header() {
-		if(!$this->is_header_footer()){
+		if(!self::is_header_footer()){
 			return;
 		}
 		$this->views->get_header();
@@ -58,7 +58,7 @@ class TemplateLoader {
 	}
 
 	public function get_footer( $name ) {
-		if(!$this->is_header_footer()){
+		if(!self::is_header_footer()){
 			return;
 		}
 		$this->views->get_footer();
@@ -78,7 +78,7 @@ class TemplateLoader {
 		ob_get_clean();
 	}
 
-	public function is_header_footer(){
+	public static function is_header_footer(){
 		if(class_exists( 'Elementor\Plugin' )){
 			$pid       = get_the_ID();
 			$post_type = get_post_type($pid);

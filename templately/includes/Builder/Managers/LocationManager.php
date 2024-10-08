@@ -12,6 +12,7 @@ use Templately\Builder\Types\ThemeTemplate;
 use ElementorPro\Modules\ThemeBuilder\Module;
 use Elementor\Core\Files\CSS\Post as Post_CSS;
 use ElementorPro\Plugin;
+use Templately\Builder\TemplateLoader;
 
 class LocationManager {
 	/**
@@ -346,7 +347,7 @@ class LocationManager {
 
 	public function enqueue_template_assets( $path, $url ) {
 		$using_templately_builder = get_query_var( 'using_templately_template' );
-		if ( $using_templately_builder && function_exists( 'templately' ) ) {
+		if ( ($using_templately_builder || TemplateLoader::is_header_footer()) && function_exists( 'templately' ) ) {
 			$template_locations = [ 'header', 'footer', 'archive', 'single' ];
 			foreach ( $template_locations as $location ) {
 				$template = templately()->theme_builder::$conditions_manager->get_templates_by_location( $location );

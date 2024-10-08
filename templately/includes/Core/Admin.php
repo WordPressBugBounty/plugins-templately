@@ -37,6 +37,8 @@ class Admin extends Base {
 
 		add_filter( 'plugin_action_links_' . TEMPLATELY_PLUGIN_BASENAME, [$this, 'handleActionLinks'], 10, 2 );
 
+		add_action( 'admin_footer', [$this, 'my_custom_footer_html'] );
+
 		// Remove OLD notice from 1.0.0 (if other WPDeveloper plugin has notice)
 		NoticeRemover::get_instance( '1.0.0' );
 	}
@@ -94,7 +96,26 @@ class Admin extends Base {
 	 * @return void
 	 */
 	public function scripts( string $hook ) {
-		if ( ! in_array( $hook, [ 'edit.php', 'toplevel_page_templately', 'elementor', 'gutenberg' ], true ) ) {
+		if ( ! in_array( $hook, [ 'index.php', 'edit.php', 'toplevel_page_templately', 'elementor', 'gutenberg' ], true ) ) {
+			return;
+		}
+
+		if('index.php' === $hook){
+			// need separate condition so we can return if page is index.php
+
+			$is_complete = get_user_meta(get_current_user_id(), 'templately_fsi_complete', true);
+			if($is_complete && $is_complete !== 'done' && !wp_is_mobile()){
+				$user  = Options::get_instance()->get('user');
+				$email = isset($user['email']) ? $user['email'] : '';
+
+				templately()->assets->enqueue( 'templately', 'css/dashboard-style.css', [] );
+				templately()->assets->enqueue( 'templately', 'js/dashboard.js', [], true );
+				templately()->assets->localize( 'templately', 'templately', [
+					'email' => $email,
+					'nonce' => wp_create_nonce( 'templately_nonce' ),
+				] );
+
+			}
 			return;
 		}
 
@@ -169,19 +190,20 @@ class Admin extends Base {
 				'profile'      => templately()->assets->icon( 'icons/profile.svg' ),
 				'warning'      => templately()->assets->icon( 'icons/warning.png' )
 			],
-			'promo_image'        => templately()->assets->icon( 'single-page-promo.png' ),
-			'default_image'      => templately()->assets->icon( 'clouds/cloud-item.svg' ),
-			'not_found'          => templately()->assets->icon( 'no-item-found.png' ),
-			'no_items'           => templately()->assets->icon( 'no-items.png' ),
-			'loadingImage'       => templately()->assets->icon( 'logos/loading-logo.gif' ),
-			'current_url'        => admin_url( 'admin.php?page=templately' ),
-			'is_signed'          => Login::is_signed(),
-			'is_globally_signed' => Login::is_globally_signed(),
-			'signed_as_global'   => Login::signed_as_global(),
-			'current_screen'     => $_current_screen,
-			'post_type' 		 => get_post_type(),
-			'has_elementor'      => rest_sanitize_boolean( is_plugin_active( 'elementor/elementor.php' ) ),
-			'has_elementor_pro'  => rest_sanitize_boolean( is_plugin_active( 'elementor-pro/elementor-pro.php' ) ),
+			'promo_image'             => templately()->assets->icon( 'single-page-promo.png' ),
+			'default_image'           => templately()->assets->icon( 'clouds/cloud-item.svg' ),
+			'not_found'               => templately()->assets->icon( 'no-item-found.png' ),
+			'no_items'                => templately()->assets->icon( 'no-items.png' ),
+			'loadingImage'            => templately()->assets->icon( 'logos/loading-logo.gif' ),
+			'current_url'             => admin_url( 'admin.php?page=templately' ),
+			'is_signed'               => Login::is_signed(),
+			'is_globally_signed'      => Login::is_globally_signed(),
+			'signed_as_global'        => Login::signed_as_global(),
+			'current_screen'          => $_current_screen,
+			'can_fsi'                 => current_user_can('install_plugins') && current_user_can('install_themes'),
+			'post_type'               => get_post_type(),
+			'has_elementor'           => rest_sanitize_boolean( is_plugin_active( 'elementor/elementor.php' ) ),
+			'has_elementor_pro'       => rest_sanitize_boolean( is_plugin_active( 'elementor-pro/elementor-pro.php' ) ),
 			'theme'                   => $_current_screen == 'templately' ? 'light' : $platform->ui_theme(),
 			'is_wp_support_gutenberg' => version_compare( get_bloginfo( 'version' ), '5.0.0', '>=' ),
 		], $templately );
@@ -390,5 +412,22 @@ class Admin extends Base {
 
 		$links[] = $settingsLink;
 		return $links;
+	}
+
+
+	public function my_custom_footer_html() {
+		global $current_screen;
+
+		if ( ! $current_screen ) {
+			return false;
+		}
+
+		if($current_screen->id !== 'dashboard'){
+			return false;
+		}
+
+		?>
+			<div id="templately-fsi-feedback"></div>
+		<?php
 	}
 }
