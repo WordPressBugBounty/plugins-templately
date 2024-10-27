@@ -46,11 +46,11 @@ class Templates extends BaseRunner {
 			$this->log( 0 );
 			$processed_templates = ["__started__"];
 			$this->origin->update_progress( $processed_templates);
+			$this->create_page_template();
 		}
 
 		$total     = count( $templates );
 
-		$this->create_page_template();
 
 		foreach ( $templates as $id => $template_settings ) {
 			// Broadcast Log

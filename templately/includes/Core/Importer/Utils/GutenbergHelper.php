@@ -107,7 +107,7 @@ class GutenbergHelper extends ImportHelper {
 			if ( ! empty( $block['innerBlocks'] ) ) {
 				$this->replace( $block['innerBlocks'], $request_params );
 			}
-			else if(!empty($request_params['logo']) && isset($request_params['logo_size']) && $request_params['logo_size'] && $block['blockName'] === "essential-blocks/advanced-image" && $block["attrs"]["imgSource"] === "site-logo"){
+			else if(!empty($request_params['logo']['id']) && isset($request_params['logo_size']) && $request_params['logo_size'] && $block['blockName'] === "essential-blocks/advanced-image" && $block["attrs"]["imgSource"] === "site-logo"){
 				$block["attrs"]["widthRange"]    = $request_params['logo_size'];
 				unset($block["attrs"]["widthUnit"]);
 				if (isset($block['attrs']['blockMeta']['desktop']) && is_string($block['attrs']['blockMeta']['desktop'])) {

@@ -1,5 +1,13 @@
 == Changelog ==
 
+= 3.1.7 – 27-10-2024 =
+Added: option to set specific Headers and Footers for Pages or Posts.
+Fixed: resolved a fatal error when creating Single Product templates.
+Fixed: site-wide Header and Footer preview issues.
+Improved: Optimized FSI import for LiteSpeed servers.
+Improved: Feedback form submission process.
+Few minor bug fixes & improvements
+
 = 3.1.6 – 08-10-2024 =
 Fixed: Template import issue on Lightspeed server.
 Fixed: Broken Gutenberg header and footer on Single Post pages.

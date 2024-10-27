@@ -38,7 +38,10 @@ class WPContent extends BaseRunner {
 		$post_types = $this->filter_post_types( $data['selected_post_types'] ?? [] );
 		$taxonomies = [];
 		$terms      = [];
-		$results    = [];
+		$results    = [
+			"wp-content" => $data["imported_data"]["wp-content"] ?? [],
+			"terms"      => $data["imported_data"]["terms"] ?? [],
+		];
 
 		$this->import_actions();
 
@@ -59,9 +62,7 @@ class WPContent extends BaseRunner {
 			if (in_array($type, $processed_templates)) {
 				continue;
 			}
-			// Add the template to the processed templates and update the session data
-			$processed_templates[] = $type;
-			$this->origin->update_progress( $processed_templates);
+
 			if(empty($data['import_demo_content']) && !in_array($type, ['wp_navigation', 'nav_menu_item'])) {
 				continue;
 			}
@@ -75,7 +76,8 @@ class WPContent extends BaseRunner {
 			$imported_data                  = array_merge( $imported_data, $results );
 
 			// Add the template to the processed templates and update the session data
-			$this->origin->update_progress( null, $results);
+			$processed_templates[] = $type;
+			$this->origin->update_progress( $processed_templates, $results);
 
 			// If it's not the last item, send the SSE message and exit
 			if( end($post_types) !== $type) {

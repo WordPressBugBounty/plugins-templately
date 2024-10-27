@@ -74,6 +74,12 @@ class ElementorContent extends BaseRunner {
 			$file     = $this->dir_path . "settings.json";
 			$settings = Utils::read_json_file( $file );
 
+			if(isset($settings['site_name'])){
+				unset($settings['site_name']);
+			}
+			if(isset($settings['site_description'])){
+				unset($settings['site_description']);
+			}
 			if(!empty($data['color'])){
 				if (!empty($settings['system_colors'])) {
 					foreach ($settings['system_colors'] as $key => $color) {

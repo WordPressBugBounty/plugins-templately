@@ -56,14 +56,14 @@ class Post extends Condition {
 //				$this->register_sub_condition( $in_sub_term );
 //			}
 //		}
-		
+
 		$by_author = new PostByAuthor( $this->post_type );
 		$this->register_sub_condition( $by_author );
 	}
 
 	protected function register_controls() {
 		$this->add_control( "posts_query_" . $this->get_name(), [
-			'field'      => 'id',
+			'field'      => 'ID',
 			'query_type' => 'posts',
 			'options'    => [ '' => 'All' ],
 			'query'      => [ 'post_type' => $this->get_name() ]

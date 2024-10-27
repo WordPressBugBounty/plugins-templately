@@ -110,6 +110,9 @@ class Conditions extends API {
 
 		$payload = sanitize_text_field( $request->get_param( 'payload' ) );
 		$args    = [ 'search' => $payload ];
+		if(is_numeric($payload)){
+			$args = [ 'post__in' => [(int) $payload] ];
+		}
 
 		if ( isset( $query['query'] ) ) {
 			$args = wp_parse_args( $query['query'], $args );

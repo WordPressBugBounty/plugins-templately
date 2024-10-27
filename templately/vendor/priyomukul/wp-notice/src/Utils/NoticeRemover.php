@@ -22,6 +22,7 @@ class NoticeRemover {
 			if ( $instanceOf === null ) {
 				$instanceOf = Notices::class;
 			}
+
 			if(!isset($wp_filter['admin_notices']->callbacks[10])) return;
 
 			foreach ( $wp_filter['admin_notices']->callbacks[10] as $callback ) {

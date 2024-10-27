@@ -35,6 +35,30 @@
 	background-color: transparent;
 }
 
+#wpnotice-templately-halloween.notice-info {
+	padding: 10px 38px 10px 12px;
+	border-left-color: #5626E7;
+}
+#wpnotice-templately-halloween .wpnotice-content-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+#wpnotice-templately-halloween .wpnotice-content-wrapper p {
+    font-size: 14px;
+}
+#wpnotice-templately-halloween a.button.button-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 15px;
+    background: #5626E7;
+    border: none;
+    border-radius: 4px;
+}
+
 .toplevel_page_templately .notice {
 	display: none !important;
 }

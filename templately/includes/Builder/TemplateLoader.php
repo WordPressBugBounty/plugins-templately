@@ -23,6 +23,7 @@ class TemplateLoader {
 		add_action( 'get_header', [ $this, 'get_header' ], 0 );
 		add_action( 'get_footer', [ $this, 'get_footer' ], 0 );
 		add_action( 'elementor/document/wrapper_attributes', [ $this, 'wrapper_attributes' ], 10, 2 );
+		add_action( 'template_redirect', array( $this, 'set_global_product' ) );
 
 		/**
 		 * Only for Development Mode.
@@ -42,7 +43,7 @@ class TemplateLoader {
 	}
 
 	public function get_header() {
-		if(!self::is_header_footer()){
+		if(!self::is_header_footer('header')){
 			return;
 		}
 		$this->views->get_header();
@@ -58,7 +59,7 @@ class TemplateLoader {
 	}
 
 	public function get_footer( $name ) {
-		if(!self::is_header_footer()){
+		if(!self::is_header_footer('footer')){
 			return;
 		}
 		$this->views->get_footer();
@@ -78,7 +79,7 @@ class TemplateLoader {
 		ob_get_clean();
 	}
 
-	public static function is_header_footer(){
+	public static function is_header_footer($type = null){
 		if(class_exists( 'Elementor\Plugin' )){
 			$pid       = get_the_ID();
 			$post_type = get_post_type($pid);
@@ -96,6 +97,13 @@ class TemplateLoader {
 
 		$header = templately()->theme_builder::$conditions_manager->get_templates_by_location( 'header' );
 		$footer = templately()->theme_builder::$conditions_manager->get_templates_by_location( 'footer' );
+
+		if($type === 'header'){
+			return $header;
+		}
+		else if($type === 'footer'){
+			return $footer;
+		}
 
 		if(!empty($header) || !empty($footer)){
 			return true;
@@ -118,6 +126,17 @@ class TemplateLoader {
 		}
 
 		return $attributes;
+	}
+
+	public function set_global_product(){
+		global $product;
+
+		if ( class_exists('\WC_Product') && ! $product instanceof \WC_Product ) {
+			$product_id = get_the_ID();
+			if ( $product_id ) {
+				wc_setup_product_data( $product_id );
+			}
+		}
 	}
 
 }

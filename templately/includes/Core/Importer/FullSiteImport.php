@@ -108,20 +108,49 @@ class FullSiteImport extends Base {
 	}
 
 	public function import_close_feedback_modal() {
+		$return = null;
+		if(isset($_GET['closeAction']) && $_GET['closeAction']){
+			$review_email = isset($_POST['review-email']) ? sanitize_email($_POST['review-email']) : '';
+			$pack_id      = get_user_meta(get_current_user_id(), 'templately_fsi_pack_id', true);
+
+			// Prepare the body of the request
+			$body = json_encode([
+				'action'      => $_GET['closeAction'],
+				'email'       => $review_email,
+				'pack_id'     => (int) $pack_id,
+			]);
+
+			// Send the request to the API
+			$response = wp_remote_post($this->get_api_url('v2', 'feedback/close'), [
+				'timeout' => 30,
+				'headers' => [
+					'Content-Type'         => 'application/json',
+					'Authorization'        => 'Bearer ' . $this->api_key,
+					'x-templately-ip'      => Helper::get_ip(),
+					'x-templately-url'     => home_url('/'),
+					'x-templately-version' => TEMPLATELY_VERSION,
+				],
+				'body' => $body,
+			]);
+			$body = wp_remote_retrieve_body($response);
+			$return = json_decode($body, true);
+		}
 		update_user_meta(get_current_user_id(), 'templately_fsi_complete', 'done');
-		wp_send_json_success();
+		wp_send_json_success($return);
 	}
 	public function feedback_form() {
 		// Get data from $_POST
 		$review_description = isset($_POST['review-description']) ? sanitize_textarea_field($_POST['review-description']) : '';
 		$review_email       = isset($_POST['review-email']) ? sanitize_email($_POST['review-email']) : '';
 		$rating             = isset($_POST['rating']) ? sanitize_text_field($_POST['rating']) : '';
+		$pack_id            = get_user_meta(get_current_user_id(), 'templately_fsi_pack_id', true);
 
 		// Prepare the body of the request
 		$body = json_encode([
 			'description' => $review_description,
 			'email'       => $review_email,
 			'rating'      => (int) $rating,
+			'pack_id'     => (int) $pack_id,
 		]);
 
 		// Send the request to the API
@@ -141,12 +170,16 @@ class FullSiteImport extends Base {
 			wp_send_json_error($response->get_error_message());
 		}
 
-		if (wp_remote_retrieve_response_code($response) != 200 && wp_remote_retrieve_response_code($response) != 201) {
-			wp_send_json_error('API request failed with response code ' . wp_remote_retrieve_response_code($response));
-		}
-
 		$body = wp_remote_retrieve_body($response);
 		$data = json_decode($body, true);
+
+		if (wp_remote_retrieve_response_code($response) != 200 && wp_remote_retrieve_response_code($response) != 201) {
+			if (isset($data['status'], $data['message']) && $data['status'] === 'error') {
+				wp_send_json_error($data['message']);
+			}
+
+			wp_send_json_error('API request failed with response code ' . wp_remote_retrieve_response_code($response));
+		}
 
 		if (!isset($data['status']) || $data['status'] !== 'success') {
 			wp_send_json_error('API response indicates failure.');
@@ -162,12 +195,13 @@ class FullSiteImport extends Base {
 	}
 
 	private function update_session_data($data): bool {
-		$old_data = get_option(self::SESSION_OPTION_KEY, []);
+		$old_data = $this->get_session_data();
 
 		return update_option(self::SESSION_OPTION_KEY, wp_parse_args($data, $old_data));
 	}
 
-	protected function CallingFunctionName() {
+	protected function CallingFunctionName($id = null) {
+		$return = 'unknown';
 		$trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
 
 		// Check if the trace has at least three elements
@@ -176,20 +210,23 @@ class FullSiteImport extends Base {
 
 			// Check if 'class' and 'function' indexes exist
 			if (isset($final_call['class']) && isset($final_call['function'])) {
-				return "{$final_call['class']}::{$final_call['function']}";
+				$return = "{$final_call['class']}::{$final_call['function']}";
 			}
 			else if(isset($final_call['function'])){
-				return $final_call['function'];
+				$return = $final_call['function'];
+			}
+			if(!empty($id)){
+				$return .= "::$id";
 			}
 		}
 
 		// Return a default value if 'class' or 'function' index does not exist, or if the trace doesn't have at least three elements
-		return 'unknown';
+		return $return;
 	}
 
 
-	public function get_progress($defaults = []) {
-		$calling_class = $this->CallingFunctionName();
+	public function get_progress($defaults = [], $unique_id = null) {
+		$calling_class = $this->CallingFunctionName($unique_id);
 		if(isset($this->request_params['progress'][$calling_class])){
 			return $this->request_params['progress'][$calling_class];
 		}
@@ -197,9 +234,10 @@ class FullSiteImport extends Base {
 	}
 
 
-	public function update_progress( $progress, $imported_data = null ): bool {
-		$calling_class = $this->CallingFunctionName();
-		$old_data = get_option( self::SESSION_OPTION_KEY, [] );
+	public function update_progress( $progress, $imported_data = null, $unique_id = null ): bool {
+		$calling_class = $this->CallingFunctionName($unique_id);
+		$old_data = $this->get_session_data();
+
 		$new_data = [];
 
 		if($progress !== null){
@@ -787,7 +825,7 @@ class FullSiteImport extends Base {
 		$import        = new Import($this);
 		$imported_data = $import->run();
 
-		$this->handle_import_status('success');
+		$import_status = $this->handle_import_status('success');
 
 		update_option('templately_flush_rewrite_rules', true, false);
 
@@ -797,10 +835,11 @@ class FullSiteImport extends Base {
 			'results' => $this->normalize_imported_data($imported_data)
 		]);
 
-
-
-		$is_fsi_complete = get_user_meta(get_current_user_id(), 'templately_fsi_complete', true);
-		if(!$is_fsi_complete){
+		update_user_meta(get_current_user_id(), 'templately_fsi_pack_id', $this->request_params["id"]);
+		if(!empty($import_status['hasFeedback'])){
+			update_user_meta(get_current_user_id(), 'templately_fsi_complete', 'done');
+		}
+		else{
 			update_user_meta(get_current_user_id(), 'templately_fsi_complete', true);
 		}
 	}
@@ -943,8 +982,9 @@ class FullSiteImport extends Base {
 		} else {
 			// Handle success
 			$body = wp_remote_retrieve_body($response);
+			$data = json_decode($body, true);
 			// Do something with $body
-			return $body;
+			return $data;
 		}
 
 		return null;

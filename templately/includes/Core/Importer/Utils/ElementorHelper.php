@@ -132,7 +132,7 @@ class ElementorHelper extends ImportHelper {
 			if ( ! empty( $element['elements'] ) ) {
 				$this->json_prepare( $element['elements'], $data, $request_params );
 			}
-			else if(!empty($request_params['logo']) && isset($request_params['logo_size']) && $request_params['logo_size'] && $element['elType'] === "widget" && $element['widgetType'] === "tl-site-logo"){
+			else if(!empty($request_params['logo']['id']) && isset($request_params['logo_size']) && $request_params['logo_size'] && $element['elType'] === "widget" && $element['widgetType'] === "tl-site-logo"){
 				$element['settings']['width'] = [
 					'size' => $request_params['logo_size'],
 					'unit' => 'px'

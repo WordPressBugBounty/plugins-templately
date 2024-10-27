@@ -349,6 +349,28 @@ class WPImport extends WP_Importer {
 		}
 	}
 
+	private function retrieve_attributes($attributes){
+		$params = $this->origin->get_request_params();
+		$attr_values = $params["imported_data"][$this->import_data_key] ?? [];
+		foreach ($attributes as $attribute) {
+			if(isset($attr_values[$attribute])){
+				$this->$attribute = $attr_values[$attribute];
+			}
+		}
+	}
+
+	private function backup_attributes($attributes){
+		$params      = $this->origin->get_request_params();
+		$attr_values = $params["imported_data"][$this->import_data_key] ?? [];
+
+		foreach ($attributes as $attribute) {
+			if(isset($this->$attribute)){
+				$attr_values[$attribute] = $this->$attribute;
+			}
+		}
+		$this->origin->update_progress( null, [$this->import_data_key => $attr_values]);
+	}
+
 	/**
 	 * Map old author logins to local user IDs based on decisions made
 	 * in import options form. Can map to an existing user, create a new user
@@ -356,6 +378,18 @@ class WPImport extends WP_Importer {
 	 */
 	private function set_author_mapping() {
 		if ( ! isset( $this->args['imported_authors'] ) ) {
+			return;
+		}
+
+		$attributes = [
+			'processed_authors',
+			'author_mapping',
+			'output',
+		];
+
+		$processed_templates = $this->origin->get_progress([], $this->import_data_key);
+		if (!empty($processed_templates)) {
+			$this->retrieve_attributes($attributes);
 			return;
 		}
 
@@ -415,6 +449,9 @@ class WPImport extends WP_Importer {
 				$this->author_mapping[ $santized_old_login ] = (int) get_current_user_id();
 			}
 		}
+
+		$this->backup_attributes($attributes);
+		$this->origin->update_progress( true, null, $this->import_data_key );
 	}
 
 	/**
@@ -425,10 +462,23 @@ class WPImport extends WP_Importer {
 	 * @return array|array[] the ids of succeed/failed imported terms.
 	 */
 	private function process_terms(): array {
-		$result = [
+		$params = $this->origin->get_request_params();
+		$result = $params["imported_data"]["wp_import_terms_" . $this->import_data_key] ?? [
 			'succeed' => [],
 			'failed'  => [],
 		];
+
+		$attributes = [
+			'terms',
+			'output',
+			'mapped_terms_slug',
+			'processed_terms',
+		];
+		$processed_templates = $this->origin->get_progress([], $this->import_data_key);
+		if (!empty($processed_templates)) {
+			$this->retrieve_attributes($attributes);
+			return $result;
+		}
 
 		$this->terms = apply_filters( 'wp_import_terms', $this->terms );
 		if ( empty( $this->terms ) ) {
@@ -511,6 +561,9 @@ class WPImport extends WP_Importer {
 
 		unset( $this->terms );
 
+		$this->backup_attributes($attributes);
+		// Add the template to the processed templates and update the session data
+		$this->origin->update_progress( true, [ "wp_import_terms_" . $this->import_data_key => $result ]);
 		return $result;
 	}
 
@@ -582,15 +635,27 @@ class WPImport extends WP_Importer {
 	 * @return array the ids of succeed/failed imported posts.
 	 */
 	private function process_posts(): array {
+		$backup_key = "wp_import_" . $this->import_data_key;
 		$params = $this->origin->get_request_params();
-		$result = $params["imported_data"]["wp_import"] ?? [
+		$result = $params["imported_data"][$backup_key] ?? [
 			'succeed' => [],
 			'failed'  => [],
 		];
 
+		$attributes = [
+			'posts',
+			'output',
+			'menu_item_orphans',
+			'processed_menu_items',
+			'post_orphans',
+			'processed_posts',
+			'featured_images',
+		];
+		$this->retrieve_attributes($attributes);
+
 		$this->posts = apply_filters( 'wp_import_posts', $this->posts );
 
-		$processed_templates = $this->origin->get_progress();
+		$processed_templates = $this->origin->get_progress([], $this->import_data_key);
 
 		foreach ( $this->posts as $key => $post ) {
 			if (in_array($key, $processed_templates)) {
@@ -599,7 +664,7 @@ class WPImport extends WP_Importer {
 
 			// Add the template to the processed templates and update the session data
 			$processed[] = $key;
-			$this->origin->update_progress( $processed);
+			$this->origin->update_progress( $processed, null, $this->import_data_key);
 
 			$post = apply_filters( 'wp_import_post_data_raw', $post );
 
@@ -714,7 +779,8 @@ class WPImport extends WP_Importer {
 				$this->output['errors'][] = $error;
 
 				// Add the template to the processed templates and update the session data
-				$this->origin->update_progress( null, ['wp_import' => $result]);
+				$this->backup_attributes($attributes);
+				$this->origin->update_progress( null, [ $backup_key => $result ], $this->import_data_key);
 
 				// If it's not the last item, send the SSE message and exit
 				if( end($this->posts) !== $post) {
@@ -883,7 +949,8 @@ class WPImport extends WP_Importer {
 			do_action( 'templately_import.process_post', $post, $result, $this );
 
 			// Add the template to the processed templates and update the session data
-			$this->origin->update_progress( null, ['wp_import' => $result]);
+			$this->backup_attributes($attributes);
+			$this->origin->update_progress( null, [ $backup_key => $result ], $this->import_data_key);
 
 			// If it's not the last item, send the SSE message and exit
 			if( end($this->posts) !== $post) {
@@ -1611,6 +1678,8 @@ class WPImport extends WP_Importer {
 		$this->requested_file_path = $file;
 		$this->args                = $args;
 		$this->origin              = $args['origin'];
+		$this->origin              = $args['origin'];
+		$this->import_data_key     = 'wp_importer_attributes_' . md5($this->requested_file_path);
 
 		if ( ! empty( $this->args['fetch_attachments'] ) ) {
 			$this->fetch_attachments = true;
