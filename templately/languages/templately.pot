@@ -2,21 +2,21 @@
 # This file is distributed under the same license as the Templately plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Templately 3.1.7\n"
+"Project-Id-Version: Templately 3.1.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/templately\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-10-27T09:36:36+00:00\n"
+"POT-Creation-Date: 2024-11-14T08:05:11+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.9.0\n"
 "X-Domain: templately\n"
 
 #. Plugin Name of the plugin
 #. Author of the plugin
-#: includes/Core/Admin.php:418
+#: includes/Core/Admin.php:427
 #: includes/Core/Platform/Gutenberg.php:82
 #: views/header.php:7
 #: assets/js/elementor.js:1
@@ -46,7 +46,7 @@ msgid "Successfully saved."
 msgstr ""
 
 #: includes/API/Dependencies.php:92
-#: includes/Core/Admin.php:420
+#: includes/Core/Admin.php:429
 #: includes/Core/Importer/Runners/ElementorContent.php:15
 #: assets/js/templately.js:1
 #: react-src/app/header/actionParts/Switcher.js:44
@@ -759,7 +759,7 @@ msgstr ""
 #: includes/Core/Admin.php:254
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Review.js:65
-#: assets/js/dashboard.js:694
+#: assets/js/dashboard.js:698
 msgid "I already did"
 msgstr ""
 
@@ -775,43 +775,44 @@ msgstr ""
 msgid "Never show again"
 msgstr ""
 
-#: includes/Core/Admin.php:306
+#: includes/Core/Admin.php:308
 msgid "🔥 Get access to 5,000+ Ready Templates & save up to 65% OFF now"
 msgstr ""
 
-#: includes/Core/Admin.php:306
-#: includes/Core/Admin.php:349
+#: includes/Core/Admin.php:308
+#: includes/Core/Admin.php:328
+#: includes/Core/Admin.php:358
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/ImportFailed.js:25
 #: assets/js/templately.js:19868
 msgid "Upgrade to Pro"
 msgstr ""
 
-#: includes/Core/Admin.php:342
+#: includes/Core/Admin.php:351
 msgid "Halloween Treats: Get Templately PRO"
 msgstr ""
 
-#: includes/Core/Admin.php:343
+#: includes/Core/Admin.php:352
 msgid "up to 65% OFF"
 msgstr ""
 
-#: includes/Core/Admin.php:344
+#: includes/Core/Admin.php:353
 msgid "& unlock 5000+ ready WordPress templates now."
 msgstr ""
 
-#: includes/Core/Admin.php:419
+#: includes/Core/Admin.php:428
 msgid "requires"
 msgstr ""
 
-#: includes/Core/Admin.php:421
+#: includes/Core/Admin.php:430
 msgid "plugin to be installed and activated. Please install Elementor to continue."
 msgstr ""
 
-#: includes/Core/Admin.php:443
+#: includes/Core/Admin.php:452
 msgid "Open settings page"
 msgstr ""
 
-#: includes/Core/Admin.php:444
+#: includes/Core/Admin.php:453
 msgid "Templates Library"
 msgstr ""
 
@@ -831,16 +832,16 @@ msgstr ""
 msgid "Insufficient permissions"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:358
+#: includes/Core/Importer/FullSiteImport.php:359
 msgid "Invalid Pack ID."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:417
+#: includes/Core/Importer/FullSiteImport.php:424
 msgid "Please update the templately plugin."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:436
-#: includes/Core/Importer/FullSiteImport.php:932
+#: includes/Core/Importer/FullSiteImport.php:443
+#: includes/Core/Importer/FullSiteImport.php:939
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Packs/FullSiteImport.js:62
 #: react-src/app/hooks/useFullSiteImport.js:255
@@ -849,48 +850,48 @@ msgstr ""
 msgid "Oops!"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:474
+#: includes/Core/Importer/FullSiteImport.php:481
 msgid "Upload directory is not writable."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:483
+#: includes/Core/Importer/FullSiteImport.php:490
 msgid "Permission Passed"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:498
+#: includes/Core/Importer/FullSiteImport.php:505
 msgid "Downloading Template Pack"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:515
+#: includes/Core/Importer/FullSiteImport.php:522
 msgid "Template pack download failed"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:526
+#: includes/Core/Importer/FullSiteImport.php:533
 msgid "Template pack download failed with response code: "
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:529
-#: includes/Core/Importer/FullSiteImport.php:543
+#: includes/Core/Importer/FullSiteImport.php:536
+#: includes/Core/Importer/FullSiteImport.php:550
 msgid "Template is getting ready"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:547
+#: includes/Core/Importer/FullSiteImport.php:554
 msgid "Downloading Failed. Please try again"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:556
+#: includes/Core/Importer/FullSiteImport.php:563
 msgid "WP_Filesystem cannot be initialized"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:569
-#: includes/Core/Importer/FullSiteImport.php:922
+#: includes/Core/Importer/FullSiteImport.php:576
+#: includes/Core/Importer/FullSiteImport.php:929
 #: assets/js/templately.js:1
 #: react-src/app/hooks/useFullSiteImport.js:256
 #: assets/js/templately.js:24530
 msgid "It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:616
+#: includes/Core/Importer/FullSiteImport.php:623
 msgid "Cannot be imported, as the manifest file is corrupted"
 msgstr ""
 
@@ -966,27 +967,27 @@ msgstr ""
 msgid "JSON file not exists. "
 msgstr ""
 
-#: includes/Core/Importer/Utils/Utils.php:164
+#: includes/Core/Importer/Utils/Utils.php:167
 msgid "URL is empty"
 msgstr ""
 
-#: includes/Core/Importer/Utils/Utils.php:169
+#: includes/Core/Importer/Utils/Utils.php:172
 msgid "Invalid URL"
 msgstr ""
 
-#: includes/Core/Importer/Utils/Utils.php:175
+#: includes/Core/Importer/Utils/Utils.php:178
 msgid "Failed to download image"
 msgstr ""
 
-#: includes/Core/Importer/Utils/Utils.php:182
+#: includes/Core/Importer/Utils/Utils.php:185
 msgid "Invalid image type"
 msgstr ""
 
-#: includes/Core/Importer/Utils/Utils.php:188
+#: includes/Core/Importer/Utils/Utils.php:191
 msgid "File type and extension check failed"
 msgstr ""
 
-#: includes/Core/Importer/Utils/Utils.php:210
+#: includes/Core/Importer/Utils/Utils.php:213
 msgid "Failed to sideload image"
 msgstr ""
 
@@ -1180,19 +1181,19 @@ msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Review.js:37
-#: assets/js/dashboard.js:666
+#: assets/js/dashboard.js:670
 msgid "We're glad that you liked us! 😍"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Review.js:43
-#: assets/js/dashboard.js:672
+#: assets/js/dashboard.js:676
 msgid "If you don't mind, could you take 30 seconds to review us on WordPress? Your feedback will help us improve and grow. Thank you in advance! 🙏"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Review.js:57
-#: assets/js/dashboard.js:686
+#: assets/js/dashboard.js:690
 msgid "Rate Templately"
 msgstr ""
 

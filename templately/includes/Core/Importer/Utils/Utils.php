@@ -122,16 +122,19 @@ class Utils extends Base {
 		return $templately_options;
 	}
 
-	public static function update_option( $key, $value, $autoload = 'no' ){
+	public static function backup_option_value($key, $autoload = 'no') {
 		$old_value = get_option($key);
-		if($old_value){
-			update_option( "__templately_$key", $old_value, $autoload );
+		if ($old_value) {
+			update_option("__templately_$key", $old_value, $autoload);
 		}
-		else{
-			add_option( "__templately_$key", $old_value, '', $autoload );
+		else {
+			add_option("__templately_$key", $old_value, '', $autoload);
 		}
+	}
 
-		return update_option( $key, $value, $autoload );
+	public static function update_option($key, $value, $autoload = 'no') {
+		self::backup_option_value($key, $autoload);
+		return update_option($key, $value, $autoload);
 	}
 
 	public static function import_page_settings( $id, $settings ) {
