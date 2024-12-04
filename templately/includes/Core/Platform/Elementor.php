@@ -95,6 +95,10 @@ class Elementor extends Platform {
 	}
 
 	public function get_saved_templates( $params = [] ) {
+		if ( ! function_exists( 'is_plugin_active' ) ){
+     		require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
+		}
+
 		$_page_number = isset( $params['page'] ) ? intval( $params['page'] ) : 1;
 
 		$args = [
@@ -129,9 +133,11 @@ class Elementor extends Platform {
 		wp_reset_query();
 
 		return array(
-			'current_page' => $templates->query_vars['paged'],
-			'total_page'   => $templates->max_num_pages,
-			'items'        => $templateList,
+			'current_page'      => $templates->query_vars['paged'],
+			'total_page'        => $templates->max_num_pages,
+			'items'             => $templateList,
+			'has_elementor'     => rest_sanitize_boolean( \is_plugin_active( 'elementor/elementor.php' ) ),
+			'has_elementor_pro' => rest_sanitize_boolean( \is_plugin_active( 'elementor-pro/elementor-pro.php' ) ),
 		);
 	}
 

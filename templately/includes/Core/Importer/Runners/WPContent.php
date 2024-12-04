@@ -143,7 +143,10 @@ class WPContent extends BaseRunner {
 		];
 
 		if ( isset( $imported_data['archive_settings'] ) ) {
-			$args['posts'][ $imported_data['archive_settings']['old_id'] ] = $imported_data['archive_settings']['page_id'];
+			foreach ($imported_data['archive_settings'] as $key => $archive_settings) {
+				$args['posts'][ $archive_settings['old_id'] ] = $archive_settings['page_id'];
+				$args['posts'][ $archive_settings['archive_id'] ] = $archive_settings['page_id'];
+			}
 		}
 
 		$file = $path . $type . '/' . $type . '.xml';

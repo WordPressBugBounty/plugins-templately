@@ -667,8 +667,8 @@ class WPImport extends WP_Importer {
 			}
 
 			// Add the template to the processed templates and update the session data
-			$processed[] = $key;
-			$this->origin->update_progress( $processed, null, $this->import_data_key);
+			$processed_templates[] = $key;
+			$this->origin->update_progress( $processed_templates, null, $this->import_data_key);
 
 			$post = apply_filters( 'wp_import_post_data_raw', $post );
 

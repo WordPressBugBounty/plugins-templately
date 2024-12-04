@@ -447,7 +447,7 @@ class FullSiteImport extends Base {
 
 		// if($_GET['part'] === 'import'){
 			// TODO: cleanup
-			$this->clear_session_data();
+			// $this->clear_session_data();
 		// }
 	}
 

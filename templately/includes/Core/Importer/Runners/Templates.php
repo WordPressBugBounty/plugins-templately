@@ -68,11 +68,12 @@ class Templates extends BaseRunner {
 
 				if ( $template_settings['type'] === 'archive' || $template_settings['type'] === 'product_archive' || $template_settings['type'] === 'course_archive' ) {
 					$page_id = $this->create_archive_page( $template_settings, $this->manifest['platform'] );
-					if ( $page_id ) {
-						$_extra_pages['archive_settings'] = [
+					if ( $page_id && isset($template_settings['page_settings']['archive_page_id']) ) {
+						$archive_page_id = $template_settings['page_settings']['archive_page_id'];
+						$_extra_pages['archive_settings'][$archive_page_id] = [
 							'old_id'     => $id,
 							'page_id'    => $page_id,
-							'archive_id' => $import['id']
+							'archive_id' => $archive_page_id
 						];
 					}
 				}
@@ -168,6 +169,11 @@ class Templates extends BaseRunner {
 	 */
 	private function create_archive_page( $template_settings, $platform ) {
 		try {
+			$archive_page_id = $template_settings['page_settings']['archive_page_id'] ?? null;
+			if($archive_page_id && !empty($this->manifest['content']['page'][$archive_page_id])){
+				return false;
+			}
+
 			$type = $template_settings['type'];
 
 			$archive_page = wp_insert_post( [

@@ -136,10 +136,17 @@ class GutenbergHelper extends ImportHelper {
 			foreach ( $blocks as &$block ) {
 				$this->sse_log('query', 'Finalizing archive settings, just a moment...', 1, 'eventLog');
 
-				if ( isset( $block['attrs']['id'] ) && $block['attrs']['id'] === $this->imported_data['archive_settings']['archive_id'] ) {
-					$changed               = true;
-					$block['attrs']['id']  = $this->imported_data['archive_settings']['page_id'];
-					$block['attrs']['url'] = get_the_permalink( $this->imported_data['archive_settings']['page_id'] );
+				if (isset($block['attrs']['id'])) {
+					$blockId = $block['attrs']['id'];
+					$archiveSettings = $this->imported_data['archive_settings'];
+
+					$archiveIds = $archiveSettings[$blockId] ?? false;
+
+					if ($archiveIds) {
+						$block['attrs']['id'] = $archiveIds['page_id'];
+						$block['attrs']['url'] = get_the_permalink($archiveIds['page_id']);
+						$changed = true;
+					}
 				}
 			}
 			if ( $changed ) {
