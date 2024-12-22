@@ -221,7 +221,7 @@ class Admin extends Base {
 	 */
 	public function notices() {
 		$notices = new Notices( [
-			// 'dev_mode'       => true,
+			'dev_mode'       => true,
 			'id'             => 'templately',
 			'storage_key'    => 'notices',
 			'lifetime'       => 3,
@@ -334,43 +334,49 @@ class Admin extends Base {
 				'html'      => $notice_text,
 			];
 
-			$notices->add( 'black_friday', $_black_friday, [
-				'start'       => $notices->strtotime('+1 minute'),
-				'recurrence'  => false,
-				'dismissible' => true,
-				'refresh'     => TEMPLATELY_VERSION,
-				"expire"      => strtotime( '11:59:59pm 5nd December, 2024' ),
-				'display_if'  => !wp_is_mobile(),
-				'screens'     => [
-					'dashboard',
-				],
-			] );
+			// $notices->add( 'black_friday', $_black_friday, [
+			// 	'start'       => $notices->strtotime('+1 minute'),
+			// 	'recurrence'  => false,
+			// 	'dismissible' => true,
+			// 	'refresh'     => TEMPLATELY_VERSION,
+			// 	"expire"      => strtotime( '11:59:59pm 5nd December, 2024' ),
+			// 	'display_if'  => !wp_is_mobile(),
+			// 	'screens'     => [
+			// 		'dashboard',
+			// 	],
+			// ] );
 
-			$halloween_text = sprintf(
-				'<p style="margin-top: 0; margin-bottom: 0px;"> 🎃 %s <strong>%s</strong> %s</p>',
-				__('Halloween Treats: Get Templately PRO', 'templately'),
-				__('up to 65% OFF', 'templately'),
-				__('& unlock 5000+ ready WordPress templates now.', 'templately')
+			$holiday_text = sprintf(
+				'<p style="margin-top: 0; margin-bottom: 0px;"> 🎁 %s <strong>%s</strong> %s</p>',
+				__('Get', 'templately'),
+				__('Templately PRO', 'templately'),
+				__('with up to 60% OFF & unlock 5500+ ready WordPress templates to power up web design in 2025.', 'templately')
 			);
 
-			$halloween_text .= sprintf(
+			$holiday_text .= "<div class='wpnotice-button-wrapper'>";
+			$holiday_text .= sprintf(
 				'<a class="button button-primary" target="_blank" href="%2$s">%1$s</a>',
-				$crown . __('Upgrade to Pro', 'templately'),
+				$crown . __('GET PRO Lifetime Access', 'templately'),
 				'https://templately.com/#pricing'
 			);
+			$holiday_text .= sprintf(
+				'<button class="button button-link dismiss-btn" data-dismiss="true">%1$s</button>',
+				__('No, I’ll Pay Full Price Later', 'templately'),
+			);
+			$holiday_text .= "</div>";
 
 
-			$_halloween = [
+			$_holiday = [
 				'thumbnail' => templately()->assets->icon( 'logos/logo-full.svg' ),
-				'html'      => $halloween_text,
+				'html'      => $holiday_text,
 			];
 
-			$notices->add( 'halloween', $_halloween, [
-				'start'       => $notices->strtotime('+1 minute'),
+			$notices->add( 'holiday', $_holiday, [
+				'start'       => $notices->strtotime( '+0 minute' ),
 				'recurrence'  => false,
 				'dismissible' => true,
 				'refresh'     => TEMPLATELY_VERSION,
-				"expire"      => strtotime( '11:59:59pm 3nd November, 2024' ),
+				"expire"      => strtotime( '11:59:59pm 10th January, 2025' ),
 				'display_if'  => !wp_is_mobile(),
 				'screens'     => [
 					'dashboard',

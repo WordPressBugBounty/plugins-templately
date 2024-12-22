@@ -35,28 +35,53 @@
 	background-color: transparent;
 } */
 
-#wpnotice-templately-halloween.notice-info, #wpnotice-templately-black_friday.notice-info {
+#wpnotice-templately-holiday.notice-info,
+#wpnotice-templately-black_friday.notice-info {
 	padding: 10px 38px 10px 12px;
 	border-left-color: #5626E7;
 }
-#wpnotice-templately-halloween .wpnotice-content-wrapper, #wpnotice-templately-black_friday .wpnotice-content-wrapper {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
+#wpnotice-templately-holiday .wpnotice-content-wrapper,
+#wpnotice-templately-black_friday .wpnotice-content-wrapper {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
 }
-#wpnotice-templately-halloween .wpnotice-content-wrapper p, #wpnotice-templately-black_friday .wpnotice-content-wrapper p {
-    font-size: 14px;
+#wpnotice-templately-holiday .wpnotice-content-wrapper {
+	gap: 10px;
+	flex-flow: column;
+	align-items: flex-start;
 }
-#wpnotice-templately-halloween a.button.button-primary, #wpnotice-templately-black_friday a.button.button-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 15px;
-    background: #5626E7;
-    border: none;
-    border-radius: 4px;
+#wpnotice-templately-holiday .wpnotice-content-wrapper p,
+#wpnotice-templately-black_friday .wpnotice-content-wrapper p {
+	font-size: 14px;
+}
+#wpnotice-templately-holiday .button.button-primary,
+#wpnotice-templately-black_friday .button.button-primary {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 5px 15px;
+	background: #5626E7;
+	border: none;
+	border-radius: 4px;
+}
+#wpnotice-templately-holiday .wpnotice-button-wrapper {
+	display: flex;
+	gap: 10px;
+}
+#wpnotice-templately-holiday .button.button-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 5px 15px;
+	border: none;
+	border-radius: 4px;
+	position: initial;
+}
+#wpnotice-templately-holiday .button.button-link:before {
+	display: none;
 }
 
 .toplevel_page_templately .notice {

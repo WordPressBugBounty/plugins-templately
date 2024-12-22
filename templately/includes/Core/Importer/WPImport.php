@@ -647,7 +647,6 @@ class WPImport extends WP_Importer {
 		];
 
 		$attributes = [
-			'posts',
 			'output',
 			'menu_item_orphans',
 			'processed_menu_items',
