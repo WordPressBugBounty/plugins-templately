@@ -159,6 +159,9 @@ class Admin extends Base {
 		if ( $hook === 'toplevel_page_templately' || $hook == 'edit.php' ) {
 			templately()->assets->enqueue( 'templately-admin', 'css/admin.css', [ 'templately' ] );
 		}
+		if ( $hook === 'toplevel_page_templately' ) {
+			header("x-frame-options: ALLOW-FROM *.templately.com");
+		}
 
 		// Google Font Enqueueing
 		templately()->assets->enqueue(
@@ -190,6 +193,7 @@ class Admin extends Base {
 				'profile'      => templately()->assets->icon( 'icons/profile.svg' ),
 				'warning'      => templately()->assets->icon( 'icons/warning.png' )
 			],
+			'locale'                  => get_locale(),
 			'promo_image'             => templately()->assets->icon( 'single-page-promo.png' ),
 			'default_image'           => templately()->assets->icon( 'clouds/cloud-item.svg' ),
 			'not_found'               => templately()->assets->icon( 'no-item-found.png' ),
@@ -221,7 +225,7 @@ class Admin extends Base {
 	 */
 	public function notices() {
 		$notices = new Notices( [
-			'dev_mode'       => true,
+			// 'dev_mode'       => true,
 			'id'             => 'templately',
 			'storage_key'    => 'notices',
 			'lifetime'       => 3,

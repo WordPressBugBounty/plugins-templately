@@ -4,22 +4,13 @@ function Close() {
 	return (
 		<svg
 			xmlns='http://www.w3.org/2000/svg'
-			width='12'
-			height='12'
+			width='11'
+			height='11'
 			fill='none'
-			viewBox='0 0 12 12'>
-			<g fill='#475467' clipPath='url(#clip0_381_11191)'>
-				<path d='M1.187 11.333a.521.521 0 01-.368-.89L10.444.82a.52.52 0 01.736.736L1.555 11.18a.518.518 0 01-.368.153z'></path>
-				<path d='M10.812 11.333a.52.52 0 01-.368-.153L.819 1.555A.52.52 0 011.555.82l9.625 9.625a.52.52 0 01-.368.889z'></path>
-			</g>
-			<defs>
-				<clipPath id='clip0_381_11191'>
-					<path
-						fill='#fff'
-						d='M0 0H10.667V10.667H0z'
-						transform='translate(.667 .666)'></path>
-				</clipPath>
-			</defs>
+			viewBox='0 0 11 11'>
+			<path
+				fill='#475467'
+				d='M1.658 10.465l-1.4-1.4 3.6-3.6-3.6-3.575 1.4-1.4 3.6 3.6L8.833.49l1.4 1.4-3.6 3.575 3.6 3.6-1.4 1.4-3.575-3.6-3.6 3.6z'></path>
 		</svg>
 	);
 }

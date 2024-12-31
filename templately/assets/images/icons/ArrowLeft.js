@@ -9,19 +9,22 @@ function ArrowRight() {
 			fill='none'
 			viewBox='0 0 25 24'>
 			<mask
-				id='mask0_1187_1613'
+				id='mask0_1187_1618'
 				style={{ maskType: 'alpha' }}
 				width='25'
 				height='24'
 				x='0'
 				y='0'
 				maskUnits='userSpaceOnUse'>
-				<path fill='#D9D9D9' d='M0.191 0H24.191V24H0.191z'></path>
-			</mask>
-			<g mask='url(#mask0_1187_1613)'>
 				<path
-					fill='#fff'
-					d='M15.191 19l-1.425-1.4 4.6-4.6H2.191v-2h16.175l-4.575-4.6 1.4-1.4 7 7-7 7z'></path>
+					fill='#D9D9D9'
+					d='M24.81 24H48.81V48H24.81z'
+					transform='rotate(-180 24.81 24)'></path>
+			</mask>
+			<g mask='url(#mask0_1187_1618)'>
+				<path
+					fill='#667085'
+					d='M9.81 5l1.425 1.4-4.6 4.6H22.81v2H6.635l4.575 4.6-1.4 1.4-7-7 7-7z'></path>
 			</g>
 		</svg>
 	);

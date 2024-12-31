@@ -82,6 +82,11 @@ class GutenbergContent extends BaseRunner {
 				}
 			}
 
+
+			if(!empty($data['typography'])){
+				$settings["global_typography"] = $data['typography'];
+			}
+
 			$settings = array_map('json_encode', $settings);
 
 			// Save the settings to the 'eb_global_styles' option

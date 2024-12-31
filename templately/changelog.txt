@@ -1,5 +1,9 @@
 == Changelog ==
 
+= 3.2.0 – 31-12-2024 =
+Added: Global Typography control for Full site import.
+Few minor bug fix & improvements.
+
 = 3.1.11 - 22/12/2024 =
 Fixed: Template importing was getting stuck on some servers.
 Few minor bug fix & improvements.

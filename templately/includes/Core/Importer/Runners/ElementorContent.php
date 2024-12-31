@@ -93,6 +93,23 @@ class ElementorContent extends BaseRunner {
 				}
 			}
 
+			if(!empty($data['typography'])){
+				if (!empty($settings['system_typography'])) {
+					foreach ($settings['system_typography'] as $key => &$typography) {
+						if(!empty($data['typography'][$typography['_id']])){
+							$typography = array_merge($typography, $data['typography'][$typography['_id']]);
+						}
+					}
+				}
+				if (!empty($settings['custom_typography'])) {
+					foreach ($settings['custom_typography'] as $key => &$typography) {
+						if(!empty($data['typography'][$typography['_id']])){
+							$typography = array_merge($typography, $data['typography'][$typography['_id']]);
+						}
+					}
+				}
+			}
+
 			if (!empty($data['logo']['id'])) {
 				$settings['site_logo'] = $data['logo'];
 				Utils::backup_option_value( 'site_logo' );

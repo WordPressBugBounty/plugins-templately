@@ -278,6 +278,8 @@ class LocationManager {
 			$this->did_locations[] = $location;
 
 			$this->set_is_printed( $location, $template_id );
+
+			do_action("templately_printed_location", $template_id, $location, $template);
 		}
 
 		return true;
