@@ -747,7 +747,7 @@ class WPImport extends WP_Importer {
 
 			if ( 'attachment' === $postdata['post_type'] ) {
 				$remote_url = ! empty( $post['attachment_url'] ) ? $post['attachment_url'] : $post['guid'];
-
+				$attachment_sizes = [];
 				// try to use _wp_attached file for upload folder placement to ensure the same location as the export site
 				// e.g. location is 2003/05/image.jpg but the attachment post_date is 2010/09, see media_handle_upload()
 				$postdata['upload_date'] = $post['post_date'];
@@ -757,12 +757,17 @@ class WPImport extends WP_Importer {
 							if ( preg_match( '%^[0-9]{4}/[0-9]{2}%', $meta['value'], $matches ) ) {
 								$postdata['upload_date'] = $matches[0];
 							}
-							break;
+							// break;
+						}
+						else if ( '_wp_attachment_metadata' === $meta['key'] ) {
+							$attachment_metadata = maybe_unserialize( $meta['value'] );
+							$attachment_sizes    = $attachment_metadata['sizes'] ?? [];
+							// break;
 						}
 					}
 				}
 
-				$post_id         = $this->process_attachment( $postdata, $remote_url );
+				$post_id         = $this->process_attachment( $postdata, $remote_url, $attachment_sizes, $original_post_id );
 				$comment_post_id = $post_id;
 			} else {
 				$post_id = wp_insert_post( $postdata, true );
@@ -785,16 +790,21 @@ class WPImport extends WP_Importer {
 
 				$this->output['errors'][] = $error;
 
+				if ( 'attachment' === $postdata['post_type'] ) {
+					do_action( 'templately_import.process_post', $post, $result, $this );
+				}
+
 				// Add the template to the processed templates and update the session data
 				$this->backup_attributes($attributes);
 				$this->origin->update_progress( null, [ $backup_key => $result ], $this->import_data_key);
 
 				// If it's not the last item, send the SSE message and exit
-				if( end($this->posts) !== $post) {
+				if(Helper::fsi_should_exit() && 'attachment' === $postdata['post_type'] && end($this->posts) !== $post) {
 					$this->origin->sse_message( [
 						'type'    => 'continue',
 						'action'  => 'continue',
 						'results' => __METHOD__ . '::' . __LINE__,
+						'data'    => Helper::fsi_should_exit(),
 					] );
 					exit;
 				}
@@ -959,12 +969,14 @@ class WPImport extends WP_Importer {
 			$this->backup_attributes($attributes);
 			$this->origin->update_progress( null, [ $backup_key => $result ], $this->import_data_key);
 
+
 			// If it's not the last item, send the SSE message and exit
-			if( end($this->posts) !== $post) {
+			if(Helper::fsi_should_exit() && 'attachment' === $postdata['post_type'] && end($this->posts) !== $post) {
 				$this->origin->sse_message( [
 					'type'    => 'continue',
 					'action'  => 'continue',
 					'results' => __METHOD__ . '::' . __LINE__,
+					'data'    => Helper::fsi_should_exit(),
 				] );
 				exit;
 			}
@@ -1155,7 +1167,7 @@ class WPImport extends WP_Importer {
 	 *
 	 * @return int|WP_Error Post ID on success, WP_Error otherwise
 	 */
-	public function process_attachment( $post, $url, $sizes = [] ) {
+	public function process_attachment( $post, $url, $sizes = [], $original_post_id = null ) {
 		if ( ! $this->fetch_attachments ) {
 			return new WP_Error( 'attachment_processing_error', esc_html__( 'Fetching attachments is not enabled', 'elementor' ) );
 		}
@@ -1170,6 +1182,11 @@ class WPImport extends WP_Importer {
 		if($saved_image = $this->get_saved_image($url)){
 			$this->url_remap[ $url ] = wp_get_attachment_url( $saved_image );
 			$this->url_remap[ $this->remove_extension($url) ] = $this->remove_extension(wp_get_attachment_url( $saved_image ));
+
+			$full_size_path = get_attached_file($saved_image);
+			$metadata       = wp_get_attachment_metadata($saved_image);
+			$metadata       = $this->import_sizes($sizes, $metadata, $full_size_path, $saved_image);
+			wp_update_attachment_metadata( $saved_image, $metadata );
 			return $saved_image;
 		}
 
@@ -1193,7 +1210,16 @@ class WPImport extends WP_Importer {
 		$file_name = basename( parse_url( $url, PHP_URL_PATH ) );
 		$file_name = wp_unique_filename( $upload_dir['path'], $file_name );
 		$dest_file = $upload_dir['path'] . "/$file_name";
-		$upload    = $this->fetch_remote_file( $url, $dest_file, $upload_dir );
+		$start     = microtime(true);
+
+		$upload = apply_filters( 'templately_import_copy_attachment', null, $original_post_id, $dest_file, $upload_dir );
+		if ( null === $upload ) {
+			$upload    = $this->fetch_remote_file( $url, $dest_file, $upload_dir );
+		}
+
+		$end       = microtime(true);
+		$duration = $end - $start;
+		error_log('Duration: ' . $duration);
 
 		if ( is_wp_error( $upload ) ) {
 			return $upload;
@@ -1212,6 +1238,10 @@ class WPImport extends WP_Importer {
 		// As per wp-admin/includes/upload.php.
 		$post_id = wp_insert_attachment( $post, $upload['file'] );
 
+		if(is_wp_error($post_id)){
+			return $post_id;
+		}
+
 		$this->update_post_meta( $post_id );
 
 		// Generate attachment metadata
@@ -1220,7 +1250,7 @@ class WPImport extends WP_Importer {
 		// error_log('Metadata: ' . print_r($metadata, true));
 
 		// For gutenberg pages
-		$metadata = $this->import_sizes($sizes, $metadata, $upload, $upload_dir, $post_id);
+		$metadata = $this->import_sizes($sizes, $metadata, $upload['file'], $post_id);
 
 		// error_log('Metadata: ' . print_r($metadata, true));
 		wp_update_attachment_metadata( $post_id, $metadata );
@@ -1425,73 +1455,96 @@ class WPImport extends WP_Importer {
 
 		if ( $post_id ) {
 			self::$_replace_image_ids[ $hash ] = $post_id;
-			return $post_id;
+			return (int) $post_id;
 		}
 
 		return false;
 	}
 
 
-    public function extract_sizes($sizes) {
-        return array_reduce($sizes, function($carry, $url) {
-            if (preg_match('/-((\d+)x(\d+))\./', $url, $matches)) {
-                $carry[$matches[1]] = $url;
-            }
-            return $carry;
-        }, []);
-    }
+    public function import_sizes($sizes, $metadata, $full_size_file, $post_id) {
+		if (!empty($sizes)) {
+			do_action('templately_import.finalize_gutenberg_attachment', $post_id);
 
-    public function size_exists_in_metadata($size_dimension, $metadata) {
-        foreach ($metadata['sizes'] as $size => $size_info) {
-            if (strpos($size_info['file'], $size_dimension) !== false) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public function create_unique_destination_file($upload_file, $size_dimension) {
-        $destination_file = preg_replace('/(\.[^.]+)$/', '-' . $size_dimension . '$1', $upload_file);
-        $destination_dir = pathinfo($destination_file, PATHINFO_DIRNAME);
-        $destination_filename = pathinfo($destination_file, PATHINFO_BASENAME);
-        $unique_filename = wp_unique_filename($destination_dir, $destination_filename);
-        return $destination_dir . '/' . $unique_filename;
-    }
-
-    public function create_size_array($destination_file, $size_dimension) {
-        list($width, $height) = explode('x', $size_dimension);
-        return array(
-            'file'      => basename($destination_file),
-            'width'     => $width,
-            'height'    => $height,
-            'mime-type' => wp_check_filetype($destination_file)['type'],
-            'filesize'  => filesize($destination_file),
-            'resized'   => false,
-        );
-    }
-
-    public function import_sizes($sizes, $metadata, $upload, $upload_dir, $post_id) {
-        if (!empty($sizes)) {
-			do_action( 'templately_import.finalize_gutenberg_attachment', $post_id );
-
-            $size_dimensions = $this->extract_sizes($sizes);
-            $size_dimensions = array_filter($size_dimensions);
-
-            foreach ($size_dimensions as $size_dimension => $__url) {
-                if (!$this->size_exists_in_metadata($size_dimension, $metadata)) {
-                    $unique_destination_file = $this->create_unique_destination_file($upload['file'], $size_dimension);
-                    $missing_size = $this->fetch_remote_file($__url, $unique_destination_file, $upload_dir);
-
-                    if($missing_size && !is_wp_error($missing_size)) {
-                        $metadata['sizes'][$size_dimension] = $this->create_size_array($unique_destination_file, $size_dimension);
-                        do_action( 'templately_import.finalize_gutenberg_attachment', $post_id, $size_dimension );
-                    }
-                }
-            }
-
-        }
+			foreach ($sizes as $size_name => $size) {
+				$size_dimension = $size['width'] . 'x' . $size['height'];
+				$size_name = !is_string($size_name) ? $size_dimension : $size_name;
+				$unique_destination_file = $this->create_unique_destination_file($full_size_file, $size);
+				// check non cropped sizes. with dynamic height
+				if (!$this->size_exists_in_metadata(basename($unique_destination_file), $metadata)) {
+					if ($unique_destination_file) {
+						$missing_size = $this->generate_missing_size_from_full($full_size_file, $unique_destination_file, $size);
+						if ($missing_size && !is_wp_error($missing_size)) {
+							unset($missing_size['path']);
+							$metadata['sizes'][$size_name] = $missing_size;
+							do_action('templately_import.finalize_gutenberg_attachment', $post_id, $size_dimension);
+						}
+					}
+				}
+			}
+		}
 		return $metadata;
-    }
+	}
+
+	public function generate_missing_size_from_full($full_size_file, $destination_file, $size) {
+		// Generate the missing size from the full-size image
+		$editor = wp_get_image_editor($full_size_file);
+		if (is_wp_error($editor)) {
+			return $editor;
+		}
+
+		$resized = $editor->resize($size['width'], $size['height'], true);
+		if (is_wp_error($resized)) {
+			return $resized;
+		}
+
+		$saved = $editor->save($destination_file);
+		if (is_wp_error($saved)) {
+			return $saved;
+		}
+
+		return $saved;
+	}
+
+	public function size_exists_in_metadata($size_file, $metadata) {
+		if (isset($metadata['sizes']) && is_array($metadata['sizes'])) {
+			foreach ($metadata['sizes'] as $size => $size_info) {
+				if ($size_info['file'] == $size_file) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public function create_unique_destination_file($full_size_file, $size) {
+		$pathinfo = pathinfo($full_size_file);
+		$directory = $pathinfo['dirname'];
+		$filename = $pathinfo['filename'];
+		$extension = $pathinfo['extension'];
+
+		$destination_file = $directory . '/' . $filename . '-' . $size['width'] . 'x' . $size['height'] . '.' . $extension;
+
+		// Skip if the file already exists
+		if (file_exists($destination_file)) {
+			// return false;
+		}
+
+		return $destination_file;
+	}
+
+	public function create_size_array($destination_file, $size_dimension) {
+		list($width, $height) = explode('x', $size_dimension);
+		return array(
+			'file'      => basename($destination_file),
+			'width'     => $width,
+			'height'    => $height,
+			'mime-type' => wp_check_filetype($destination_file)['type'],
+			'filesize'  => filesize($destination_file),
+			'resized'   => false,
+		);
+	}
+
 
 	/**
 	 * Attempt to associate posts and menu items with previously missing parents
@@ -1612,7 +1665,7 @@ class WPImport extends WP_Importer {
 	private function is_valid_meta_key( $key ) {
 		// Skip attachment metadata since we'll regenerate it from scratch.
 		// Skip _edit_lock as not relevant for import
-		if ( in_array( $key, [ '_wp_attached_file', '_wp_attachment_metadata', '_edit_lock' ] ) ) {
+		if ( in_array( $key, [ '_wp_attached_file', '_wp_attachment_metadata', '_edit_lock', '_elementor_source_image_hash', 'sm_cloud' ] ) ) {
 			return false;
 		}
 

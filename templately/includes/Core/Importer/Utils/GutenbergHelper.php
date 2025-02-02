@@ -352,6 +352,25 @@ class GutenbergHelper extends ImportHelper {
 				continue;
 			}
 
+			foreach ($sizes as $key => $size) {
+				if ($base_url == $size) {
+					unset($sizes[$key]);
+					continue;
+				}
+
+				// $size url string; get width height from the image url
+				preg_match('/-(\d+)x(\d+)\.[a-zA-Z]+$/', $size, $matches);
+				if (isset($matches[1]) && isset($matches[2])) {
+					$sizes[$key] = [
+						'file'   => basename($size),
+						'width'  => $matches[1],
+						'height' => $matches[2]
+					];
+				} else {
+					unset($sizes[$key]);
+				}
+			}
+
 			// Check if the attachment already exists
 			$attachment_id = $this->wp_importer->process_attachment($post_data, $base_url, $sizes);
 			// If there was an error, handle it here
@@ -365,29 +384,7 @@ class GutenbergHelper extends ImportHelper {
 	}
 
 	private function prepare_post_data($post_id, $image_url) {
-		$filetype = wp_check_filetype(basename($image_url));
-		if (!$filetype['type']) {
-			$this->sse_log('prepare', 'Error: Unable to determine the file type.', -1, 'eventLog');
-			return null;
-		}
-
-		$post_data = array(
-			'post_title'     => basename($image_url),
-			'post_content'   => '',
-			'post_status'    => 'inherit',
-			'post_mime_type' => $filetype['type'],
-			'guid'           => $image_url,
-			'post_parent'    => $post_id, // Set the parent post
-		);
-
-		if (preg_match('%wp-content/uploads/([0-9]{4}/[0-9]{2})%', $image_url, $matches)) {
-			$post_data['upload_date'] = $matches[1];
-		}
-		else{
-			$post_data['upload_date'] = date('Y/m');
-		}
-
-		return $post_data;
+		return Utils::prepare_post_data($image_url, $post_id, [$this, 'sse_log']);
 	}
 
 	public function sse_log( $type, $message, $progress = 1, $action = 'updateLog', $status = null ) {

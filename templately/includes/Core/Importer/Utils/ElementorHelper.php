@@ -72,10 +72,10 @@ class ElementorHelper extends ImportHelper {
 							}
 						}
 					}
-					$this->sse_log('prepare', 'Preparing output for finalize, just a moment...', 1, 'eventLog');
+					$this->sse_log('prepare', 'Preparing output for finalize, just a moment...' . $plugin, 1, 'eventLog');
 				}
 			}
-			$this->sse_log('prepare', 'Preparing output for finalize, just a moment...', 1, 'eventLog');
+			$this->sse_log('prepare', 'Preparing output for finalize, just a moment...' . $type, 1, 'eventLog');
 		}
 
 		// $content = $template_json;

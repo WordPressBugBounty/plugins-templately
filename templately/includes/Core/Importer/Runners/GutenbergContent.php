@@ -29,11 +29,11 @@ class GutenbergContent extends BaseRunner {
 	}
 
 	public function get_action(): string {
-		return 'eventLog';
+		return 'updateLog';
 	}
 
 	public function log_message(): string {
-		return __( 'Importing Gutenberg Templates (Pages, Posts etc)', 'templately' );
+		return __( 'Importing Gutenberg Page and Post Templates', 'templately' );
 	}
 
 	public function import( $data, $imported_data ): array {
@@ -129,14 +129,14 @@ class GutenbergContent extends BaseRunner {
 				$processed_templates[] = "$type::$id";
 				$this->origin->update_progress( $processed_templates, [ 'content' => $results ]);
 				// If it's not the last item, send the SSE message and exit
-				if( end($contents) !== $posts || end($posts) !== $settings) {
-					$this->sse_message( [
-						'type'    => 'continue',
-						'action'  => 'continue',
-						'results' => __METHOD__ . '::' . __LINE__,
-					] );
-					exit;
-				}
+				// if( end($contents) !== $posts || end($posts) !== $settings) {
+				// 	$this->sse_message( [
+				// 		'type'    => 'continue',
+				// 		'action'  => 'continue',
+				// 		'results' => __METHOD__ . '::' . __LINE__,
+				// 	] );
+				// 	exit;
+				// }
 			}
 		}
 

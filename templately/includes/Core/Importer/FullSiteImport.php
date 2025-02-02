@@ -1,10 +1,25 @@
 <?php
 
+/**
+ * remove 'action'  => 'continue',
+ * way to retry
+ * way to skip if failed multiple times
+ *
+ *	@todo: on runner check for timeout and retry
+ *	@todo: use ErrorException on runner to skip item when error occurs: not useful
+ *
+ */
+
+
 namespace Templately\Core\Importer;
 
 use Elementor\Plugin;
 use Error;
 use Exception;
+use Templately\Core\Importer\Exception\NonRetryableErrorException;
+use Templately\Core\Importer\Exception\RetryableErrorException;
+use Templately\Core\Importer\Exception\UnknownErrorException;
+use Templately\Core\Importer\Utils\LogHandler;
 use Templately\Core\Importer\Utils\Utils;
 use Templately\Utils\Base;
 use Templately\Utils\Helper;
@@ -98,6 +113,10 @@ class FullSiteImport extends Base {
 	public function import_settings() {
 		$data = wp_unslash($_POST);
 
+		$session_id       = uniqid();
+		$this->session_id = $session_id;
+		$data['session_id'] = $session_id;
+
 		update_option(self::SESSION_OPTION_KEY, $data);
 
 		delete_option('templately_fsi_imported_list');
@@ -105,6 +124,7 @@ class FullSiteImport extends Base {
 
 		wp_send_json_success([
 			'is_lightspeed' => !Helper::should_flush(),
+			'session_id'    => $session_id,
 		]);
 	}
 
@@ -172,7 +192,7 @@ class FullSiteImport extends Base {
 		}
 
 		if (wp_remote_retrieve_response_code($response) != 200 && wp_remote_retrieve_response_code($response) != 201) {
-			wp_send_json_error('API request failed with response code ' . wp_remote_retrieve_response_code($response));
+			wp_send_json_error('API request failed with response code ' . wp_remote_retrieve_response_code($response), wp_remote_retrieve_response_code($response));
 		}
 
 		$body = wp_remote_retrieve_body($response);
@@ -191,10 +211,14 @@ class FullSiteImport extends Base {
 		wp_send_json_success($result);
 	}
 
-	private function update_session_data($data): bool {
-		$old_data = $this->get_session_data();
+	public static function _update_session_data($data): bool {
+		$old_data = self::_get_session_data();
 
 		return update_option(self::SESSION_OPTION_KEY, wp_parse_args($data, $old_data));
+	}
+
+	private function update_session_data($data): bool {
+		return self::_update_session_data($data);
 	}
 
 	protected function CallingFunctionName($id = null) {
@@ -262,7 +286,7 @@ class FullSiteImport extends Base {
 		return $r;
 	}
 
-	public function get_session_data(): array {
+	public static function _get_session_data(): array {
 		$data = get_option(self::SESSION_OPTION_KEY, []);
 
 		$options = [];
@@ -275,6 +299,10 @@ class FullSiteImport extends Base {
 		}
 
 		return $options;
+	}
+
+	public function get_session_data(): array {
+		return self::_get_session_data();
 	}
 
 	public function initialize_props() {
@@ -298,30 +326,57 @@ class FullSiteImport extends Base {
 	}
 
 	private function finishRequestHeaders() {
-		header( "Cache-Control: no-store, no-cache" );
-		// header( 'Content-Type: text/event-stream, charset=UTF-8' );
-		// header( "Connection: Keep-Alive" );
+		if(Helper::should_flush()) {
+			// Disable output buffering and compression
+			@ini_set('output_buffering', 'Off');
+			@ini_set('zlib.output_compression', 'Off');
+			@ini_set('implicit_flush', 1);
 
-		// Ignore user aborts and allow the script to run forever
-		// (Use with caution, consider progress updates or timeouts)
-		ignore_user_abort(true);
-
-		// Time to run the import!  Set no limit
-		set_time_limit(0);
+			// Time to run the import!  Set no limit
+			set_time_limit(0);
 
 
-		if ( !empty($GLOBALS['is_nginx']) ) {
-			header( 'X-Accel-Buffering: no' );
-			header( 'Content-Encoding: none' );
-		}
+			// Set headers to prevent caching and buffering
+			header('Content-Type: text/event-stream, charset=UTF-8');
+			header('Cache-Control: no-cache, must-revalidate');
+			header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
+			header('Connection: Keep-Alive');
+			header('Pragma: no-cache');
 
-		// Send output as soon as possible during long-running process
-		if (function_exists('fastcgi_finish_request')) {
-			fastcgi_finish_request();
-		} elseif (function_exists('litespeed_finish_request')) {
-			litespeed_finish_request();
-		} else {
+			if (!empty($GLOBALS['is_nginx'])) {
+				header('X-Accel-Buffering: no');
+				header('Content-Encoding: none');
+			}
+
+			flush();
+			ob_flush();
 			wp_ob_end_flush_all();
+		} else {
+			header("Cache-Control: no-store, no-cache");
+			// header( 'Content-Type: text/event-stream, charset=UTF-8' );
+			// header( "Connection: Keep-Alive" );
+
+			// Ignore user aborts and allow the script to run forever
+			// (Use with caution, consider progress updates or timeouts)
+			ignore_user_abort(true);
+
+			// Time to run the import!  Set no limit
+			set_time_limit(0);
+
+
+			if (!empty($GLOBALS['is_nginx'])) {
+				header('X-Accel-Buffering: no');
+				header('Content-Encoding: none');
+			}
+
+			// Send output as soon as possible during long-running process
+			if (function_exists('fastcgi_finish_request')) {
+				fastcgi_finish_request();
+			} elseif (function_exists('litespeed_finish_request')) {
+				litespeed_finish_request();
+			} else {
+				wp_ob_end_flush_all();
+			}
 		}
 	}
 
@@ -330,13 +385,9 @@ class FullSiteImport extends Base {
 			exit;
 		}
 
-		// delete_option( 'templately_fsi_log' );
+		define('TEMPLATELY_START_TIME', microtime(true));
 
-		$this->sse_message( [
-			'type'    => 'start',
-			'action'  => 'eventLog',
-			'results' => __METHOD__ . '::' . __LINE__,
-		] );
+		// delete_option( 'templately_fsi_log' );
 
 		register_shutdown_function( [ $this, 'register_shutdown' ] );
 
@@ -345,16 +396,39 @@ class FullSiteImport extends Base {
 		try {
 			// TODO: Need to check if user is connected or not
 
+
 			$this->request_params = $this->get_session_data();
 			$this->initialize_props();
 			$this->add_revert_hooks();
 			$progress = $this->request_params['progress'] ?? [];
+
+			if(empty($progress['create_log_dir'])){
+				// Create Log Directory and if fail then chose option method
+				LogHandler::create_log_dir();
+
+				$progress['create_log_dir'] = true;
+				$this->update_session_data( [
+					'progress' => $progress,
+				] );
+				$this->sse_message( [
+					'type'    => 'eventLog',
+					'action'  => 'eventLog',
+					'info'    => 'create_log_dir',
+					'results' => __METHOD__ . '::' . __LINE__,
+				] );
+			}
 
 			$_id = isset($this->request_params['id']) ? (int) $this->request_params['id'] : null;
 
 			if ($_id === null) {
 				$this->throw(__('Invalid Pack ID.', 'templately'));
 			}
+
+			$this->sse_message( [
+				'type'    => 'start',
+				'action'  => 'eventLog',
+				'results' => __METHOD__ . '::' . __LINE__,
+			] );
 
 			if(empty($progress['download_zip'])){
 				//clear previous revert backup
@@ -432,13 +506,18 @@ class FullSiteImport extends Base {
 			$this->start_content_import();
 
 		} catch ( Exception $e ) {
-			$this->handle_import_status('failed', $e->getMessage());
+			$should_retry = $e instanceof RetryableErrorException;
+			if(!$should_retry){
+				$this->handle_import_status('failed', $e->getMessage());
+			}
+
 			$this->sse_message([
-				'action'   => 'error',
-				'status'   => 'error',
-				'type'     => "error",
-				'title'    => __("Oops!", "templately"),
-				'message'  => $e->getMessage()
+				'action'  => 'error',
+				'status'  => 'error',
+				'type'    => "error",
+				'retry'   => $should_retry,
+				'title'   => __("Oops!", "templately"),
+				'message' => $e->getMessage()
 			]);
 		}
 
@@ -448,14 +527,24 @@ class FullSiteImport extends Base {
 		// }
 	}
 
-	public function import_status(){
-		$log = get_option( 'templately_fsi_log' );
+	// Updated import_status method
+	public function import_status() {
+		$request_params = $this->get_session_data();
 
-		if(!empty($log) && is_array($log) && isset($_GET['lastLogIndex'])){
-			$lastLogIndex = (int) $_GET['lastLogIndex'];
-			$log = array_slice($log, $lastLogIndex);
+		if (isset($request_params['log_type']) && $request_params['log_type'] == 'file') {
+			$log_index  = isset($_GET['lastLogIndex']) ? (int) $_GET['lastLogIndex'] : 0;
+			$log = LogHandler::read_log_file($log_index);
+
+			wp_send_json(['count' => count($log), 'log' => $log]);
+		} else {
+			$log = get_option('templately_fsi_log');
+
+			if (!empty($log) && is_array($log) && isset($_GET['lastLogIndex'])) {
+				$lastLogIndex = (int) $_GET['lastLogIndex'];
+				$log = array_slice($log, $lastLogIndex);
+			}
+			wp_send_json(['count' => $log ? count($log) : 0, 'log' => $log]);
 		}
-		wp_send_json( ['count' => $log ? count($log) : 0, 'log' => $log] );
 	}
 
 	/**
@@ -466,6 +555,33 @@ class FullSiteImport extends Base {
 			error_log(print_r($message, 1));
 		}
 		throw new Exception($message);
+	}
+	/**
+	 * @throws Exception
+	 */
+	private function throw_non_retryable($message, $code = 0) {
+		if ($this->dev_mode) {
+			error_log(print_r($message, 1));
+		}
+		throw new NonRetryableErrorException($message);
+	}
+	/**
+	 * @throws Exception
+	 */
+	private function throw_retryable($message, $code = 0) {
+		if ($this->dev_mode) {
+			error_log(print_r($message, 1));
+		}
+		throw new RetryableErrorException($message);
+	}
+	/**
+	 * @throws Exception
+	 */
+	private function throw_unknown($message, $code = 0) {
+		if ($this->dev_mode) {
+			error_log(print_r($message, 1));
+		}
+		throw new UnknownErrorException($message);
 	}
 
 	/**
@@ -516,7 +632,7 @@ class FullSiteImport extends Base {
 		$this->download_key  = wp_remote_retrieve_header($response, 'download-key');
 
 		if (is_wp_error($response)) {
-			$this->throw(__('Template pack download failed', 'templately') . $response->get_error_message());
+			$this->throw_retryable(__('Template pack download failed', 'templately') . $response->get_error_message());
 		} else if ($response_code != 200) {
 			if (strpos($content_type, 'application/json') !== false) {
 				// Retrieve Data from Response Body.
@@ -524,18 +640,22 @@ class FullSiteImport extends Base {
 
 				// If the response body is JSON and it contains an error, throw an exception with the error message
 				if (isset($response_body['status']) && $response_body['status'] === 'error') {
-					$this->throw($response_body['message']);
+					$support_message = '';
+					if(strpos($response_body['message'], 'https://wpdeveloper.com/support') === false){
+						$support_message = sprintf(__(" Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://wpdeveloper.com/support');
+					}
+					$this->throw_non_retryable($response_body['message'] . $support_message);
 				}
 			}
-			$this->throw(__('Template pack download failed with response code: ', 'templately') . $response_code);
+			$this->throw_unknown(__('Template pack download failed with response code: ', 'templately') . $response_code);
 		}
 
-		$this->sse_log('download', __('Template is getting ready', 'templately'), 57);
+		$this->sse_log('download', __('Downloading Template Pack', 'templately'), 57);
 
-		$session_id       = uniqid();
-		$this->dir_path   = $this->tmp_dir . $session_id . DIRECTORY_SEPARATOR;
-		$this->filePath   = $this->tmp_dir . "{$session_id}.zip";
-		$this->session_id = $session_id;
+		// $session_id       = uniqid();
+		$this->dir_path   = $this->tmp_dir . $this->session_id . DIRECTORY_SEPARATOR;
+		$this->filePath   = $this->tmp_dir . "{$this->session_id}.zip";
+		// $this->session_id = $session_id;
 
 		$this->update_session_data([
 			'session_id'   => $this->session_id,
@@ -544,11 +664,11 @@ class FullSiteImport extends Base {
 		]);
 
 		if (file_put_contents($this->filePath, $response['body'])) { // phpcs:ignore
-			$this->sse_log('download', __('Template is getting ready', 'templately'), 100);
+			$this->sse_log('download', __('Downloading Template Pack', 'templately'), 100);
 
 			$this->unzip();
 		} else {
-			$this->throw(__('Downloading Failed. Please try again', 'templately'));
+			$this->throw_retryable(__('Downloading Failed. Please try again', 'templately'));
 		}
 	}
 
@@ -646,10 +766,11 @@ class FullSiteImport extends Base {
 			// $this->before_install_hook();
 
 			if (isset($theme['stylesheet'])) {
+				$stylesheet = get_option('stylesheet');
+
 				// do_action('before_theme_activation', $theme); // Trigger action before theme activation
-				$this->sse_log('theme', 'Installing and activating theme: ' . $theme['name'], 0);
+				$this->sse_log('theme', 'Installing and Activating Theme: ' . $theme['name'], 0);
 				if (!get_option("__templately_stylesheet")) {
-					$stylesheet = get_option('stylesheet');
 					add_option("__templately_stylesheet", $stylesheet, '', 'no');
 				}
 
@@ -698,13 +819,15 @@ class FullSiteImport extends Base {
 					] );
 				}
 
-				// If it's not the last item, send the SSE message and exit
-				$this->sse_message( [
-					'type'    => 'continue',
-					'action'  => 'continue',
-					'results' => __METHOD__ . '::' . __LINE__,
-				] );
-				exit;
+				if($theme['stylesheet'] !== $stylesheet){
+					// If it's not the last item, send the SSE message and exit
+					$this->sse_message( [
+						'type'    => 'continue',
+						'action'  => 'continue',
+						'results' => __METHOD__ . '::' . __LINE__,
+					] );
+					exit;
+				}
 			}
 
 			// $this->after_install_hook();
@@ -726,9 +849,10 @@ class FullSiteImport extends Base {
 				if(in_array($dependency['plugin_original_slug'], $progress['plugin_dependency'])){
 					continue;
 				}
-				$_dependency = $dependency;
-				$this->sse_log( 'plugin', 'Installing required plugins: ' . $dependency['name'], floor( ( 100 * $_installed_plugins / $total_plugin ) ) );
+				$this->sse_log( 'plugin', 'Installing Required Plugins: ' . $dependency['name'], floor( ( 100 * $_installed_plugins / $total_plugin ) ) );
 
+				$_dependency        = $dependency;
+				$is_installed       = Helper::is_plugins_installed($dependency['plugin_file']);
 				$dependency['slug'] = $dependency['plugin_original_slug'];
 				$plugin_status      = Installer::get_instance()->install($dependency);
 
@@ -770,7 +894,7 @@ class FullSiteImport extends Base {
 				] );
 
 				// If it's not the last item, send the SSE message and exit
-				if( end($this->request_params['plugins']) !== $_dependency ) {
+				if(!$is_installed && end($this->request_params['plugins']) !== $_dependency ) {
 					$this->sse_message( [
 						'type'    => 'continue',
 						'action'  => 'continue',
@@ -785,7 +909,7 @@ class FullSiteImport extends Base {
 			$this->sse_message([
 				'action'   => 'updateLog',
 				'status'   => 'complete',
-				'message'  => "Installed required plugins ($_installed_plugins/$total_plugin)",
+				'message'  => "Installed Required Plugins ($_installed_plugins/$total_plugin)",
 				'type'     => "plugin",
 				'progress' => 100
 			]);
@@ -849,8 +973,11 @@ class FullSiteImport extends Base {
 	}
 
 	private function normalize_imported_data($data) {
-		$templates = !empty($data['templates']['succeed']) ? count($data['templates']['succeed']) : 0;
-		$template_types = !empty($data['templates']['template_types']) ? $data['templates']['template_types'] : [];
+		$attachments        = !empty($data['attachments']['succeed']) ? count($data['attachments']['succeed']) : 0;
+		$attachments_fail   = !empty($data['attachments']['failed']) ? count($data['attachments']['failed']) : 0;
+		$attachments_errors = !empty($data['attachments_errors']) ? $data['attachments_errors'] : [];
+		$templates          = !empty($data['templates']['succeed']) ? count($data['templates']['succeed']) : 0;
+		$template_types     = !empty($data['templates']['template_types']) ? $data['templates']['template_types'] : [];
 
 		$post_types = [];
 		$content_templates = [];
@@ -874,12 +1001,15 @@ class FullSiteImport extends Base {
 		Helper::log($data);
 
 		return [
-			'templates'         => $templates,
-			'contents'          => $content_templates,
-			'wp-content'        => $contents,
-			'post_types'        => $post_types,
-			'template_types'    => $template_types,
-			'dependency_data'   => $this->dependency_data,
+			'attachments'        => $attachments,
+			'attachments_fail'   => $attachments_fail,
+			'attachments_errors' => $attachments_errors,
+			'templates'          => $templates,
+			'contents'           => $content_templates,
+			'wp-content'         => $contents,
+			'post_types'         => $post_types,
+			'template_types'     => $template_types,
+			'dependency_data'    => $this->dependency_data,
 		];
 	}
 
@@ -912,15 +1042,14 @@ class FullSiteImport extends Base {
 	public function register_shutdown() {
 		$status     = connection_status();
 		$last_error = error_get_last();
-		if ($status != CONNECTION_NORMAL && $last_error && $last_error['type'] === E_ERROR) {
-			if ((defined('WP_DEBUG') && WP_DEBUG || defined('TEMPLATELY_EVENT_LOG') && TEMPLATELY_EVENT_LOG) && !empty($last_error['message'])) {
+		if ($last_error && ($last_error['type'] === E_ERROR || $last_error['type'] === E_CORE_ERROR || $last_error['type'] === E_COMPILE_ERROR || $last_error['type'] === E_USER_ERROR)) {
+			if (!empty($last_error['message'])) {
 				$full_message = $last_error['message'];
+				// Extract the first line from the error message
+				$firstLine = strtok($full_message, "\n");
 
-				// Split the message at the first newline to remove the stack trace
-				$message_parts = preg_split('/\n/', $full_message);
-
-				// The error message is the first part
-				$error_message = $message_parts[0];
+				// Remove absolute paths by replacing the WordPress directory path with a placeholder
+				$error_message = str_replace(ABSPATH, 'ABSPATH/', $firstLine);
 			} else {
 				// Generic error message
 				$error_message = sprintf(__("It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://wpdeveloper.com/support');
@@ -933,6 +1062,7 @@ class FullSiteImport extends Base {
 				'action'   => 'error',
 				'status'   => 'error',
 				'type'     => "error",
+				'retry'    => true,
 				'title'    => __("Oops!", "templately"),
 				'message'  => $error_message,
 				// 'position' => 'plugin',
@@ -1037,7 +1167,7 @@ class FullSiteImport extends Base {
 		}
 		// If the response code is not 200, return the error message
 		if (wp_remote_retrieve_response_code($response) != 200) {
-			wp_send_json_error(json_decode(wp_remote_retrieve_body($response)));
+			wp_send_json_error(json_decode(wp_remote_retrieve_body($response)), wp_remote_retrieve_response_code($response));
 			return;
 		}
 		// If the response body is JSON and it contains an error, return the error message
@@ -1220,7 +1350,7 @@ class FullSiteImport extends Base {
 			}
 
 			if (wp_remote_retrieve_response_code($response) != 200) {
-				wp_send_json_error('API request failed with response code ' . wp_remote_retrieve_response_code($response));
+				wp_send_json_error('API request failed with response code ' . wp_remote_retrieve_response_code($response), wp_remote_retrieve_response_code($response));
 			}
 
 			$body = wp_remote_retrieve_body($response);

@@ -64,14 +64,14 @@ class ExtraContent extends BaseRunner {
 				$progress[] = $type;
 				$this->origin->update_progress($progress, [ 'extra-content' => $extra_content ]);
 
-				if( end( $contents ) !== $content){
-					$this->sse_message( [
-						'type'    => 'continue',
-						'action'  => 'continue',
-						'results' => __METHOD__ . '::' . __LINE__,
-					] );
-					exit;
-				}
+				// if( end( $contents ) !== $content){
+				// 	$this->sse_message( [
+				// 		'type'    => 'continue',
+				// 		'action'  => 'continue',
+				// 		'results' => __METHOD__ . '::' . __LINE__,
+				// 	] );
+				// 	exit;
+				// }
 			}
 		}
 

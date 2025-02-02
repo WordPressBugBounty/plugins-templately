@@ -1,11 +1,11 @@
-=== Templately – Elementor & Gutenberg Template Library: 5000+ Free & Pro Ready Templates & Cloud! ===
+=== Templately – Elementor & Gutenberg Template Library: 5500+ Free & Pro Ready Templates And Cloud! ===
 Contributors: templately, wpdevteam, re_enter_rupok, Asif2BD, priyomukul, rahat89, alimuzzamanalim
 Donate link: https://templately.com
 Tags: templates, elementor template, Gutenberg template, landing page, WoCommerce Templates
 Requires at least: 5.0
 Tested up to: 6.7
 Requires PHP: 7.2
-Stable tag: 3.2.0
+Stable tag: 3.2.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -43,13 +43,13 @@ Invite your team to work together while building a website and get your work don
 
 Create landing pages with Elementor, Gutenberg and boost up your page building experience to the next level.
 
-### 🔥 Over 2500+ Elementor Templates Available Already ###
+### 🔥 OVER 2800 ELEMENTOR TEMPLATES AVAILABLE ALREADY ###
 
-Elementor Templates are the easiest way to build websites fast with the most popular website builder, we have 2500+ templates available already.
+Elementor Templates are the easiest way to build websites fast with the most popular website builder, we have 2800+ templates available already.
 
-### 🔥 READY TO USE OVER 2000+ GUTENBERG TEMPLATES ###
+### 🔥 READY TO USE 2800+ GUTENBERG TEMPLATES ###
 
-Unlock the true possibilities of the Gutenberg block editor with ready-to-use templates from Templately. More than 2000+ templates are ready to build your website in one click.
+Unlock the true possibilities of the Gutenberg block editor with ready-to-use templates from Templately. More than 2800 templates are ready to build your website in one click.
 
 ### 👨‍💻 SUPER FRIENDLY SUPPORT ###
 
@@ -139,6 +139,10 @@ Every month we are adding new Elementor templates, along with Gutenberg template
 
 
 == Changelog ==
+
+= 3.2.1 – 02-02-2025 =
+Improved: Optimized import process for faster full-site importing.
+Few minor bug fix and Improvements.
 
 = 3.2.0 – 31-12-2024 =
 Added: Global Typography control for Full site import.

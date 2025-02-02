@@ -7,14 +7,14 @@ use Templately\Core\Importer\WPImport;
 use Templately\Utils\Helper;
 
 class WPContent extends BaseRunner {
-	private $selected_types = [];
+	protected $selected_types = [];
 
 	/**
 	 * @var int
 	 */
-	private $total = 1;
+	protected $total = 1;
 
-	private $processed = [];
+	protected $processed = [];
 
 	public function get_name(): string {
 		return 'wp-content';
@@ -25,7 +25,7 @@ class WPContent extends BaseRunner {
 	}
 
 	public function log_message(): string {
-		return __( 'Importing Pages, Posts, Products, Navigation, etc', 'templately' );
+		return __( 'Importing Content (Pages, Posts, Products, Navigation)', 'templately' );
 	}
 
 	public function should_run( $data, $imported_data = [] ): bool {
@@ -85,14 +85,14 @@ class WPContent extends BaseRunner {
 			$this->origin->update_progress( $processed_templates, $results);
 
 			// If it's not the last item, send the SSE message and exit
-			if( end($post_types) !== $type) {
-				$this->sse_message( [
-					'type'    => 'continue',
-					'action'  => 'continue',
-					'results' => __METHOD__ . '::' . __LINE__,
-				] );
-				exit;
-			}
+			// if( end($post_types) !== $type) {
+			// 	$this->sse_message( [
+			// 		'type'    => 'continue',
+			// 		'action'  => 'continue',
+			// 		'results' => __METHOD__ . '::' . __LINE__,
+			// 	] );
+			// 	exit;
+			// }
 		}
 
 		$this->import_actions( true );
@@ -100,7 +100,7 @@ class WPContent extends BaseRunner {
 		return $results;
 	}
 
-	private function filter_post_types( $selected_custom_post_types = [] ) {
+	protected function filter_post_types( $selected_custom_post_types = [] ) {
 		$wp_builtin_post_types = Utils::get_builtin_wp_post_types();
 
 		foreach ( $selected_custom_post_types as $custom_post_type ) {
@@ -126,7 +126,7 @@ class WPContent extends BaseRunner {
 		return $post_types;
 	}
 
-	private function import_type_data( $type, $path, $imported_data, $taxonomies, $terms ): array {
+	protected function _import_type_data( $type, $path, $imported_data, $taxonomies, $terms ): array {
 		$args = [
 			'fetch_attachments' => true,
 			'origin'            => $this->origin,
@@ -158,10 +158,18 @@ class WPContent extends BaseRunner {
 		$wp_importer = new WPImport( $file, $args );
 		$result      = $wp_importer->run();
 
-		return $result['summary'];
+		return $result;
 	}
 
-	private function import_actions( $remove = false ) {
+	protected function import_type_data( $type, $path, $imported_data, $taxonomies, $terms ): array {
+		$result = $this->_import_type_data( $type, $path, $imported_data, $taxonomies, $terms );
+		if(isset($result['summary'])){
+			return $result['summary'];
+		}
+		return [];
+	}
+
+	protected function import_actions( $remove = false ) {
 		if ( ! $remove ) {
 			add_action( 'templately_import.process_post', [ $this, 'post_log' ], 10, 2 );
 			add_action( 'templately_import.process_term', [ $this, 'post_log' ], 10, 2 );

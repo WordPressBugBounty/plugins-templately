@@ -3,9 +3,12 @@
 namespace Templately\Core\Importer\Utils;
 
 use Exception;
+use Templately\Core\Importer\WPImport;
 use Templately\Utils\Base;
 
 class Utils extends Base {
+
+
 	/**
 	 * @throws Exception
 	 */
@@ -172,50 +175,17 @@ class Utils extends Base {
 			return ['error' => __('Invalid URL', 'templately')];
 		}
 
-		// Download image and get MIME type
-		$temp_file = download_url( $url );
-		if ( is_wp_error( $temp_file ) ) {
-			return ['error' => __('Failed to download image', 'templately')];
-		}
+		$post_data     = self::prepare_post_data($url);
+		$wp_importer   = new WPImport( null, ['fetch_attachments' => true] );
+		$attachment_id = $wp_importer->process_attachment($post_data, $url);
 
-		// Validate image type using wp_get_image_mime
-		$mime_type = wp_get_image_mime( $temp_file );
-		if ( ! $mime_type || !in_array( $mime_type, get_allowed_mime_types() ) ) {
-			unlink( $temp_file );
-			return ['error' => __('Invalid image type', 'templately')];
-		}
-
-		$file_info = wp_check_filetype_and_ext( $temp_file, basename( $url ), get_allowed_mime_types() );
-		if ( ! $file_info['ext'] || $file_info['type'] !== $mime_type ) {
-			unlink( $temp_file );
-			return ['error' => __('File type and extension check failed', 'templately')];
-		}
-
-		// Prepare the file for sideloading
-		$file = array(
-			'name'     => basename($url),
-			'type'     => $mime_type,
-			'tmp_name' => $temp_file,
-			'error'    => 0,
-			'size'     => filesize($temp_file),
-		);
-
-		// Load the WordPress media handler
-		require_once(ABSPATH . 'wp-admin/includes/media.php');
-		require_once(ABSPATH . 'wp-admin/includes/file.php');
-		require_once(ABSPATH . 'wp-admin/includes/image.php');
-
-		// Handle the sideload
-		$id = media_handle_sideload($file, 0);
-
-		if (is_wp_error($id)) {
-			@unlink($file['tmp_name']);
-			return ['error' => __('Failed to sideload image', 'templately')];
+		if(is_wp_error($attachment_id)){
+			return ['error' => $attachment_id->get_error_message()];
 		}
 
 		return [
-			'id'  => $id,
-			'url' => esc_url_raw(wp_get_attachment_url($id)),
+			'id'  => (int) $attachment_id,
+			'url' => esc_url_raw(wp_get_attachment_url($attachment_id)),
 		];
 	}
 
@@ -258,4 +228,37 @@ class Utils extends Base {
 
         return $content;
     }
+
+	public static function prepare_post_data($image_url, $post_parent = null, $logger = null) {
+		$filetype = wp_check_filetype(basename($image_url));
+		if (!$filetype['type']) {
+			if(is_callable($logger)){
+				// call the logger function
+				call_user_func($logger, 'prepare', 'Error: Unable to determine the file type.', -1, 'eventLog');
+			}
+			return null;
+		}
+
+		$post_data = array(
+			'post_title'     => basename($image_url),
+			'post_content'   => '',
+			'post_status'    => 'inherit',
+			'post_mime_type' => $filetype['type'],
+			'guid'           => $image_url,
+		);
+
+		if($post_parent){
+			$post_data['post_parent'] = $post_parent; // Set the parent post
+		}
+
+		if (preg_match('%wp-content/uploads/([0-9]{4}/[0-9]{2})%', $image_url, $matches)) {
+			$post_data['upload_date'] = $matches[1];
+		}
+		else{
+			$post_data['upload_date'] = date('Y/m');
+		}
+
+		return $post_data;
+	}
+
 }

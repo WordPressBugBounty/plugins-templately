@@ -23,6 +23,11 @@ class Helper extends Base {
         }
         return get_plugins();
     }
+    public static function is_plugins_installed($plugin_file){
+		$_plugins     = self::get_plugins();
+		$is_installed = isset( $_plugins[ $plugin_file ] );
+		return $is_installed;
+    }
 
     /**
      * Get installed WordPress Plugin List
@@ -198,6 +203,9 @@ class Helper extends Base {
 	}
 
 	public static function should_flush(){
+		if(isset($_GET['is_lightspeed']) && $_GET['is_lightspeed'] === 'true'){
+			return false;
+		}
 		return (!defined('TEMPLATELY_IGNORE_FLUSH_ALL') || !TEMPLATELY_IGNORE_FLUSH_ALL) && strpos($_SERVER['SERVER_SOFTWARE'], 'LiteSpeed') === false;
 	}
 
@@ -280,4 +288,23 @@ class Helper extends Base {
 		return true;
 	}
 
+	/**
+	 * Calculates the elapsed time and checks if it is close to the maximum execution time.
+	 * Returns true if the script should exit to avoid exceeding the limit.
+	 *
+	 * @return bool True if the script should exit, false otherwise.
+	 */
+	public static function fsi_should_exit() {
+		if (defined('TEMPLATELY_START_TIME') && ini_get('max_execution_time')) {
+			$max_time = ini_get('max_execution_time');
+			$elapsed  = microtime(true) - TEMPLATELY_START_TIME;
+			$delay    = max(5, $max_time / 20);
+
+			// Check if elapsed time is close to max execution time
+			if ($max_time - $elapsed <= $delay) {
+				return ['max_time' => $max_time, 'elapsed' => $elapsed, 'delay' => $delay];
+			}
+		}
+		return false;
+	}
 }

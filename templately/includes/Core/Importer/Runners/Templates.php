@@ -96,15 +96,15 @@ class Templates extends BaseRunner {
 			$this->origin->update_progress( $processed_templates, array_merge( [ 'templates' => $results ], $_extra_pages ));
 
 			// If it's not the last item, send the SSE message and exit
-			if( end($templates) !== $template_settings ) {
-				$this->sse_message( [
-					'type'    => 'continue',
-					'action'  => 'continue',
-					'i'       => $id,
-					'results' => __METHOD__ . '::' . __LINE__,
-				] );
-				exit;
-			}
+			// if( end($templates) !== $template_settings ) {
+			// 	$this->sse_message( [
+			// 		'type'    => 'continue',
+			// 		'action'  => 'continue',
+			// 		'i'       => $id,
+			// 		'results' => __METHOD__ . '::' . __LINE__,
+			// 	] );
+			// 	exit;
+			// }
 		}
 
 		return array_merge( [ 'templates' => $results ], $_extra_pages );

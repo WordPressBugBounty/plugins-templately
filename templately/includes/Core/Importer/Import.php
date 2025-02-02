@@ -3,6 +3,7 @@
 namespace Templately\Core\Importer;
 
 use Exception;
+use Templately\Core\Importer\Runners\Attachments;
 use Templately\Core\Importer\Runners\BaseRunner;
 use Templately\Core\Importer\Runners\Customizer;
 use Templately\Core\Importer\Runners\ElementorContent;
@@ -46,6 +47,7 @@ class Import {
 	private function register_runners() {
 		$this->runners = [
 			// TODO: Site Settings Import Runner
+			new Attachments( $this->full_site_import ),
 			new Customizer( $this->full_site_import ),
 			new ExtraContent( $this->full_site_import ),
 			new Templates( $this->full_site_import ),

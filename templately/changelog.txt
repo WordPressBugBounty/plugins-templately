@@ -1,5 +1,9 @@
 == Changelog ==
 
+= 3.2.1 – 31-12-2024 =
+Improved: Optimized import process for faster full-site importing.
+Few minor bug fix and Improvements.
+
 = 3.2.0 – 31-12-2024 =
 Added: Global Typography control for Full site import.
 Few minor bug fix & improvements.

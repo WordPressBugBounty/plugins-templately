@@ -160,7 +160,7 @@ class Items extends API {
 		$params       = 'data { ' . $items_params . ', variations { name, slug, type, platform } }';
 
 		if ( $type == 'packs' ) {
-			$params = 'data { id, fullsite_import, has_settings, name, rating, type, slug, live_url, price, features, favourite_count, thumbnail, downloads, categories{ id, name, slug }, items { ' . $items_params . ' }, variations { name, slug, type, platform } }';
+			$params = 'data { id, fullsite_import, has_settings, has_attachments, name, rating, type, slug, live_url, price, features, favourite_count, thumbnail, downloads, categories{ id, name, slug }, items { ' . $items_params . ' }, variations { name, slug, type, platform } }';
 		}
 
 		$response = $this->http()->query( $type, $params, [ 'slug' => $slug ] )->post();

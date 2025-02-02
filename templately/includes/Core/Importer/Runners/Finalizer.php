@@ -115,14 +115,14 @@ class Finalizer extends BaseRunner {
 				$processed[] = $type;
 				$this->origin->update_progress( $processed);
 				// If it's not the last item, send the SSE message and exit
-				if( end($this->options) !== $contents ) {
-					$this->sse_message( [
-						'type'    => 'continue',
-						'action'  => 'continue',
-						'results' => __METHOD__ . '::' . __LINE__,
-					] );
-					exit;
-				}
+				// if( end($this->options) !== $contents ) {
+				// 	$this->sse_message( [
+				// 		'type'    => 'continue',
+				// 		'action'  => 'continue',
+				// 		'results' => __METHOD__ . '::' . __LINE__,
+				// 	] );
+				// 	exit;
+				// }
 			} else {
 				foreach ( $contents as $post_type => $templates ) {
 					// If the template has been processed, skip it
@@ -136,14 +136,14 @@ class Finalizer extends BaseRunner {
 					$processed[] = "$type::$post_type";
 					$this->origin->update_progress( $processed);
 					// If it's not the last item, send the SSE message and exit
-					if( end($contents) !== $templates ) {
-						$this->sse_message( [
-							'type'    => 'continue',
-							'action'  => 'continue',
-							'results' => __METHOD__ . '::' . __LINE__,
-						] );
-						exit;
-					}
+					// if( end($contents) !== $templates ) {
+					// 	$this->sse_message( [
+					// 		'type'    => 'continue',
+					// 		'action'  => 'continue',
+					// 		'results' => __METHOD__ . '::' . __LINE__,
+					// 	] );
+					// 	exit;
+					// }
 				}
 			}
 		}
@@ -203,14 +203,14 @@ class Finalizer extends BaseRunner {
 			$this->origin->update_progress( $processed);
 
 			// If it's not the last item, send the SSE message and exit
-			if( end($templates) !== $template_settings) {
-				$this->sse_message( [
-					'type'    => 'continue',
-					'action'  => 'continue',
-					'results' => __METHOD__ . '::' . __LINE__,
-				] );
-				exit;
-			}
+			// if( end($templates) !== $template_settings) {
+			// 	$this->sse_message( [
+			// 		'type'    => 'continue',
+			// 		'action'  => 'continue',
+			// 		'results' => __METHOD__ . '::' . __LINE__,
+			// 	] );
+			// 	exit;
+			// }
 		}
 	}
 

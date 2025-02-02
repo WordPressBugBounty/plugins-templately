@@ -24,11 +24,11 @@ class ElementorContent extends BaseRunner {
 	}
 
 	public function get_action(): string {
-		return 'eventLog';
+		return 'updateLog';
 	}
 
 	public function log_message(): string {
-		return __( 'Importing Elementor Templates (Pages, Posts etc)', 'templately' );
+		return __( 'Importing Elementor Page and Post Templates', 'templately' );
 	}
 
 	/**
@@ -192,14 +192,14 @@ class ElementorContent extends BaseRunner {
 				$this->origin->update_progress( $processed_templates, [ 'content' => $results ]);
 
 				// If it's not the last item, send the SSE message and exit
-				if( end($contents) !== $post || end($post) !== $content_settings) {
-					$this->sse_message( [
-						'type'    => 'continue',
-						'action'  => 'continue',
-						'results' => __METHOD__ . '::' . __LINE__,
-					] );
-					exit;
-				}
+				// if( end($contents) !== $post || end($post) !== $content_settings) {
+				// 	$this->sse_message( [
+				// 		'type'    => 'continue',
+				// 		'action'  => 'continue',
+				// 		'results' => __METHOD__ . '::' . __LINE__,
+				// 	] );
+				// 	exit;
+				// }
 			}
 		}
 
