@@ -495,6 +495,12 @@ class FullSiteImport extends Base {
 				$this->throw( __( 'Please update the templately plugin.', 'templately' ) );
 			}
 
+			$platform = $this->manifest['platform'] ?? '';
+			if($platform === 'elementor') {
+				Helper::enable_elementor_container();
+			}
+
+
 			/**
 			 * Should Revert Old Data
 			 */

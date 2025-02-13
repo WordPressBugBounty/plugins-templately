@@ -71,9 +71,20 @@ class Post_Content extends Widget_Base {
 	}
 
 	protected function get_dynamic_post_ID() {
-		$latest_cpt = get_posts( "post_type=post&numberposts=1" );
+		$post_type = 'post';
+		$type = get_post_meta( get_the_ID(), '_templately_template_type', true );
+		if($type == 'single') {
+			$post_type = 'post';
+		}
+		else if($type == 'page_single') {
+			$post_type = 'page';
+		}
+		else if($type == 'product_single') {
+			$post_type = 'product';
+		}
+		$latest_cpt = get_posts( "post_type=$post_type&numberposts=1" );
 
-		return Plugin::$instance->editor->is_edit_mode() || isset( $_GET['preview_id'] ) || isset( $_GET['preview'] ) ? $latest_cpt[0]->ID : get_the_ID();
+		return Plugin::$instance->editor->is_edit_mode() || isset($_GET['templately_library'], $_GET['preview_id']) ? $latest_cpt[0]->ID : get_the_ID();
 	}
 
 	protected function render() {
@@ -83,15 +94,16 @@ class Post_Content extends Widget_Base {
 		$post = get_post();
 
 		// Avoid recursion
-		if ( $post && isset( $did_posts[ $post->ID ] ) ) {
+		if ( isset($post, $post->ID) && isset( $did_posts[ $post->ID ] ) ) {
 			return;
 		}
 
 		$level ++;
 		$did_posts[ $post->ID ] = true;
 		// End avoid recursion
+		Plugin::$instance->init_common();
+		$is_edit_mode = Plugin::$instance->editor->is_edit_mode($post->ID);
 
-		$is_edit_mode = Plugin::$instance->editor->is_edit_mode();
 		if ( $is_edit_mode || isset( $_GET['preview_id'] ) || isset( $_GET['preview'] ) ) {
 			echo get_the_content( null, null, $this->get_dynamic_post_ID() );
 
@@ -147,5 +159,10 @@ class Post_Content extends Widget_Base {
 		if ( 0 === $level ) {
 			$did_posts = [];
 		}
+	}
+
+	// getting infinite loop otherwise
+	public function render_plain_content() {
+
 	}
 }

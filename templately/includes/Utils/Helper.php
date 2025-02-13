@@ -1,6 +1,7 @@
 <?php
 namespace Templately\Utils;
 
+use Elementor\Plugin;
 use WP_Error;
 use WP_REST_Response;
 use function get_plugins;
@@ -13,34 +14,34 @@ use function is_plugin_active;
  * @since 1.0.0
  */
 class Helper extends Base {
-    /**
-     * Get installed WordPress Plugin List
-     * @return array
-     */
-    public static function get_plugins(){
-        if( ! function_exists( 'get_plugins' ) ) {
-            require_once ABSPATH . 'wp-admin/includes/plugin.php';
-        }
-        return get_plugins();
-    }
-    public static function is_plugins_installed($plugin_file){
+	/**
+	 * Get installed WordPress Plugin List
+	 * @return array
+	 */
+	public static function get_plugins(){
+		if( ! function_exists( 'get_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		return get_plugins();
+	}
+	public static function is_plugins_installed($plugin_file){
 		$_plugins     = self::get_plugins();
 		$is_installed = isset( $_plugins[ $plugin_file ] );
 		return $is_installed;
-    }
+	}
 
-    /**
-     * Get installed WordPress Plugin List
-     * @return boolean
-     */
-    public static function is_plugin_active( $plugin ){
-        if( ! function_exists( 'is_plugin_active' ) ) {
-            require_once ABSPATH . 'wp-admin/includes/plugin.php';
-        }
-        return is_plugin_active( $plugin );
-    }
+	/**
+	 * Get installed WordPress Plugin List
+	 * @return boolean
+	 */
+	public static function is_plugin_active( $plugin ){
+		if( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		return is_plugin_active( $plugin );
+	}
 
-    /**
+	/**
 	 * Collect IP from request.
 	 *
 	 * @return string
@@ -58,22 +59,22 @@ class Helper extends Base {
 		return sanitize_text_field( $ip );
 	}
 
-    /**
-     * Get views for front-end display
-     *
-     * @param string $name  it will be file name only from the view's folder.
-     * @param array $data
-     * @return void
-     */
-    public static function views( $name, $data = [] ){
+	/**
+	 * Get views for front-end display
+	 *
+	 * @param string $name  it will be file name only from the view's folder.
+	 * @param array $data
+	 * @return void
+	 */
+	public static function views( $name, $data = [] ){
 		extract( $data );
-        $helper = self::class;
-        $file = TEMPLATELY_PATH . 'views/' . $name . '.php';
+		$helper = self::class;
+		$file = TEMPLATELY_PATH . 'views/' . $name . '.php';
 
-        if( is_readable( $file ) ) {
-            include_once $file;
-        }
-    }
+		if( is_readable( $file ) ) {
+			include_once $file;
+		}
+	}
 
 	/**
 	 * Sanitize Helper
@@ -303,6 +304,24 @@ class Helper extends Base {
 			// Check if elapsed time is close to max execution time
 			if ($max_time - $elapsed <= $delay) {
 				return ['max_time' => $max_time, 'elapsed' => $elapsed, 'delay' => $delay];
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Enable Elementor Container
+	 * This function will enable the Elementor Container feature.
+	 * Without this feature, some of the templates may not work properly.
+	 *
+	 * @return boolean
+	 */
+	public static function enable_elementor_container(){
+		if(class_exists('Elementor\Plugin')) {
+			$control_name = Plugin::instance()->experiments->get_feature_option_key( 'container' );
+			if(get_option( $control_name ) === 'inactive') {
+				update_option( $control_name, 'active' );
+				return true;
 			}
 		}
 		return false;

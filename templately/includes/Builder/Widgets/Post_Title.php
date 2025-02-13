@@ -102,9 +102,20 @@ class Post_Title extends Widget_Base {
 	}
 
 	protected function get_dynamic_post_ID() {
-		$latest_cpt = get_posts( "post_type=post&numberposts=1" );
+		$post_type = 'post';
+		$type = get_post_meta( get_the_ID(), '_templately_template_type', true );
+		if($type == 'single') {
+			$post_type = 'post';
+		}
+		else if($type == 'page_single') {
+			$post_type = 'page';
+		}
+		else if($type == 'product_single') {
+			$post_type = 'product';
+		}
+		$latest_cpt = get_posts( "post_type=$post_type&numberposts=1" );
 
-		return Plugin::$instance->editor->is_edit_mode() || isset( $_GET['preview_id'] ) || isset( $_GET['preview'] ) ? $latest_cpt[0]->ID : get_the_ID();
+		return Plugin::$instance->editor->is_edit_mode() || isset($_GET['templately_library'], $_GET['preview_id']) ? $latest_cpt[0]->ID : get_the_ID();
 	}
 
 	protected function render() {

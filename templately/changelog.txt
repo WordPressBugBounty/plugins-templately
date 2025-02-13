@@ -1,5 +1,12 @@
 == Changelog ==
 
+= 3.2.2 – 13-02-2025 =
+Fixed: Issue with syncing saved templates to Templately Cloud.
+Fixed: Single Page templates were not working properly on pages.
+Fixed: PHP warning when trying to read property “ID” during import.
+Fixed: Template import issue when Elementor Container was disabled.
+Few minor bug fixes and improvements.
+
 = 3.2.1 – 31-12-2024 =
 Improved: Optimized import process for faster full-site importing.
 Few minor bug fix and Improvements.

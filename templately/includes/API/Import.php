@@ -2,8 +2,11 @@
 
 namespace Templately\API;
 
+use Elementor\Plugin;
+use Elementor\Core\Experiments\Manager as Experiments_Manager;
 use Templately\Core\Platform\Elementor;
 use Templately\Core\Platform\Gutenberg;
+use Templately\Utils\Helper;
 
 /**
  * @method Elementor|Gutenberg platform( $id );
@@ -26,6 +29,16 @@ class Import extends API {
         if( $id <= 0 || $id == null ) {
             return $this->error('invalid_item_id', __( 'Invalid ID is provided.', 'templately' ), 'get_content', 404 );
         }
+        if($platform === 'elementor') {
+            if(Helper::enable_elementor_container()) {
+                return $this->error(
+                    'retry_again',
+                    __( 'Please try again we enabled container.', 'templately' ),
+                    'insert', 404
+                );
+            }
+        }
+
 
         switch ( $origin ) {
             case 'cloud':
@@ -149,6 +162,15 @@ class Import extends API {
         if( $id == 0 ) {
             return $this->error('invalid_item_id', __( 'Invalid ID is provided.', 'templately' ), 'import/page', 404 );
         }
+        if($platform === 'elementor') {
+            if(Helper::enable_elementor_container()) {
+                return $this->error(
+                    'retry_again',
+                    __( 'Please try again we enabled container.', 'templately' ),
+                    'insert', 404
+                );
+            }
+        }
 
         return $this->platform( $platform )->import_in_library( $id, $this );
     }
@@ -160,6 +182,15 @@ class Import extends API {
 
         if( $id == 0 ) {
             return $this->error('invalid_item_id', __( 'Invalid ID is provided.', 'templately' ), 'import/page', 404 );
+        }
+        if($platform === 'elementor') {
+            if(Helper::enable_elementor_container()) {
+                return $this->error(
+                    'retry_again',
+                    __( 'Please try again we enabled container.', 'templately' ),
+                    'insert', 404
+                );
+            }
         }
 
         return $this->platform( $platform )->create_page( $id, $title, $this );
