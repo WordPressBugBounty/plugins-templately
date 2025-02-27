@@ -1,5 +1,9 @@
 == Changelog ==
 
+= 3.2.3 – 27-02-2025 =
+Fixed: PHP warnings on the Templately dashboard.
+Few minor bug fixes and improvements.
+
 = 3.2.2 – 13-02-2025 =
 Fixed: Issue with syncing saved templates to Templately Cloud.
 Fixed: Single Page templates were not working properly on pages.

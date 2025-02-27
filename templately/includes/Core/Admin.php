@@ -25,6 +25,7 @@ class Admin extends Base {
 	 */
 	public function __construct() {
 		add_action( 'admin_enqueue_scripts', [ $this, 'scripts' ] );
+		add_action( 'load-toplevel_page_templately', [ $this, 'before_scripts' ] );
 		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
 
 		self::$cache_bank = CacheBank::get_instance();
@@ -87,6 +88,10 @@ class Admin extends Base {
 		];
 
 		register_post_type( 'templately_library', $args );
+	}
+
+	public function before_scripts() {
+		header("x-frame-options: ALLOW-FROM *.templately.com");
 	}
 
 	/**
@@ -158,9 +163,6 @@ class Admin extends Base {
 
 		if ( $hook === 'toplevel_page_templately' || $hook == 'edit.php' ) {
 			templately()->assets->enqueue( 'templately-admin', 'css/admin.css', [ 'templately' ] );
-		}
-		if ( $hook === 'toplevel_page_templately' ) {
-			header("x-frame-options: ALLOW-FROM *.templately.com");
 		}
 
 		// Google Font Enqueueing
