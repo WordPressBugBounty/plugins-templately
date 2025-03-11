@@ -1,5 +1,12 @@
 == Changelog ==
 
+= 3.2.4 – 11-03-2025 =
+Improved: Full pack import process using FSI.
+Fixed: Pagination issue on Templately Cloud.
+Added: Option to hide Templately and “Save Post in Templately” from the Gutenberg editor.
+Fixed: Duplicate viewport issue in Gutenberg-based themes.
+Few minor bug fixes and overall improvements.
+
 = 3.2.3 – 27-02-2025 =
 Fixed: PHP warnings on the Templately dashboard.
 Few minor bug fixes and improvements.

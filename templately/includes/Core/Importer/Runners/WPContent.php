@@ -36,41 +36,25 @@ class WPContent extends BaseRunner {
 	public function import( $data, $imported_data ): array {
 		$path       = $this->dir_path . 'wp-content' . DIRECTORY_SEPARATOR;
 		$post_types = $this->filter_post_types( $data['selected_post_types'] ?? [] );
-		$taxonomies = [];
-		$terms      = [];
-		$results    = [
-			"wp-content" => $data["imported_data"]["wp-content"] ?? [],
-			"terms"      => $data["imported_data"]["terms"] ?? [],
-		];
 
 		$this->import_actions();
 
-		$contents        = $imported_data['wp-content_manifest_content'] ?? $this->manifest['wp-content'];
-		$this->processed = $imported_data['wp-content_processed'] ?? [];
-		$this->total = array_reduce( $contents, function ( $carry, $item ) {
+		$contents        = $this->get_progress($this->manifest['wp-content'], 'wp-content_manifest_content', false);
+		$this->processed = $this->get_progress([], 'wp-content_processed', false);
+		$this->total     = array_reduce( $contents, function ( $carry, $item ) {
 			return $carry + count( $item );
 		}, 0 );
 
-		$processed_templates = $this->origin->get_progress();
 
-		if(empty($processed_templates)){
-			$this->log( 0 );
-			$processed_templates = ["__started__"];
-			$this->origin->update_progress( $processed_templates, ['wp-content_manifest_content' => $contents]);
-		}
-
-		foreach ( $post_types as $type ) {
-			if (in_array($type, $processed_templates)) {
-				continue;
-			}
-
+		$results = $this->loop( $post_types, function($key, $type ) use($path, $imported_data, $data) {
+			$results = [];
 			if(empty($data['import_demo_content']) && !in_array($type, ['wp_navigation', 'nav_menu_item'])) {
-				continue;
+				return $results;
 			}
-			$import = $this->import_type_data( $type, $path, $imported_data, $taxonomies, $terms );
+			$import = $this->import_type_data( $type, $path, $imported_data );
 
 			if ( empty( $import['posts'] ) ) {
-				continue;
+				return $results;
 			}
 			if(isset($import['posts']['__attachments'])){
 				$results['wp-content']['__attachments'][ $type ] = $import['posts']['__attachments'];
@@ -78,22 +62,9 @@ class WPContent extends BaseRunner {
 			}
 			$results['wp-content'][ $type ] = $import['posts'];
 			$results['terms'][ $type ]      = $import['terms'];
-			$imported_data                  = array_merge( $imported_data, $results );
 
-			// Add the template to the processed templates and update the session data
-			$processed_templates[] = $type;
-			$this->origin->update_progress( $processed_templates, $results);
-
-			// If it's not the last item, send the SSE message and exit
-			// if( end($post_types) !== $type) {
-			// 	$this->sse_message( [
-			// 		'type'    => 'continue',
-			// 		'action'  => 'continue',
-			// 		'results' => __METHOD__ . '::' . __LINE__,
-			// 	] );
-			// 	exit;
-			// }
-		}
+			return $results;
+		});
 
 		$this->import_actions( true );
 
@@ -126,14 +97,15 @@ class WPContent extends BaseRunner {
 		return $post_types;
 	}
 
-	protected function _import_type_data( $type, $path, $imported_data, $taxonomies, $terms ): array {
+	protected function _import_type_data( $type, $path, $imported_data ): array {
 		$args = [
 			'fetch_attachments' => true,
 			'origin'            => $this->origin,
+			'session_id'        => $this->session_id,
 			'json'              => $this->json,
 			'posts'             => Utils::map_old_new_post_ids( $imported_data ),
 			'terms'             => Utils::map_old_new_term_ids( $imported_data ),
-			'taxonomies'        => ! empty( $taxonomies[ $type ] ) ? $taxonomies[ $type ] : [],
+			'taxonomies'        => [],
 			'posts_meta'        => [
 				self::META_SESSION_KEY => $this->session_id,
 			],
@@ -161,8 +133,8 @@ class WPContent extends BaseRunner {
 		return $result;
 	}
 
-	protected function import_type_data( $type, $path, $imported_data, $taxonomies, $terms ): array {
-		$result = $this->_import_type_data( $type, $path, $imported_data, $taxonomies, $terms );
+	protected function import_type_data( $type, $path, $imported_data ): array {
+		$result = $this->_import_type_data( $type, $path, $imported_data );
 		if(isset($result['summary'])){
 			return $result['summary'];
 		}
@@ -195,7 +167,7 @@ class WPContent extends BaseRunner {
 			$type  = $post['post_type'];
 			$title = $post['post_title'];
 
-			$this->origin->update_progress( null, ['wp-content_processed' => $this->processed]);
+			$this->update_progress( $this->processed, null, 'wp-content_processed', false);
 		} elseif ( isset( $post['term_id'] ) ) {
 			/**
 			 * FIXME: We should fix it later, with a proper count of terms and make a total with post itself.
@@ -222,8 +194,7 @@ class WPContent extends BaseRunner {
 	}
 
 	public function update_total( $WPImport ) {
-		$session_data = $this->origin->get_session_data();
-		$contents     = $session_data['imported_data']['wp-content_manifest_content'];
+		$contents     = $this->get_progress([], 'wp-content_manifest_content', false);
 
 		foreach ($WPImport->posts as $key => $post) {
 			$postType = $post['post_type'];
@@ -238,6 +209,6 @@ class WPContent extends BaseRunner {
 			return $carry + count( $item );
 		}, 0 );
 
-		$this->origin->update_progress( null, ['wp-content_manifest_content' => $contents]);
+		$this->update_progress( $contents, null, 'wp-content_manifest_content', false);
 	}
 }

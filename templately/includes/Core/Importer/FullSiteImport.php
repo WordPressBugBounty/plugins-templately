@@ -35,17 +35,18 @@ class FullSiteImport extends Base {
 
 	private $version = '1.0.0';
 
-	public    $session_id;
 	public    $download_key;
-	public    $dir_path;
-	protected $filePath;
-	protected $tmp_dir        = null;
 	protected $dev_mode       = false;
 	protected $api_key        = '';
-	public    $request_params = [];
+	protected $session_id        = '';
 	protected $documents_data = [];
 	protected $dependency_data = [];
 	private   $is_import_status_handled = false;
+
+	public    $dir_path;
+	protected $filePath;
+	protected $tmp_dir        = null;
+	public    $request_params = [];
 
 	public function __construct() {
 		$this->dev_mode = defined('TEMPLATELY_DEV') && TEMPLATELY_DEV;
@@ -113,12 +114,32 @@ class FullSiteImport extends Base {
 	public function import_settings() {
 		$data = wp_unslash($_POST);
 
-		$session_id       = uniqid();
-		$this->session_id = $session_id;
+		$upload_dir = wp_upload_dir();
+		$session_id = uniqid();
+		$tmp_dir    = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR;
+
+		$this->session_id   = $session_id;
 		$data['session_id'] = $session_id;
+		$data['root_dir']   = $tmp_dir;
+		$data['dir_path']   = $tmp_dir . $session_id . DIRECTORY_SEPARATOR;
+		$data['zip_path']   = $tmp_dir . "{$session_id}.zip";
 
-		update_option(self::SESSION_OPTION_KEY, $data);
 
+		if ( is_array( $data ) && ! empty( $data ) ) {
+			foreach ( $data as $key => $value ) {
+				$json         = is_string($value) ? json_decode( $value, true ) : null;
+				$data[ $key ] = $json !== null ? $json : $value;
+			}
+		}
+
+		Utils::update_session_data($session_id, $data);
+
+
+		//clear previous revert backup
+		$options = Utils::get_backup_options();
+		foreach ($options as $key => $value) {
+			delete_option("__templately_$key");
+		}
 		delete_option('templately_fsi_imported_list');
 		delete_option('templately_fsi_log');
 
@@ -211,99 +232,15 @@ class FullSiteImport extends Base {
 		wp_send_json_success($result);
 	}
 
-	public static function _update_session_data($data): bool {
-		$old_data = self::_get_session_data();
+    // Modified get_session_data to use the static version
+    protected function get_session_data() {
+        return Utils::get_session_data_by_id();
+    }
 
-		return update_option(self::SESSION_OPTION_KEY, wp_parse_args($data, $old_data));
-	}
-
-	private function update_session_data($data): bool {
-		return self::_update_session_data($data);
-	}
-
-	protected function CallingFunctionName($id = null) {
-		$return = 'unknown';
-		$trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
-
-		// Check if the trace has at least three elements
-		if (isset($trace[2])) {
-			$final_call = $trace[2];
-
-			// Check if 'class' and 'function' indexes exist
-			if (isset($final_call['class']) && isset($final_call['function'])) {
-				$return = "{$final_call['class']}::{$final_call['function']}";
-			}
-			else if(isset($final_call['function'])){
-				$return = $final_call['function'];
-			}
-			if(!empty($id)){
-				$return .= "::$id";
-			}
-		}
-
-		// Return a default value if 'class' or 'function' index does not exist, or if the trace doesn't have at least three elements
-		return $return;
-	}
-
-
-	public function get_progress($defaults = [], $unique_id = null) {
-		$calling_class = $this->CallingFunctionName($unique_id);
-		if(isset($this->request_params['progress'][$calling_class])){
-			return $this->request_params['progress'][$calling_class];
-		}
-		return $defaults;
-	}
-
-
-	public function update_progress( $progress, $imported_data = null, $unique_id = null ): bool {
-		$calling_class = $this->CallingFunctionName($unique_id);
-		$old_data = $this->get_session_data();
-
-		$new_data = [];
-
-		if($progress !== null){
-			$new_data['progress'] = [$calling_class => $progress];
-		}
-		if($imported_data !== null){
-			$new_data['imported_data'] = $imported_data;
-		}
-
-		$this->request_params = $this->recursive_wp_parse_args( $new_data, $old_data );
-		return update_option( self::SESSION_OPTION_KEY, $this->request_params );
-	}
-
-	public function recursive_wp_parse_args( $args, $defaults ) {
-		$args     = (array) $args;
-		$defaults = (array) $defaults;
-		$r = $defaults;
-		foreach ( $args as $key => $value ) {
-			if ( is_array( $value ) && isset( $r[ $key ] ) ) {
-				$r[ $key ] = $this->recursive_wp_parse_args( $value, $r[ $key ] );
-			} else {
-				$r[ $key ] = $value;
-			}
-		}
-		return $r;
-	}
-
-	public static function _get_session_data(): array {
-		$data = get_option(self::SESSION_OPTION_KEY, []);
-
-		$options = [];
-
-		if ( is_array( $data ) && ! empty( $data ) ) {
-			foreach ( $data as $key => $value ) {
-				$json            = is_string($value) ? json_decode( $value, true ) : null;
-				$options[ $key ] = $json !== null ? $json : $value;
-			}
-		}
-
-		return $options;
-	}
-
-	public function get_session_data(): array {
-		return self::_get_session_data();
-	}
+    // Modified update_session_data to use the static version
+    protected function update_session_data($data) {
+        return Utils::update_session_data_by_id($data);
+    }
 
 	public function initialize_props() {
 		$data = $this->get_session_data();
@@ -312,6 +249,9 @@ class FullSiteImport extends Base {
 		}
 		if (isset($data['dir_path'])) {
 			$this->dir_path = $data['dir_path'];
+		}
+		if (isset($data['zip_path'])) {
+			$this->filePath = $data['zip_path'];
 		}
 		if (isset($data['download_key'])) {
 			$this->download_key = $data['download_key'];
@@ -385,6 +325,8 @@ class FullSiteImport extends Base {
 			exit;
 		}
 
+
+
 		define('TEMPLATELY_START_TIME', microtime(true));
 
 		// delete_option( 'templately_fsi_log' );
@@ -395,6 +337,12 @@ class FullSiteImport extends Base {
 
 		try {
 			// TODO: Need to check if user is connected or not
+			if(!empty($_GET['session_id'])){
+				$this->session_id = sanitize_text_field($_GET['session_id']);
+			}
+			else {
+				$this->throw(__('Invalid Session ID.', 'templately'));
+			}
 
 
 			$this->request_params = $this->get_session_data();
@@ -431,12 +379,6 @@ class FullSiteImport extends Base {
 			] );
 
 			if(empty($progress['download_zip'])){
-				//clear previous revert backup
-				$options = Utils::get_backup_options();
-				foreach ($options as $key => $value) {
-					delete_option("__templately_$key");
-				}
-
 				/**
 				 * Check Writing Permission
 				 */
@@ -461,29 +403,12 @@ class FullSiteImport extends Base {
 			}
 
 
-			if(empty($progress['download_dependencies'])){
-				/**
-				 * Checking & Installing Plugin Dependencies
-				 */
-				$this->install_dependencies();
-
-				$progress['download_dependencies'] = true;
-				$this->update_session_data( [
-					'progress' => $progress,
-				] );
-				$this->sse_message( [
-					'type'    => 'continue',
-					'action'  => 'continue',
-					'results' => 'download_dependencies',
-				] );
-				exit;
-			}
 
 
-			/**
-			 * Reading Manifest File
-			 */
-			$this->read_manifest();
+			// /**
+			//  * Reading Manifest File
+			//  */
+			// $this->read_manifest();
 
 			/**
 			 * Version Check
@@ -523,7 +448,8 @@ class FullSiteImport extends Base {
 				'type'    => "error",
 				'retry'   => $should_retry,
 				'title'   => __("Oops!", "templately"),
-				'message' => $e->getMessage()
+				'message' => $e->getMessage(),
+				'trace'   => $e->getTraceAsString(),
 			]);
 		}
 
@@ -658,14 +584,7 @@ class FullSiteImport extends Base {
 
 		$this->sse_log('download', __('Downloading Template Pack', 'templately'), 57);
 
-		// $session_id       = uniqid();
-		$this->dir_path   = $this->tmp_dir . $this->session_id . DIRECTORY_SEPARATOR;
-		$this->filePath   = $this->tmp_dir . "{$this->session_id}.zip";
-		// $this->session_id = $session_id;
-
 		$this->update_session_data([
-			'session_id'   => $this->session_id,
-			'dir_path'     => $this->dir_path,
 			'download_key' => $this->download_key,
 		]);
 
@@ -740,15 +659,16 @@ class FullSiteImport extends Base {
 	/**
 	 * @throws Exception
 	 */
-	private function read_manifest() {
-		$manifest_content = file_get_contents($this->dir_path . DIRECTORY_SEPARATOR . 'manifest.json');
+	private function read_manifest($dir_path) {
+		$manifest_content = file_get_contents($dir_path . 'manifest.json');
 		if (empty($manifest_content)) {
 			$this->throw(__('Cannot be imported, as the manifest file is corrupted', 'templately'));
 		}
 
-		$this->manifest = json_decode($manifest_content, true);
+		$manifest_content = json_decode($manifest_content, true);
 		$this->removeLog('temp');
 
+		return $manifest_content;
 		// TODO: Read & Broadcast the LOG for waiting list
 		// $this->sse_log( 'plugin', 'Installing required plugins', '--', 'updateLog', 'processing' );
 		// // $this->sse_log( 'extra-content', 'Import Extra Contents (i.e: Forms)', '--', 'updateLog', 'processing' );
@@ -762,175 +682,6 @@ class FullSiteImport extends Base {
 		return empty($this->request_params['plugins']) || !is_array($this->request_params['plugins']);
 	}
 
-	private function install_dependencies() {
-		$progress = $this->request_params['progress'] ?? [];
-
-		if ( empty($progress['theme_dependency']) && ! empty( $this->request_params['theme'] ) && is_array( $this->request_params['theme'] ) ) {
-			// activate theme
-			$theme = $this->request_params['theme'];
-
-			// $this->before_install_hook();
-
-			if (isset($theme['stylesheet'])) {
-				$stylesheet = get_option('stylesheet');
-
-				// do_action('before_theme_activation', $theme); // Trigger action before theme activation
-				$this->sse_log('theme', 'Installing and Activating Theme: ' . $theme['name'], 0);
-				if (!get_option("__templately_stylesheet")) {
-					add_option("__templately_stylesheet", $stylesheet, '', 'no');
-				}
-
-				$plugin_status      = Installer::get_instance()->install_and_activate_theme($theme['stylesheet']);
-
-				if (!$plugin_status['success']) {
-					$this->sse_message([
-						'action'   => 'updateLog',
-						'status'   => 'error',
-						'message'  => "Failed to activate theme: " . $theme['name'],
-						'type'     => "theme",
-						'progress' => 0
-					]);
-					$this->dependency_data['theme'] = [
-						'success' => false,
-						'name'    => $theme['name'],
-						'slug'    => $theme['stylesheet'],
-						'message' => $plugin_status['message'] ?? ''
-					];
-					$this->update_session_data( [
-						'dependency_data'   => $this->dependency_data,
-					] );
-				} else {
-					// do_action('after_theme_activation', $theme); // Trigger action after theme activation
-
-					$this->sse_message([
-						'action'   => 'updateLog',
-						'status'   => 'complete',
-						'message'  => "Activated theme: " . $theme['name'],
-						'type'     => "theme",
-						'progress' => 100
-					]);
-					$this->dependency_data['theme'] = [
-						'success' => true,
-						'name'    => $theme['name'],
-						'slug'    => $theme['stylesheet'],
-						'message' => $plugin_status['message'] ?? ''
-					];
-					$this->update_session_data( [
-						'dependency_data'   => $this->dependency_data,
-					] );
-
-					$progress['theme_dependency'] = true;
-					$this->update_session_data( [
-						'progress' => $progress,
-					] );
-				}
-
-				if($theme['stylesheet'] !== $stylesheet){
-					// If it's not the last item, send the SSE message and exit
-					$this->sse_message( [
-						'type'    => 'continue',
-						'action'  => 'continue',
-						'results' => __METHOD__ . '::' . __LINE__,
-					] );
-					exit;
-				}
-			}
-
-			// $this->after_install_hook();
-		}
-		else if(empty($progress['theme_dependency'])) {
-			$this->removeLog( 'theme' );
-		}
-		if ( ! empty( $this->request_params['plugins'] ) && is_array( $this->request_params['plugins'] ) ) {
-			// $this->sse_log( 'plugin', 'Installing Plugins', 1 );
-			$total_plugin = count($this->request_params['plugins']);
-
-			// $total_plugin_installed = $total_plugin;
-			$_installed_plugins     = $this->dependency_data['_installed_plugins'] ?? 0;
-			$progress['plugin_dependency'] = $progress['plugin_dependency'] ?? [];
-
-			// $this->before_install_hook();
-
-			foreach ( $this->request_params['plugins'] as $dependency ) {
-				if(in_array($dependency['plugin_original_slug'], $progress['plugin_dependency'])){
-					continue;
-				}
-				$this->sse_log( 'plugin', 'Installing Required Plugins: ' . $dependency['name'], floor( ( 100 * $_installed_plugins / $total_plugin ) ) );
-
-				$_dependency        = $dependency;
-				$is_installed       = Helper::is_plugins_installed($dependency['plugin_file']);
-				$dependency['slug'] = $dependency['plugin_original_slug'];
-				$plugin_status      = Installer::get_instance()->install($dependency);
-
-				if (!$plugin_status['success']) {
-					$this->sse_message([
-						'position' => 'plugin',
-						'action'   => 'updateLog',
-						'status'   => 'error',
-						'message'  => 'Installation Failed: ' . $dependency['name'] . ' (' . ($plugin_status['message'] ?? '') . ')',
-						'type'     => "plugin_{$dependency['plugin_original_slug']}",
-						'progress' => 0
-					]);
-
-					if (isset($dependency['mustHave']) && $dependency['mustHave']) {
-						$this->removeLog('plugin');
-						$this->throw('Installation Failed: ' . $dependency['name'] . ' (' . ($plugin_status['message'] ?? '') . ')');
-					}
-
-					$this->dependency_data['plugins']['failed'][] = [
-						'name'    => $dependency['name'],
-						'slug'    => $dependency['slug'],
-						'link'    => $dependency['link'],
-						'message' => $plugin_status['message'] ?? ''
-					];
-				} else {
-					$_installed_plugins++;
-					// $total_plugin_installed--;
-
-					$this->dependency_data['_installed_plugins'] = $_installed_plugins;
-				}
-
-				$this->update_session_data( [
-					'dependency_data'   => $this->dependency_data,
-				] );
-
-				$progress['plugin_dependency'][] = $dependency['slug'];
-				$this->update_session_data( [
-					'progress' => $progress,
-				] );
-
-				// If it's not the last item, send the SSE message and exit
-				if(!$is_installed && end($this->request_params['plugins']) !== $_dependency ) {
-					$this->sse_message( [
-						'type'    => 'continue',
-						'action'  => 'continue',
-						'results' => __METHOD__ . '::' . __LINE__,
-					] );
-					exit;
-				}
-			}
-
-			// $this->after_install_hook();
-
-			$this->sse_message([
-				'action'   => 'updateLog',
-				'status'   => 'complete',
-				'message'  => "Installed Required Plugins ($_installed_plugins/$total_plugin)",
-				'type'     => "plugin",
-				'progress' => 100
-			]);
-			$this->dependency_data['plugins']['total'] = $total_plugin;
-			$this->dependency_data['plugins']['succeed'] = $_installed_plugins;
-		} else {
-			$this->removeLog('plugin');
-		}
-
-
-		$this->update_session_data([
-			'dependency_data'   => json_encode($this->dependency_data),
-		]);
-		// $this->sse_log( 'plugin', 'Skipped Installing Plugins', '--', 'updateLog', 'skipped' );
-	}
 
 	private function before_install_hook() {
 		// remove_all_actions( 'wp_loaded' );
@@ -956,7 +707,13 @@ class FullSiteImport extends Base {
 		add_filter('upload_mimes', array($this, 'allow_svg_upload'));
 		add_filter('elementor/files/allow_unfiltered_upload', '__return_true');
 
-		$import        = new Import($this);
+		$request_params = $this->get_session_data();
+		$manifest = $this->read_manifest($request_params['dir_path']);
+
+		$import        = new Import(array_merge($request_params, [
+			'origin'   => $this,
+			'manifest' => $manifest,
+		]));
 		$imported_data = $import->run();
 
 		$import_status = $this->handle_import_status('success');
@@ -969,7 +726,7 @@ class FullSiteImport extends Base {
 			'results' => $this->normalize_imported_data($imported_data)
 		]);
 
-		update_user_meta(get_current_user_id(), 'templately_fsi_pack_id', $this->request_params["id"]);
+		update_user_meta(get_current_user_id(), 'templately_fsi_pack_id', $request_params["id"]);
 		if(!empty($import_status['hasFeedback'])){
 			update_user_meta(get_current_user_id(), 'templately_fsi_complete', 'done');
 		}

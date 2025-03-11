@@ -57,7 +57,9 @@ abstract class BaseTemplate {
 				// if ( Plugin::$instance->documents == null ) {
 				// 	Plugin::instance()->init();
 				// }
-
+				if(!did_action( 'elementor/init' )){
+					Plugin::instance()->init();
+				}
 				$this->platform_data = Plugin::$instance->documents->get( $this->post->ID );
 			} else {
 				$this->platform_data = &$this;

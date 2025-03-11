@@ -30,12 +30,11 @@ class Customizer extends BaseRunner {
 	}
 
 	public function should_run( $data, $imported_data = [] ): bool {
-		$params = $this->origin->get_request_params();
-		return ! empty( $params['title'] ) || !empty( $params['slogan'] );
+		return ! empty( $data['title'] ) || !empty( $data['slogan'] );
 	}
 
 	public function import( $data, $imported_data ): array {
-		$params = $this->origin->get_request_params();
+		$params = $data;
 		$customizer = [];
 
 		$this->log( 0 );

@@ -85,6 +85,9 @@ class PageTemplates {
 
 		switch ( $page_template ) {
 			case self::TEMPLATE_HEADER_FOOTER:
+				// removes: Renders a 'viewport' meta tag.
+				remove_action( 'wp_head', '_block_template_viewport_meta_tag', 0 );
+
 				if ( $this->platform === 'gutenberg' ) {
 					$template_path = $file . 'templates/templately-gutenberg-template.php';
 				} else {

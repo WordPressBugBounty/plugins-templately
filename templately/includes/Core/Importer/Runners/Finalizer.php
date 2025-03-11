@@ -92,61 +92,18 @@ class Finalizer extends BaseRunner {
 
 		add_action('templately_import.finalize_gutenberg_attachment', [$this, 'post_log'], 10, 2);
 
-		// Get the processed templates from the session data
-		$processed = $this->origin->get_progress();
-
-		if(empty($processed)){
-			$this->log( 0 );
-			$processed = ["__started__"];
-			$this->origin->update_progress( $processed);
-		}
-
-		foreach ( $this->options as $type => $contents ) {
+		$this->loop( $this->options, function($type, $contents ) {
 			$this->type = $type;
-
-			// If the template has been processed, skip it
-			if (in_array($type, $processed)) {
-				continue;
-			}
 
 			if ( $type == 'templates' ) {
 				$this->finalize_imports( $contents, $type );
-
-				$processed[] = $type;
-				$this->origin->update_progress( $processed);
-				// If it's not the last item, send the SSE message and exit
-				// if( end($this->options) !== $contents ) {
-				// 	$this->sse_message( [
-				// 		'type'    => 'continue',
-				// 		'action'  => 'continue',
-				// 		'results' => __METHOD__ . '::' . __LINE__,
-				// 	] );
-				// 	exit;
-				// }
 			} else {
-				foreach ( $contents as $post_type => $templates ) {
-					// If the template has been processed, skip it
-					if (in_array("$type::$post_type", $processed)) {
-						continue;
-					}
-
+				$this->loop( $contents, function($post_type, $templates ) use($type) {
 					$this->sub_type = $post_type;
 					$this->finalize_imports( $templates, $type, $post_type );
-
-					$processed[] = "$type::$post_type";
-					$this->origin->update_progress( $processed);
-					// If it's not the last item, send the SSE message and exit
-					// if( end($contents) !== $templates ) {
-					// 	$this->sse_message( [
-					// 		'type'    => 'continue',
-					// 		'action'  => 'continue',
-					// 		'results' => __METHOD__ . '::' . __LINE__,
-					// 	] );
-					// 	exit;
-					// }
-				}
+				}, $type);
 			}
-		}
+		});
 
 		if ( $this->platform == 'gutenberg' ) {
 			$this->regenerate_assets();
@@ -164,15 +121,10 @@ class Finalizer extends BaseRunner {
 	}
 
 	private function finalize_imports( $templates, $type, $post_type = null ) {
-		// Get the processed templates from the session data
-		$processed = $this->origin->get_progress();
+		// used for counting
 
-		foreach ( $templates as $old_template_id => $template_settings ) {
-			// If the template has been processed, skip it
-			if (in_array($old_template_id, $processed)) {
-				continue;
-			}
-
+		$this->loop( $templates, function($old_template_id, $template_settings ) use($type, $post_type) {
+			$processed = $this->get_progress([], 'finalized_imports', false);
 			try {
 				$path = $this->dir_path . $this->type . DIRECTORY_SEPARATOR;
 				if ( ! empty( $this->sub_type ) ) {
@@ -191,27 +143,22 @@ class Finalizer extends BaseRunner {
 				$params = $this->origin->get_request_params();
 				$this->json->prepare( $template_json, $template_settings, $this->extra_content['form'][ $old_template_id ] ?? [], $params )->update();
 
+				$processed[] = $old_template_id;
+				// Add the template to the processed templates and update the session data
+				$this->update_progress( $processed, null, 'finalized_imports', false);
 				// Broadcast Log
 				$progress = floor( ( 100 * count($processed) ) / $this->total_counts );
+				if(empty($progress)){
+					$xyz = 0;
+				}
 				$this->log( $progress );
+
 			} catch ( Exception $e ) {
-				continue;
+
 			}
 
-			// Add the template to the processed templates and update the session data
-			$processed[] = $old_template_id;
-			$this->origin->update_progress( $processed);
 
-			// If it's not the last item, send the SSE message and exit
-			// if( end($templates) !== $template_settings) {
-			// 	$this->sse_message( [
-			// 		'type'    => 'continue',
-			// 		'action'  => 'continue',
-			// 		'results' => __METHOD__ . '::' . __LINE__,
-			// 	] );
-			// 	exit;
-			// }
-		}
+		}, "$type-$post_type");
 	}
 
 	public function post_log($id, $size_dimension = null){

@@ -180,6 +180,9 @@ class Admin extends Base {
 		 */
 		$platform = $this->platform( $_current_screen );
 
+		$hide_buttons = get_option('templately-gutenberg-hide-buttons', 'no');
+		$hide_buttons = $hide_buttons === 'yes' ? 'yes' : 'no';
+
 		$templately = array_merge( [
 			'url'                => home_url(),
 			'site_url'           => site_url(),
@@ -212,6 +215,7 @@ class Admin extends Base {
 			'has_elementor_pro'       => rest_sanitize_boolean( is_plugin_active( 'elementor-pro/elementor-pro.php' ) ),
 			'theme'                   => $_current_screen == 'templately' ? 'light' : $platform->ui_theme(),
 			'is_wp_support_gutenberg' => version_compare( get_bloginfo( 'version' ), '5.0.0', '>=' ),
+			'hide_buttons'            => $hide_buttons,
 		], $templately );
 
 		templately()->assets->localize( $_localize_handle, 'templately', $templately );
@@ -451,14 +455,14 @@ class Admin extends Base {
 		Helper::views( 'header' );
 	}
 
-    /**
-     * Handle links displayed below the plugin name in the WordPress Installed Plugins page.
-     *
-     * @return  array
-     * @since   3.1.2
-     * @static
-     *
-     */
+	/**
+	 * Handle links displayed below the plugin name in the WordPress Installed Plugins page.
+	 *
+	 * @return  array
+	 * @since   3.1.2
+	 * @static
+	 *
+	 */
 	public static function handleActionLinks($links, $file)
 	{
 		$settingsLink = '<a href="' . admin_url('admin.php?page=templately') . '" aria-label="' . __('Open settings page',

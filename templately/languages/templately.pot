@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Templately plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Templately 3.2.3\n"
+"Project-Id-Version: Templately 3.2.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/templately\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-02-27T11:59:01+00:00\n"
+"POT-Creation-Date: 2025-03-10T09:52:46+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: templately\n"
@@ -17,8 +17,8 @@ msgstr ""
 #. Plugin Name of the plugin
 #. Author of the plugin
 #: templately.php
-#: includes/Core/Admin.php:439
-#: includes/Core/Platform/Gutenberg.php:82
+#: includes/Core/Admin.php:443
+#: includes/Core/Platform/Gutenberg.php:83
 #: views/header.php:7
 #: assets/js/elementor.js:1
 #: react-src/elementor.js:93
@@ -50,11 +50,11 @@ msgid "Successfully saved."
 msgstr ""
 
 #: includes/API/Dependencies.php:92
-#: includes/Core/Admin.php:441
-#: includes/Core/Importer/Runners/ElementorContent.php:15
+#: includes/Core/Admin.php:445
+#: includes/Core/Importer/Runners/ElementorContent.php:16
 #: assets/js/templately.js:1
 #: react-src/app/header/actionParts/Switcher.js:44
-#: assets/js/templately.js:25634
+#: assets/js/templately.js:25636
 msgid "Elementor"
 msgstr ""
 
@@ -111,14 +111,14 @@ msgstr ""
 #: react-src/utils/savedTemplatesContextMenu.js:35
 #: react-src/utils/workSpaceContextMenu.js:15
 #: react-src/utils/workSpaceContextMenu.js:44
-#: assets/js/templately.js:15493
-#: assets/js/templately.js:15963
-#: assets/js/templately.js:28203
-#: assets/js/templately.js:32407
-#: assets/js/templately.js:33052
-#: assets/js/templately.js:33846
-#: assets/js/templately.js:34097
-#: assets/js/templately.js:34126
+#: assets/js/templately.js:15495
+#: assets/js/templately.js:15965
+#: assets/js/templately.js:28212
+#: assets/js/templately.js:32416
+#: assets/js/templately.js:33061
+#: assets/js/templately.js:33855
+#: assets/js/templately.js:34106
+#: assets/js/templately.js:34135
 msgid "Something went wrong."
 msgstr ""
 
@@ -158,14 +158,14 @@ msgstr ""
 #: includes/API/SignUp.php:31
 #: assets/js/templately.js:1
 #: react-src/utils/messages.js:33
-#: assets/js/templately.js:33703
+#: assets/js/templately.js:33712
 msgid "First name cannot be empty."
 msgstr ""
 
 #: includes/API/SignUp.php:34
 #: assets/js/templately.js:1
 #: react-src/utils/messages.js:43
-#: assets/js/templately.js:33713
+#: assets/js/templately.js:33722
 msgid "Last name cannot be empty."
 msgstr ""
 
@@ -176,7 +176,7 @@ msgstr ""
 #: includes/API/SignUp.php:43
 #: assets/js/templately.js:1
 #: react-src/utils/messages.js:51
-#: assets/js/templately.js:33721
+#: assets/js/templately.js:33730
 msgid "Password cannot be empty."
 msgstr ""
 
@@ -376,13 +376,13 @@ msgstr ""
 #: react-src/app/components/profile/FavouritesFilter.js:59
 #: react-src/app/components/sidebar/components/partials/Categories.js:42
 #: react-src/app/components/sidebar/components/partials/TemplateTypes.js:47
-#: assets/js/templately.js:17641
-#: assets/js/templately.js:22590
-#: assets/js/templately.js:22640
-#: assets/js/templately.js:22952
-#: assets/js/templately.js:22974
-#: assets/js/templately.js:23707
-#: assets/js/templately.js:24137
+#: assets/js/templately.js:17643
+#: assets/js/templately.js:22592
+#: assets/js/templately.js:22642
+#: assets/js/templately.js:22954
+#: assets/js/templately.js:22976
+#: assets/js/templately.js:23709
+#: assets/js/templately.js:24139
 msgid "All"
 msgstr ""
 
@@ -432,9 +432,9 @@ msgstr ""
 #: react-src/app/components/core/itemDetails/Packs/PacksHeader.js:135
 #: react-src/app/components/profile/FavouritesFilter.js:47
 #: react-src/app/routesTemplate.js:40
-#: assets/js/templately.js:17661
-#: assets/js/templately.js:22962
-#: assets/js/templately.js:28321
+#: assets/js/templately.js:17663
+#: assets/js/templately.js:22964
+#: assets/js/templately.js:28330
 msgid "Pages"
 msgstr ""
 
@@ -535,9 +535,9 @@ msgstr ""
 #: react-src/app/components/core/itemDetails/Packs/import-parts/Typography/index.js:234
 #: react-src/app/components/core/itemDetails/Packs/import-parts/Typography/index.js:243
 #: react-src/app/components/core/itemDetails/Packs/import-parts/Typography/TypographyRow.js:23
-#: assets/js/templately.js:19830
-#: assets/js/templately.js:20137
-#: assets/js/templately.js:20146
+#: assets/js/templately.js:19832
+#: assets/js/templately.js:20139
+#: assets/js/templately.js:20148
 msgid "Default"
 msgstr ""
 
@@ -689,14 +689,14 @@ msgstr ""
 #: includes/Core/Admin.php:56
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/ImportSuccess.js:20
-#: assets/js/templately.js:21539
+#: assets/js/templately.js:21541
 msgid "Edit Template"
 msgstr ""
 
 #: includes/Core/Admin.php:57
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/ImportSuccess.js:33
-#: assets/js/templately.js:21552
+#: assets/js/templately.js:21554
 msgid "View Template"
 msgstr ""
 
@@ -765,78 +765,78 @@ msgctxt "Screen reader text for the items list heading on the post type listing 
 msgid "Templates list"
 msgstr ""
 
-#: includes/Core/Admin.php:247
+#: includes/Core/Admin.php:251
 msgid "We hope you're enjoying %s! Could you please do us a favor and give us a review on %s to help us spread the word and boost our motivation?"
 msgstr ""
 
-#: includes/Core/Admin.php:256
+#: includes/Core/Admin.php:260
 msgid "Sure, you deserve it!"
 msgstr ""
 
-#: includes/Core/Admin.php:260
+#: includes/Core/Admin.php:264
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Review.js:65
 #: assets/js/dashboard.js:714
 msgid "I already did"
 msgstr ""
 
-#: includes/Core/Admin.php:267
+#: includes/Core/Admin.php:271
 msgid "Maybe Later"
 msgstr ""
 
-#: includes/Core/Admin.php:279
+#: includes/Core/Admin.php:283
 msgid "I need help"
 msgstr ""
 
-#: includes/Core/Admin.php:283
+#: includes/Core/Admin.php:287
 msgid "Never show again"
 msgstr ""
 
-#: includes/Core/Admin.php:314
+#: includes/Core/Admin.php:318
 msgid "🔥 Get access to 5,000+ Ready Templates & save up to 65% OFF now"
 msgstr ""
 
-#: includes/Core/Admin.php:314
-#: includes/Core/Admin.php:334
+#: includes/Core/Admin.php:318
+#: includes/Core/Admin.php:338
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/ImportFailed.js:25
-#: assets/js/templately.js:21503
+#: assets/js/templately.js:21505
 msgid "Upgrade to Pro"
 msgstr ""
 
-#: includes/Core/Admin.php:357
+#: includes/Core/Admin.php:361
 msgid "Get"
 msgstr ""
 
-#: includes/Core/Admin.php:358
+#: includes/Core/Admin.php:362
 msgid "Templately PRO"
 msgstr ""
 
-#: includes/Core/Admin.php:359
+#: includes/Core/Admin.php:363
 msgid "with up to 60% OFF & unlock 5500+ ready WordPress templates to power up web design in 2025."
 msgstr ""
 
-#: includes/Core/Admin.php:365
+#: includes/Core/Admin.php:369
 msgid "GET PRO Lifetime Access"
 msgstr ""
 
-#: includes/Core/Admin.php:370
+#: includes/Core/Admin.php:374
 msgid "No, I’ll Pay Full Price Later"
 msgstr ""
 
-#: includes/Core/Admin.php:440
+#: includes/Core/Admin.php:444
 msgid "requires"
 msgstr ""
 
-#: includes/Core/Admin.php:442
+#: includes/Core/Admin.php:446
 msgid "plugin to be installed and activated. Please install Elementor to continue."
 msgstr ""
 
-#: includes/Core/Admin.php:464
+#: includes/Core/Admin.php:468
 msgid "Open settings page"
 msgstr ""
 
-#: includes/Core/Admin.php:465
+#: includes/Core/Admin.php:469
 msgid "Templates Library"
 msgstr ""
 
@@ -848,93 +848,106 @@ msgstr ""
 msgid "Cannot be imported."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:91
+#: includes/Core/Importer/FullSiteImport.php:92
 msgid "Invalid nonce"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:97
+#: includes/Core/Importer/FullSiteImport.php:98
 msgid "Insufficient permissions"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:424
+#: includes/Core/Importer/FullSiteImport.php:344
+#: includes/Core/Importer/Utils/Utils.php:296
+#: includes/Core/Importer/Utils/Utils.php:304
+msgid "Invalid Session ID."
+msgstr ""
+
+#: includes/Core/Importer/FullSiteImport.php:372
 msgid "Invalid Pack ID."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:495
+#: includes/Core/Importer/FullSiteImport.php:420
 msgid "Please update the templately plugin."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:525
-#: includes/Core/Importer/FullSiteImport.php:1072
+#: includes/Core/Importer/FullSiteImport.php:450
+#: includes/Core/Importer/FullSiteImport.php:829
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Packs/FullSiteImport.js:64
 #: react-src/app/components/core/itemDetails/Packs/FullSiteImport.js:88
-#: react-src/app/hooks/useFullSiteImport.js:331
-#: assets/js/templately.js:17431
-#: assets/js/templately.js:17455
-#: assets/js/templately.js:26236
+#: react-src/app/hooks/useFullSiteImport.js:310
+#: assets/js/templately.js:17433
+#: assets/js/templately.js:17457
+#: assets/js/templately.js:26217
 msgid "Oops!"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:600
+#: includes/Core/Importer/FullSiteImport.php:526
 msgid "Upload directory is not writable."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:609
+#: includes/Core/Importer/FullSiteImport.php:535
 msgid "Permission Passed"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:624
-#: includes/Core/Importer/FullSiteImport.php:659
-#: includes/Core/Importer/FullSiteImport.php:673
+#: includes/Core/Importer/FullSiteImport.php:550
+#: includes/Core/Importer/FullSiteImport.php:585
+#: includes/Core/Importer/FullSiteImport.php:592
+#: includes/Core/Importer/Runners/DownloadZip.php:61
+#: includes/Core/Importer/Runners/DownloadZip.php:96
+#: includes/Core/Importer/Runners/DownloadZip.php:110
 msgid "Downloading Template Pack"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:641
+#: includes/Core/Importer/FullSiteImport.php:567
+#: includes/Core/Importer/Runners/DownloadZip.php:78
 msgid "Template pack download failed"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:651
+#: includes/Core/Importer/FullSiteImport.php:577
+#: includes/Core/Importer/Runners/DownloadZip.php:88
 msgid " Please try again or contact <a href='%s' target='_blank'>support</a>."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:656
+#: includes/Core/Importer/FullSiteImport.php:582
+#: includes/Core/Importer/Runners/DownloadZip.php:93
 msgid "Template pack download failed with response code: "
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:677
+#: includes/Core/Importer/FullSiteImport.php:596
+#: includes/Core/Importer/Runners/DownloadZip.php:114
 msgid "Downloading Failed. Please try again"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:686
+#: includes/Core/Importer/FullSiteImport.php:605
 msgid "WP_Filesystem cannot be initialized"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:699
-#: includes/Core/Importer/FullSiteImport.php:1061
+#: includes/Core/Importer/FullSiteImport.php:618
+#: includes/Core/Importer/FullSiteImport.php:818
 #: assets/js/templately.js:1
-#: react-src/app/hooks/useFullSiteImport.js:332
-#: assets/js/templately.js:26237
+#: react-src/app/hooks/useFullSiteImport.js:311
+#: assets/js/templately.js:26218
 msgid "It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:746
+#: includes/Core/Importer/FullSiteImport.php:665
 msgid "Cannot be imported, as the manifest file is corrupted"
 msgstr ""
 
-#: includes/Core/Importer/Runners/Attachments.php:18
+#: includes/Core/Importer/Runners/Attachments.php:13
 msgid "Attachments"
 msgstr ""
 
-#: includes/Core/Importer/Runners/Attachments.php:31
+#: includes/Core/Importer/Runners/Attachments.php:26
 msgid "Importing Attachments: ("
 msgstr ""
 
-#: includes/Core/Importer/Runners/Attachments.php:33
+#: includes/Core/Importer/Runners/Attachments.php:28
 msgid "Importing Attachment."
 msgstr ""
 
-#: includes/Core/Importer/Runners/BaseRunner.php:51
+#: includes/Core/Importer/Runners/BaseRunner.php:55
 msgid "Platform is not specified. Please try again after specifying the platform."
 msgstr ""
 
@@ -943,10 +956,20 @@ msgid "Customizer"
 msgstr ""
 
 #: includes/Core/Importer/Runners/Customizer.php:29
+#: includes/Core/Importer/Runners/Dependencies.php:31
+#: includes/Core/Importer/Runners/DownloadZip.php:29
 msgid "Updating customizer settings."
 msgstr ""
 
-#: includes/Core/Importer/Runners/ElementorContent.php:31
+#: includes/Core/Importer/Runners/Dependencies.php:19
+msgid "Download Dependencies"
+msgstr ""
+
+#: includes/Core/Importer/Runners/DownloadZip.php:17
+msgid "Download Zip"
+msgstr ""
+
+#: includes/Core/Importer/Runners/ElementorContent.php:32
 msgid "Importing Elementor Page and Post Templates"
 msgstr ""
 
@@ -979,14 +1002,14 @@ msgstr ""
 msgid "Importing Taxonomies"
 msgstr ""
 
-#: includes/Core/Importer/Runners/Templates.php:20
+#: includes/Core/Importer/Runners/Templates.php:19
 #: assets/js/templately.js:1
 #: react-src/app/routesTemplate.js:58
-#: assets/js/templately.js:28339
+#: assets/js/templately.js:28348
 msgid "Templates"
 msgstr ""
 
-#: includes/Core/Importer/Runners/Templates.php:24
+#: includes/Core/Importer/Runners/Templates.php:23
 msgid "Importing Templates (i.e: Header, Footer, etc)"
 msgstr ""
 
@@ -1002,15 +1025,15 @@ msgstr ""
 msgid "Templately Error code: T001"
 msgstr ""
 
-#: includes/Core/Importer/Utils/Utils.php:17
+#: includes/Core/Importer/Utils/Utils.php:19
 msgid "JSON file not exists. "
 msgstr ""
 
-#: includes/Core/Importer/Utils/Utils.php:170
+#: includes/Core/Importer/Utils/Utils.php:178
 msgid "URL is empty"
 msgstr ""
 
-#: includes/Core/Importer/Utils/Utils.php:175
+#: includes/Core/Importer/Utils/Utils.php:183
 msgid "Invalid URL"
 msgstr ""
 
@@ -1026,7 +1049,7 @@ msgstr ""
 msgid "Something must went wrong."
 msgstr ""
 
-#: includes/Core/Platform/Gutenberg.php:86
+#: includes/Core/Platform/Gutenberg.php:87
 msgid "Save %s in Templately"
 msgstr ""
 
@@ -1101,7 +1124,7 @@ msgstr ""
 #: views/builder/tabs.php:29
 #: assets/js/templately.js:1
 #: react-src/app/revert/RevertWrapper.js:89
-#: assets/js/templately.js:28277
+#: assets/js/templately.js:28286
 msgid "Revert Now"
 msgstr ""
 
@@ -1126,7 +1149,7 @@ msgstr ""
 #: react-src/app/components/profile/Profile.js:55
 #: react-src/dashboard/Feedback/Feedback.js:44
 #: assets/js/dashboard.js:457
-#: assets/js/templately.js:23055
+#: assets/js/templately.js:23057
 msgid "Email"
 msgstr ""
 
@@ -1236,37 +1259,37 @@ msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/messages.js:18
-#: assets/js/templately.js:33688
+#: assets/js/templately.js:33697
 msgid "Please enter a valid email address."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/messages.js:28
-#: assets/js/templately.js:33698
+#: assets/js/templately.js:33707
 msgid "Please provide a valid API Key."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/messages.js:37
-#: assets/js/templately.js:33707
+#: assets/js/templately.js:33716
 msgid "The First Name may only contain letters, dashes and spaces."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/messages.js:47
-#: assets/js/templately.js:33717
+#: assets/js/templately.js:33726
 msgid "The Last Name may only contain letters, dashes and spaces."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/messages.js:57
-#: assets/js/templately.js:33727
+#: assets/js/templately.js:33736
 msgid "Password must contain at least 8 characters, uppercase, lowercase and numbers."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/messages.js:69
-#: assets/js/templately.js:33739
+#: assets/js/templately.js:33748
 msgid "Password not matched!"
 msgstr ""
 
@@ -1278,55 +1301,55 @@ msgstr ""
 #: assets/js/templately.js:12958
 #: assets/js/templately.js:13211
 #: assets/js/templately.js:13279
-#: assets/js/templately.js:33747
+#: assets/js/templately.js:33756
 msgid "Opps...!"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/core/Search.js:49
-#: assets/js/templately.js:24552
+#: assets/js/templately.js:24554
 msgid "Type and hit enter..."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/workSpaceContextMenu.js:16
-#: assets/js/templately.js:34098
+#: assets/js/templately.js:34107
 msgid "Something went wrong regarding changes in your WorkSpace. Try Later or Contact support."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/workSpaceContextMenu.js:22
-#: assets/js/templately.js:34104
+#: assets/js/templately.js:34113
 msgid "Successfully Saved"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/workSpaceContextMenu.js:23
-#: assets/js/templately.js:34105
+#: assets/js/templately.js:34114
 msgid "You have succesfully saved your WorkSpace changes."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/workSpaceContextMenu.js:45
-#: assets/js/templately.js:34127
+#: assets/js/templately.js:34136
 msgid "Something went wrong regarding deleting your WorkSpace. Try Later or Contact Support."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/workSpaceContextMenu.js:52
-#: assets/js/templately.js:34134
+#: assets/js/templately.js:34143
 msgid "Successfully Deleted"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/workSpaceContextMenu.js:53
-#: assets/js/templately.js:34135
+#: assets/js/templately.js:34144
 msgid "You have deleted a WorkSpace from your account."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/workSpaceContextMenu.js:76
-#: assets/js/templately.js:34158
+#: assets/js/templately.js:34167
 msgid "Edit"
 msgstr ""
 
@@ -1336,105 +1359,105 @@ msgstr ""
 #: react-src/utils/cloudFilesContextMenu.js:166
 #: react-src/utils/savedTemplatesContextMenu.js:131
 #: react-src/utils/workSpaceContextMenu.js:83
-#: assets/js/templately.js:15101
-#: assets/js/templately.js:15157
-#: assets/js/templately.js:33164
-#: assets/js/templately.js:33942
-#: assets/js/templately.js:34165
+#: assets/js/templately.js:15103
+#: assets/js/templately.js:15159
+#: assets/js/templately.js:33173
+#: assets/js/templately.js:33951
+#: assets/js/templately.js:34174
 msgid "Delete"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/KitWarningModal.js:19
-#: assets/js/templately.js:21579
+#: assets/js/templately.js:21581
 msgid "Force Delete"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/KitWarningModal.js:21
-#: assets/js/templately.js:21581
+#: assets/js/templately.js:21583
 msgid "Keep my settings"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/partials/importPartials/Import.js:17
-#: assets/js/templately.js:22231
+#: assets/js/templately.js:22233
 msgid "Import this template to your library to make it available in your Elementor Saved Templates(opens in a new tab) list for future use."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/partials/importPartials/Import.js:27
-#: assets/js/templately.js:22241
+#: assets/js/templately.js:22243
 msgid "Import to Library"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/partials/importPartials/CreatePage.js:22
-#: assets/js/templately.js:22190
+#: assets/js/templately.js:22192
 msgid "Create a new page from this template to make it available as a draft page in your pages list."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/partials/importPartials/CreatePage.js:30
-#: assets/js/templately.js:22198
+#: assets/js/templately.js:22200
 msgid "Type a title here..."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/partials/importPartials/CreatePage.js:36
-#: assets/js/templately.js:22204
+#: assets/js/templately.js:22206
 msgid "Create a Page"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/DependencyInstaller.js:175
 #: react-src/app/components/core/modals/partials/ImportModal.js:82
-#: assets/js/templately.js:21421
-#: assets/js/templately.js:21977
+#: assets/js/templately.js:21423
+#: assets/js/templately.js:21979
 msgid "Importing..."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/DependencyInstaller.js:176
 #: react-src/app/components/core/modals/partials/ImportModal.js:83
-#: assets/js/templately.js:21422
-#: assets/js/templately.js:21978
+#: assets/js/templately.js:21424
+#: assets/js/templately.js:21980
 msgid "Your chosen template is being imported right now, please do not refresh or close this tab."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/partials/InstallerInBackground.js:93
-#: assets/js/templately.js:22110
+#: assets/js/templately.js:22112
 msgid "Installing..."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/partials/InstallerInBackground.js:108
-#: assets/js/templately.js:22125
+#: assets/js/templately.js:22127
 msgid "Retry & Proceed to Import"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/partials/InstallerInBackground.js:116
-#: assets/js/templately.js:22133
+#: assets/js/templately.js:22135
 msgid "Success"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/partials/InstallerInBackground.js:22
-#: assets/js/templately.js:22039
+#: assets/js/templately.js:22041
 msgid "Ignored"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/partials/DependencyShowcase.js:70
-#: assets/js/templately.js:21783
+#: assets/js/templately.js:21785
 msgid "Required Dependencies"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/partials/DependencyShowcase.js:72
-#: assets/js/templately.js:21785
+#: assets/js/templately.js:21787
 msgid "To import this item you need to install all the Plugin(s) listed below:"
 msgstr ""
 
@@ -1442,21 +1465,21 @@ msgstr ""
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:219
 #: react-src/app/components/clouds/components/modals/DeleteWorkSpaceModal.js:14
 #: react-src/app/components/core/modals/partials/DependencyShowcase.js:147
-#: assets/js/templately.js:14712
-#: assets/js/templately.js:15123
-#: assets/js/templately.js:21860
+#: assets/js/templately.js:14714
+#: assets/js/templately.js:15125
+#: assets/js/templately.js:21862
 msgid "Note"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/partials/DependencyShowcase.js:150
-#: assets/js/templately.js:21863
+#: assets/js/templately.js:21865
 msgid "Make sure you have manually installed & activated the <em><strong>%s</strong></em> listed above"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/partials/DependencyShowcase.js:154
-#: assets/js/templately.js:21867
+#: assets/js/templately.js:21869
 msgid "Pro Plugin"
 msgid_plural "Pro Plugin's"
 msgstr[0] ""
@@ -1467,134 +1490,134 @@ msgstr[1] ""
 #: react-src/app/components/clouds/components/modals/DeleteWorkSpaceModal.js:40
 #: react-src/app/components/core/modals/partials/DependencyShowcase.js:165
 #: react-src/app/revert/Modal.js:82
-#: assets/js/templately.js:15093
-#: assets/js/templately.js:15149
-#: assets/js/templately.js:21878
-#: assets/js/templately.js:28181
+#: assets/js/templately.js:15095
+#: assets/js/templately.js:15151
+#: assets/js/templately.js:21880
+#: assets/js/templately.js:28190
 msgid "Cancel"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/partials/DependencyShowcase.js:171
-#: assets/js/templately.js:21884
+#: assets/js/templately.js:21886
 msgid "Install & Proceed to Import"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/ImportFailed.js:11
-#: assets/js/templately.js:21489
+#: assets/js/templately.js:21491
 msgid "Importing Failed"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Header.js:33
 #: react-src/app/components/core/modals/ImportFailed.js:32
-#: assets/js/templately.js:17128
-#: assets/js/templately.js:21510
+#: assets/js/templately.js:17130
+#: assets/js/templately.js:21512
 msgid "Purchase This Item"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/DependencyInstaller.js:62
-#: assets/js/templately.js:21308
+#: assets/js/templately.js:21310
 msgid "Oops! Seems you don't have %s to import the %s Template"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/DependencyInstaller.js:80
-#: assets/js/templately.js:21326
+#: assets/js/templately.js:21328
 msgid "%6$s %1$s is a part of a %2$s which is available in %3$s. You need to install Elementor Pro to import %1$s template from here. %4$s, you can insert this template from %5$s on your single page."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/DependencyInstaller.js:103
-#: assets/js/templately.js:21349
+#: assets/js/templately.js:21351
 msgid "NOTE"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/DependencyInstaller.js:187
-#: assets/js/templately.js:21433
+#: assets/js/templately.js:21435
 msgid "Checking..."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/DependencyInstaller.js:188
-#: assets/js/templately.js:21434
+#: assets/js/templately.js:21436
 msgid "Checking template dependencies are installed or not..."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/ImportSuccess.js:7
-#: assets/js/templately.js:21526
+#: assets/js/templately.js:21528
 msgid "Imported successfully!"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/ImportSuccess.js:9
-#: assets/js/templately.js:21528
+#: assets/js/templately.js:21530
 msgid "You can now edit or preview the template or, you can push it to Templately Cloud to share with your team."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/modals/ImportSuccess.js:27
-#: assets/js/templately.js:21546
+#: assets/js/templately.js:21548
 msgid "Edit Template with Elementor"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/DeleteFileModal.js:12
 #: react-src/app/components/clouds/components/modals/DeleteWorkSpaceModal.js:12
-#: assets/js/templately.js:15080
-#: assets/js/templately.js:15121
+#: assets/js/templately.js:15082
+#: assets/js/templately.js:15123
 msgid "Are You Sure?"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/DeleteWorkSpaceModal.js:15
-#: assets/js/templately.js:15124
+#: assets/js/templately.js:15126
 msgid "The WorkSpace will be permanently deleted."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/DeleteWorkSpaceModal.js:29
-#: assets/js/templately.js:15138
+#: assets/js/templately.js:15140
 msgid "Want To Delete Files Too?"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/CreateWorkspaceModal.js:97
-#: assets/js/templately.js:15007
+#: assets/js/templately.js:15009
 msgid "Type workspace title here..."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/CreateWorkspaceModal.js:113
 #: react-src/app/components/clouds/components/modals/EditWorkSpaceModal.js:252
-#: assets/js/templately.js:15023
-#: assets/js/templately.js:15416
+#: assets/js/templately.js:15025
+#: assets/js/templately.js:15418
 msgid "Add People"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/CreateWorkspaceModal.js:128
 #: react-src/app/components/clouds/components/modals/EditWorkSpaceModal.js:267
-#: assets/js/templately.js:15038
-#: assets/js/templately.js:15431
+#: assets/js/templately.js:15040
+#: assets/js/templately.js:15433
 msgid "Type email to add"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/CreateWorkspaceModal.js:139
 #: react-src/app/components/clouds/components/modals/EditWorkSpaceModal.js:278
-#: assets/js/templately.js:15049
-#: assets/js/templately.js:15442
+#: assets/js/templately.js:15051
+#: assets/js/templately.js:15444
 msgid "Add"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/CreateWorkspaceModal.js:150
-#: assets/js/templately.js:15060
+#: assets/js/templately.js:15062
 msgid "Create Workspace"
 msgstr ""
 
@@ -1604,11 +1627,11 @@ msgstr ""
 #: react-src/app/components/clouds/SaveTemplates.js:55
 #: react-src/app/components/sidebar/components/CloudSidebar.js:21
 #: react-src/app/layouts/CloudsLayout.js:90
-#: assets/js/templately.js:13781
-#: assets/js/templately.js:14808
-#: assets/js/templately.js:15916
-#: assets/js/templately.js:23367
-#: assets/js/templately.js:27652
+#: assets/js/templately.js:13783
+#: assets/js/templately.js:14810
+#: assets/js/templately.js:15918
+#: assets/js/templately.js:23369
+#: assets/js/templately.js:27661
 msgid "My WorkSpace"
 msgstr ""
 
@@ -1616,67 +1639,67 @@ msgstr ""
 #: react-src/app/components/clouds/components/modals/CopyMoveModal.js:56
 #: react-src/app/components/clouds/components/partials/WorkSpaceFilter.js:53
 #: react-src/app/components/clouds/SaveTemplates.js:61
-#: assets/js/templately.js:13787
-#: assets/js/templately.js:14814
-#: assets/js/templately.js:15922
+#: assets/js/templately.js:13789
+#: assets/js/templately.js:14816
+#: assets/js/templately.js:15924
 msgid "Shared WorkSpace"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/CopyMoveModal.js:104
-#: assets/js/templately.js:14862
+#: assets/js/templately.js:14864
 msgid "%s to WorkSpace"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/CopyMoveModal.js:104
 #: react-src/app/components/clouds/components/modals/CopyMoveModal.js:136
-#: assets/js/templately.js:14862
-#: assets/js/templately.js:14894
+#: assets/js/templately.js:14864
+#: assets/js/templately.js:14896
 msgid "Copy"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/CopyMoveModal.js:104
 #: react-src/app/components/clouds/components/modals/CopyMoveModal.js:136
-#: assets/js/templately.js:14862
-#: assets/js/templately.js:14894
+#: assets/js/templately.js:14864
+#: assets/js/templately.js:14896
 msgid "Move"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/CopyMoveModal.js:107
-#: assets/js/templately.js:14865
+#: assets/js/templately.js:14867
 msgid "Item Name"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/CopyMoveModal.js:116
-#: assets/js/templately.js:14874
+#: assets/js/templately.js:14876
 msgid "Copy to"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/CopyMoveModal.js:116
-#: assets/js/templately.js:14874
+#: assets/js/templately.js:14876
 msgid "Move to"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/CopyMoveModal.js:122
-#: assets/js/templately.js:14880
+#: assets/js/templately.js:14882
 msgid "Select WorkSpace"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/CopyMoveModal.js:123
-#: assets/js/templately.js:14881
+#: assets/js/templately.js:14883
 msgid "No WorkSpace Found"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/DeleteFileModal.js:14
-#: assets/js/templately.js:15082
+#: assets/js/templately.js:15084
 msgid "You want to delete the file from your cloud."
 msgstr ""
 
@@ -1687,276 +1710,276 @@ msgstr ""
 #: react-src/app/layouts/CloudsLayout.js:31
 #: react-src/app/layouts/CloudsLayout.js:86
 #: react-src/app/layouts/CloudsLayout.js:107
-#: assets/js/templately.js:13774
-#: assets/js/templately.js:14514
-#: assets/js/templately.js:14521
-#: assets/js/templately.js:27593
-#: assets/js/templately.js:27648
-#: assets/js/templately.js:27669
+#: assets/js/templately.js:13776
+#: assets/js/templately.js:14516
+#: assets/js/templately.js:14523
+#: assets/js/templately.js:27602
+#: assets/js/templately.js:27657
+#: assets/js/templately.js:27678
 msgid "My Clouds"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:32
-#: assets/js/templately.js:14525
+#: assets/js/templately.js:14527
 msgid "My Workspaces"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:36
-#: assets/js/templately.js:14529
+#: assets/js/templately.js:14531
 msgid "Shared Workspaces"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:138
-#: assets/js/templately.js:14631
+#: assets/js/templately.js:14633
 msgid "Add Template to WorkSpace"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:141
-#: assets/js/templately.js:14634
+#: assets/js/templately.js:14636
 msgid "Select Source"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:149
-#: assets/js/templately.js:14642
+#: assets/js/templately.js:14644
 msgid "Select a source"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:151
-#: assets/js/templately.js:14644
+#: assets/js/templately.js:14646
 msgid "No Sources Found"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:163
-#: assets/js/templately.js:14656
+#: assets/js/templately.js:14658
 msgid "Select Workspace"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:171
-#: assets/js/templately.js:14664
+#: assets/js/templately.js:14666
 msgid "Select a workspace"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:174
-#: assets/js/templately.js:14667
+#: assets/js/templately.js:14669
 msgid "No %s Found"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:176
-#: assets/js/templately.js:14669
+#: assets/js/templately.js:14671
 msgid "Workspace"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:177
-#: assets/js/templately.js:14670
+#: assets/js/templately.js:14672
 msgid "Shared Workspace"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:192
-#: assets/js/templately.js:14685
+#: assets/js/templately.js:14687
 msgid "Select Templates"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:202
-#: assets/js/templately.js:14695
+#: assets/js/templately.js:14697
 msgid "Search by typing..."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:207
-#: assets/js/templately.js:14700
+#: assets/js/templately.js:14702
 msgid "No Templates Found"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:210
-#: assets/js/templately.js:14703
+#: assets/js/templately.js:14705
 msgid "Loading templates..."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:220
-#: assets/js/templately.js:14713
+#: assets/js/templately.js:14715
 msgid "You are seeing fewer items after initial load. You can search more to find your desire templates from the selected source."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:236
-#: assets/js/templately.js:14729
+#: assets/js/templately.js:14731
 msgid "Add to WorkSpace"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/EditWorkSpaceModal.js:80
-#: assets/js/templately.js:15244
+#: assets/js/templately.js:15246
 msgid "invited"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/EditWorkSpaceModal.js:240
-#: assets/js/templately.js:15404
+#: assets/js/templately.js:15406
 msgid "Shared with"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/EditWorkSpaceModal.js:289
-#: assets/js/templately.js:15453
+#: assets/js/templately.js:15455
 msgid "Save Changes"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/cloudFilesContextMenu.js:28
-#: assets/js/templately.js:33026
+#: assets/js/templately.js:33035
 msgid "Download Failed!!!"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/cloudFilesContextMenu.js:32
-#: assets/js/templately.js:33030
+#: assets/js/templately.js:33039
 msgid "Successfully Downloaded!"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/cloudFilesContextMenu.js:64
-#: assets/js/templately.js:33062
+#: assets/js/templately.js:33071
 msgid "Successfully Copied"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/cloudFilesContextMenu.js:68
-#: assets/js/templately.js:33066
+#: assets/js/templately.js:33075
 msgid "Your file has been copied to a WorkSpace called: "
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/cloudFilesContextMenu.js:72
-#: assets/js/templately.js:33070
+#: assets/js/templately.js:33079
 msgid "Your file has been moved to a WorkSpace called: "
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/cloudFilesContextMenu.js:101
-#: assets/js/templately.js:33099
+#: assets/js/templately.js:33108
 msgid "Something went wrong!"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/cloudFilesContextMenu.js:106
-#: assets/js/templately.js:33104
+#: assets/js/templately.js:33113
 msgid "Successfully Deleted!"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/clouds/MyClouds.js:81
+#: react-src/app/components/clouds/MyClouds.js:83
 #: react-src/app/components/core/item/Meta.js:84
 #: react-src/app/components/core/item/Meta.js:90
 #: react-src/app/components/core/itemDetails/Header.js:63
 #: react-src/app/components/profile/PurchasedItems.js:100
 #: react-src/utils/cloudFilesContextMenu.js:140
 #: react-src/utils/savedTemplatesContextMenu.js:93
-#: assets/js/templately.js:13633
-#: assets/js/templately.js:16928
-#: assets/js/templately.js:16934
-#: assets/js/templately.js:17158
-#: assets/js/templately.js:23232
-#: assets/js/templately.js:33138
-#: assets/js/templately.js:33904
+#: assets/js/templately.js:13635
+#: assets/js/templately.js:16930
+#: assets/js/templately.js:16936
+#: assets/js/templately.js:17160
+#: assets/js/templately.js:23234
+#: assets/js/templately.js:33147
+#: assets/js/templately.js:33913
 msgid "Insert"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/cloudFilesContextMenu.js:147
-#: assets/js/templately.js:33145
+#: assets/js/templately.js:33154
 msgid "Download"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/cloudFilesContextMenu.js:153
-#: assets/js/templately.js:33151
+#: assets/js/templately.js:33160
 msgid "Copy to WorkSpace"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/cloudFilesContextMenu.js:159
-#: assets/js/templately.js:33157
+#: assets/js/templately.js:33166
 msgid "Move to WorkSpace"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/savedTemplatesContextMenu.js:43
-#: assets/js/templately.js:33854
+#: assets/js/templately.js:33863
 msgid "Successfully Pushed"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/savedTemplatesContextMenu.js:46
-#: assets/js/templately.js:33857
+#: assets/js/templately.js:33866
 msgid "Your file has been pushed successfully to your cloud store."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/savedTemplatesContextMenu.js:78
-#: assets/js/templately.js:33889
+#: assets/js/templately.js:33898
 msgid "The required dependency ‘Elementor’ is missing. Please install it before proceeding."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/savedTemplatesContextMenu.js:84
-#: assets/js/templately.js:33895
+#: assets/js/templately.js:33904
 msgid "Elementor not installed."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/savedTemplatesContextMenu.js:101
-#: assets/js/templately.js:33912
+#: assets/js/templately.js:33921
 msgid "Preview"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/savedTemplatesContextMenu.js:110
-#: assets/js/templately.js:33921
+#: assets/js/templately.js:33930
 msgid "Push To Cloud"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/savedTemplatesContextMenu.js:124
-#: assets/js/templately.js:33935
+#: assets/js/templately.js:33944
 msgid "Export"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/utils/notVerifiedModal.js:16
-#: assets/js/templately.js:33765
+#: assets/js/templately.js:33774
 msgid "Sorry your account is not verified. Please verify your account to start inserting items."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/redux/sagas/application/profileSaga.js:124
-#: assets/js/templately.js:30973
+#: assets/js/templately.js:30982
 msgid "Successfully Synced Account"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/hooks/useFullSiteImport.js:300
-#: assets/js/templately.js:26205
+#: react-src/app/hooks/useFullSiteImport.js:335
+#: assets/js/templately.js:26242
 msgid "Sorry for the delay!"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/hooks/useFullSiteImport.js:301
-#: assets/js/templately.js:26206
+#: react-src/app/hooks/useFullSiteImport.js:336
+#: assets/js/templately.js:26243
 msgid "If it's taking longer than expected, please try again or contact <a href='%s' target='_blank'>support</a>."
 msgstr ""
 
@@ -1964,9 +1987,9 @@ msgstr ""
 #: react-src/app/components/core/itemPartials/Badge.js:17
 #: react-src/app/components/header/PlanSwitcher.js:53
 #: react-src/app/components/profile/FavouritesFilter.js:69
-#: assets/js/templately.js:21174
-#: assets/js/templately.js:22654
-#: assets/js/templately.js:22984
+#: assets/js/templately.js:21176
+#: assets/js/templately.js:22656
+#: assets/js/templately.js:22986
 msgid "Pro"
 msgstr ""
 
@@ -1974,85 +1997,85 @@ msgstr ""
 #: react-src/app/components/core/itemPartials/Badge.js:17
 #: react-src/app/components/header/PlanSwitcher.js:46
 #: react-src/app/components/profile/FavouritesFilter.js:64
-#: assets/js/templately.js:21174
-#: assets/js/templately.js:22647
-#: assets/js/templately.js:22979
+#: assets/js/templately.js:21176
+#: assets/js/templately.js:22649
+#: assets/js/templately.js:22981
 msgid "Starter"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/item/Meta.js:41
 #: react-src/app/components/core/itemDetails/Sidebar.js:200
-#: assets/js/templately.js:16885
-#: assets/js/templately.js:20859
+#: assets/js/templately.js:16887
+#: assets/js/templately.js:20861
 msgid "Average Rating"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/item/Meta.js:47
 #: react-src/app/components/core/itemDetails/Sidebar.js:206
-#: assets/js/templately.js:16891
-#: assets/js/templately.js:20865
+#: assets/js/templately.js:16893
+#: assets/js/templately.js:20867
 msgid "Not Rated"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/item/Meta.js:67
 #: react-src/app/components/core/itemDetails/Sidebar.js:175
-#: assets/js/templately.js:16911
-#: assets/js/templately.js:20834
+#: assets/js/templately.js:16913
+#: assets/js/templately.js:20836
 msgid "Added to Favourite"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/item/Meta.js:68
 #: react-src/app/components/core/itemDetails/Sidebar.js:176
-#: assets/js/templately.js:16912
-#: assets/js/templately.js:20835
+#: assets/js/templately.js:16914
+#: assets/js/templately.js:20837
 msgid "Add to Favourite"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/item/Meta.js:83
-#: assets/js/templately.js:16927
+#: assets/js/templately.js:16929
 msgid "Total Downloads"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/Pagination.js:106
-#: assets/js/templately.js:16398
+#: assets/js/templately.js:16400
 msgid "1"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/Pagination.js:113
 #: react-src/app/components/core/Pagination.js:138
-#: assets/js/templately.js:16405
-#: assets/js/templately.js:16430
+#: assets/js/templately.js:16407
+#: assets/js/templately.js:16432
 msgid "..."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/partials/AddNewWorkSpace.js:70
 #: react-src/app/components/core/NoItemFound.js:11
-#: assets/js/templately.js:15545
-#: assets/js/templately.js:16276
+#: assets/js/templately.js:15547
+#: assets/js/templately.js:16278
 msgid "Your account is not verified. Please check your email inbox and verify your Templately account."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/sidebar/components/CloudSidebar.js:14
 #: react-src/app/routesTemplate.js:67
-#: assets/js/templately.js:23360
-#: assets/js/templately.js:28348
+#: assets/js/templately.js:23362
+#: assets/js/templately.js:28357
 msgid "My Cloud"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/sidebar/components/CloudSidebar.js:27
 #: react-src/app/layouts/CloudsLayout.js:94
-#: assets/js/templately.js:23373
-#: assets/js/templately.js:27656
+#: assets/js/templately.js:23375
+#: assets/js/templately.js:27665
 msgid "Shared with Me"
 msgstr ""
 
@@ -2060,9 +2083,9 @@ msgstr ""
 #: react-src/app/components/sidebar/components/CloudSidebar.js:33
 #: react-src/app/header/actionParts/ProfileDrops.js:91
 #: react-src/app/layouts/CloudsLayout.js:78
-#: assets/js/templately.js:23379
-#: assets/js/templately.js:25558
-#: assets/js/templately.js:27640
+#: assets/js/templately.js:23381
+#: assets/js/templately.js:25560
+#: assets/js/templately.js:27649
 msgid "My Favourites"
 msgstr ""
 
@@ -2070,9 +2093,9 @@ msgstr ""
 #: react-src/app/components/sidebar/components/CloudSidebar.js:39
 #: react-src/app/header/actionParts/ProfileDrops.js:101
 #: react-src/app/layouts/CloudsLayout.js:82
-#: assets/js/templately.js:23385
-#: assets/js/templately.js:25568
-#: assets/js/templately.js:27644
+#: assets/js/templately.js:23387
+#: assets/js/templately.js:25570
+#: assets/js/templately.js:27653
 msgid "My Downloads"
 msgstr ""
 
@@ -2080,203 +2103,203 @@ msgstr ""
 #: react-src/app/components/sidebar/components/CloudSidebar.js:45
 #: react-src/app/header/actionParts/ProfileDrops.js:109
 #: react-src/app/layouts/CloudsLayout.js:102
-#: assets/js/templately.js:23391
-#: assets/js/templately.js:25576
-#: assets/js/templately.js:27664
+#: assets/js/templately.js:23393
+#: assets/js/templately.js:25578
+#: assets/js/templately.js:27673
 msgid "Purchased Items"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/sidebar/components/CloudSidebar.js:162
-#: assets/js/templately.js:23508
+#: assets/js/templately.js:23510
 msgid "Unlimited"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/sidebar/components/CloudSidebar.js:67
-#: assets/js/templately.js:23413
+#: assets/js/templately.js:23415
 msgid "You are using %d%% of your storage quota"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/sidebar/components/CloudSidebar.js:82
-#: assets/js/templately.js:23428
+#: assets/js/templately.js:23430
 msgid "Your storage quota is runing out. Please upgrade your plan to upload more files."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/sidebar/components/CloudSidebar.js:95
-#: assets/js/templately.js:23441
+#: assets/js/templately.js:23443
 msgid "You have reached your limit of files. Please upgrade your plan to upload more files."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/sidebar/components/CloudSidebar.js:119
-#: assets/js/templately.js:23465
+#: assets/js/templately.js:23467
 msgid "My Cloud Status"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/profile/Profile.js:64
 #: react-src/app/components/sidebar/components/CloudSidebar.js:123
-#: assets/js/templately.js:23064
-#: assets/js/templately.js:23469
+#: assets/js/templately.js:23066
+#: assets/js/templately.js:23471
 msgid "You haven't verify your account yet. Please check your email inbox."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/sidebar/components/CloudSidebar.js:141
-#: assets/js/templately.js:23487
+#: assets/js/templately.js:23489
 msgid "%d of %s files"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/sidebar/components/partials/TagsFilter.js:33
-#: assets/js/templately.js:24056
+#: assets/js/templately.js:24058
 msgid "Filter Items by Tags"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/sidebar/components/partials/TagsFilter.js:37
-#: assets/js/templately.js:24060
+#: assets/js/templately.js:24062
 msgid "Write a keyword..."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/sidebar/components/partials/FilterButtons.js:45
-#: assets/js/templately.js:23996
+#: assets/js/templately.js:23998
 msgid "Filter"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/sidebar/components/partials/FilterButtons.js:55
-#: assets/js/templately.js:24006
+#: assets/js/templately.js:24008
 msgid "Reset"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/sidebar/components/partials/DependenciesFilter.js:120
-#: assets/js/templately.js:23878
+#: assets/js/templately.js:23880
 msgid "Pro Plugins Dependencies"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/sidebar/components/partials/DependenciesFilter.js:145
-#: assets/js/templately.js:23903
+#: assets/js/templately.js:23905
 msgid "Free Plugins Dependencies"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/sidebar/components/TemplatesSidebar.js:91
-#: assets/js/templately.js:23604
+#: assets/js/templately.js:23606
 msgid "Categories"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/sidebar/components/TemplatesSidebar.js:99
-#: assets/js/templately.js:23612
+#: assets/js/templately.js:23614
 msgid "Types"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/partials/WorkSpaceFilter.js:98
-#: assets/js/templately.js:15967
+#: assets/js/templately.js:15969
 msgid "Successfully Added!"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/partials/WorkSpaceFilter.js:99
-#: assets/js/templately.js:15968
+#: assets/js/templately.js:15970
 msgid "Your file has been added to this workspace."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/partials/WorkSpaceFilter.js:132
-#: assets/js/templately.js:16001
+#: assets/js/templately.js:16003
 msgid "My Files"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/partials/WorkSpaceFilter.js:137
-#: assets/js/templately.js:16006
+#: assets/js/templately.js:16008
 msgid "Current Workspace"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/partials/WorkSpaceFilter.js:143
 #: react-src/app/components/clouds/SaveTemplates.js:245
-#: assets/js/templately.js:13971
-#: assets/js/templately.js:16012
+#: assets/js/templately.js:13973
+#: assets/js/templately.js:16014
 msgid "Loading workspace and shared workspaces list."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/partials/AddNewWorkSpace.js:10
-#: assets/js/templately.js:15485
+#: assets/js/templately.js:15487
 msgid "Add New Workspace"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/partials/AddNewWorkSpace.js:19
 #: react-src/app/revert/RevertWrapper.js:16
-#: assets/js/templately.js:15494
-#: assets/js/templately.js:28204
+#: assets/js/templately.js:15496
+#: assets/js/templately.js:28213
 msgid "Something went wrong while creating workspace for you. Try Later or Contact support."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/partials/AddNewWorkSpace.js:25
-#: assets/js/templately.js:15500
+#: assets/js/templately.js:15502
 msgid "Successfully Created"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/partials/AddNewWorkSpace.js:30
-#: assets/js/templately.js:15505
+#: assets/js/templately.js:15507
 msgid "You have created a WorkSpace called"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/WorkSpace.js:116
-#: assets/js/templately.js:14246
+#: assets/js/templately.js:14248
 msgid "Shared with:"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/profile/Profile.js:58
-#: assets/js/templately.js:23058
+#: assets/js/templately.js:23060
 msgid "Joining Date"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/profile/Profile.js:78
 #: react-src/app/header/actionParts/ProfileDrops.js:80
-#: assets/js/templately.js:23078
-#: assets/js/templately.js:25547
+#: assets/js/templately.js:23080
+#: assets/js/templately.js:25549
 msgid "Manage Account"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/profile/Profile.js:86
 #: react-src/app/header/actionParts/LogoutLink.js:19
-#: assets/js/templately.js:23086
-#: assets/js/templately.js:25414
+#: assets/js/templately.js:23088
+#: assets/js/templately.js:25416
 msgid "Link My Account"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/profile/Profile.js:104
 #: react-src/app/header/actionParts/LogoutLink.js:50
-#: assets/js/templately.js:23104
-#: assets/js/templately.js:25445
+#: assets/js/templately.js:23106
+#: assets/js/templately.js:25447
 msgid "Unlink My Account"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/profile/Profile.js:105
 #: react-src/app/header/actionParts/LogoutLink.js:51
-#: assets/js/templately.js:23105
-#: assets/js/templately.js:25446
+#: assets/js/templately.js:23107
+#: assets/js/templately.js:25448
 msgid "Logout"
 msgstr ""
 
@@ -2285,98 +2308,98 @@ msgstr ""
 #: react-src/app/components/profile/FavouritesFilter.js:42
 #: react-src/app/routesTemplate.js:32
 #: react-src/app/routesTemplate.js:49
-#: assets/js/templately.js:17650
-#: assets/js/templately.js:22957
-#: assets/js/templately.js:28313
-#: assets/js/templately.js:28330
+#: assets/js/templately.js:17652
+#: assets/js/templately.js:22959
+#: assets/js/templately.js:28322
+#: assets/js/templately.js:28339
 msgid "Blocks"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/profile/FavouritesFilter.js:52
 #: react-src/app/routesTemplate.js:24
-#: assets/js/templately.js:22967
-#: assets/js/templately.js:28305
+#: assets/js/templately.js:22969
+#: assets/js/templately.js:28314
 msgid "Packs"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/profile/PurchasedItems.js:110
-#: assets/js/templately.js:23242
+#: assets/js/templately.js:23244
 msgid "View"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/SaveTemplates.js:145
 #: react-src/app/components/clouds/SaveTemplates.js:199
-#: assets/js/templately.js:13871
-#: assets/js/templately.js:13925
+#: assets/js/templately.js:13873
+#: assets/js/templately.js:13927
 msgid "Something must went wrong!"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/SaveTemplates.js:162
-#: assets/js/templately.js:13888
+#: assets/js/templately.js:13890
 msgid "Uploading..."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/SaveTemplates.js:163
-#: assets/js/templately.js:13889
+#: assets/js/templately.js:13891
 msgid "Your template content is being pushed into Templately Cloud. Please do not refresh or close this tab."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/SaveTemplates.js:180
-#: assets/js/templately.js:13906
+#: assets/js/templately.js:13908
 msgid "Successfully Pushed!"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/SaveTemplates.js:181
-#: assets/js/templately.js:13907
+#: assets/js/templately.js:13909
 msgid "Your template is successfully pushed to your desire cloud folder. You will be redirected there."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/SaveTemplates.js:224
-#: assets/js/templately.js:13950
+#: assets/js/templately.js:13952
 msgid "Save your templates and push to cloud"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/SaveTemplates.js:229
-#: assets/js/templately.js:13955
+#: assets/js/templately.js:13957
 msgid "Type a name for the template..."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/SaveTemplates.js:238
-#: assets/js/templately.js:13964
+#: assets/js/templately.js:13966
 msgid "Select "
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/SaveTemplates.js:256
-#: assets/js/templately.js:13982
+#: assets/js/templately.js:13984
 msgid "Save & Push"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/WorkSpaceWrapper.js:30
-#: assets/js/templately.js:14038
+#: assets/js/templately.js:14040
 msgid "Add New WorkSpace"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/WorkSpaceWrapper.js:41
-#: assets/js/templately.js:14049
+#: assets/js/templately.js:14051
 msgid "No shared workspaces yet."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/WorkSpaceWrapper.js:42
-#: assets/js/templately.js:14050
+#: assets/js/templately.js:14052
 msgid "You do not have any workspaces."
 msgstr ""
 
@@ -2546,179 +2569,179 @@ msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Tags.js:8
-#: assets/js/templately.js:20925
+#: assets/js/templately.js:20927
 msgid "Tags"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Packs/import-parts/Typography/index.js:235
-#: assets/js/templately.js:20138
+#: assets/js/templately.js:20140
 msgid "System"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Packs/import-parts/Typography/index.js:237
-#: assets/js/templately.js:20140
+#: assets/js/templately.js:20142
 msgid "Google"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Packs/import-parts/Customizer.js:348
-#: assets/js/templately.js:18109
+#: assets/js/templately.js:18111
 msgid "Site Title"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Packs/import-parts/Customizer.js:360
-#: assets/js/templately.js:18121
+#: assets/js/templately.js:18123
 msgid "Site Tagline"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Packs/import-parts/Dependencies.js:398
-#: assets/js/templately.js:18791
+#: assets/js/templately.js:18793
 msgid "Back"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Packs/import-parts/index.js:60
 #: react-src/app/components/core/itemDetails/Packs/import-parts/index.js:82
-#: assets/js/templately.js:20507
-#: assets/js/templately.js:20529
+#: assets/js/templately.js:20509
+#: assets/js/templately.js:20531
 msgid "Please wait until the import process is complete before navigating back."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Packs/FullSiteImport.js:65
-#: assets/js/templately.js:17432
+#: assets/js/templately.js:17434
 msgid "Unfortunately, you don't have permission to import templates. Please check your permissions or contact the website admin for help."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Packs/FullSiteImport.js:148
-#: assets/js/templately.js:17515
+#: assets/js/templately.js:17517
 msgid "Insert Full Site"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Banner.js:44
 #: react-src/app/components/core/itemDetails/Packs/PacksHeader.js:144
-#: assets/js/templately.js:16988
-#: assets/js/templately.js:17670
+#: assets/js/templately.js:16990
+#: assets/js/templately.js:17672
 msgid "Live Demo"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Banner.js:37
-#: assets/js/templately.js:16981
+#: assets/js/templately.js:16983
 msgid "Screenshots"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Sidebar.js:112
-#: assets/js/templately.js:20771
+#: assets/js/templately.js:20773
 msgid "Template Type"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Sidebar.js:127
-#: assets/js/templately.js:20786
+#: assets/js/templately.js:20788
 msgid "Category"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Sidebar.js:135
-#: assets/js/templately.js:20794
+#: assets/js/templately.js:20796
 msgid "Item Parent"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Sidebar.js:147
-#: assets/js/templately.js:20806
+#: assets/js/templately.js:20808
 msgid "Dependency"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Sidebar.js:159
-#: assets/js/templately.js:20818
+#: assets/js/templately.js:20820
 msgid "Price"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Sidebar.js:236
-#: assets/js/templately.js:20895
+#: assets/js/templately.js:20897
 msgid "Purchase This %s"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/LayoutsInPack.js:14
-#: assets/js/templately.js:17226
+#: assets/js/templately.js:17228
 msgid "Layouts In This Pack"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/FeaturedItems.js:24
-#: assets/js/templately.js:17076
+#: assets/js/templately.js:17078
 msgid "Featured Items"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/header/Logo.js:21
-#: assets/js/templately.js:25323
+#: assets/js/templately.js:25325
 msgid "Back to Library"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/header/actionParts/Switcher.js:55
-#: assets/js/templately.js:25645
+#: assets/js/templately.js:25647
 msgid "Gutenberg"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/header/Actions.js:45
-#: assets/js/templately.js:25265
+#: assets/js/templately.js:25267
 msgid "Login"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/layouts/GlobalLayout.js:28
-#: assets/js/templately.js:27847
+#: assets/js/templately.js:27856
 msgid "Please complete your account by the verification email we sent you, If you don't get an email"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/layouts/GlobalLayout.js:37
-#: assets/js/templately.js:27856
+#: assets/js/templately.js:27865
 msgid "click here"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/layouts/GlobalLayout.js:39
-#: assets/js/templately.js:27858
+#: assets/js/templately.js:27867
 msgid "to resend verification mail."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/layouts/GlobalLayout.js:45
-#: assets/js/templately.js:27864
+#: assets/js/templately.js:27873
 msgid "Verifying . . ."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/layouts/GlobalLayout.js:46
-#: assets/js/templately.js:27865
+#: assets/js/templately.js:27874
 msgid "I've verified & Close"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/layouts/CloudsLayout.js:74
-#: assets/js/templately.js:27636
+#: assets/js/templately.js:27645
 msgid "Profile"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/layouts/CloudsLayout.js:98
-#: assets/js/templately.js:27660
+#: assets/js/templately.js:27669
 msgid "Save your template"
 msgstr ""
 
@@ -2726,37 +2749,37 @@ msgstr ""
 #: react-src/app/components/TemplateContent.js:24
 #: react-src/app/layouts/TemplatesTypeLayout.js:35
 #: assets/js/templately.js:12541
-#: assets/js/templately.js:27964
+#: assets/js/templately.js:27973
 msgid "You are looking for: %s"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/display-conditions/rows/ConditionType.js:9
-#: assets/js/templately.js:25072
+#: assets/js/templately.js:25074
 msgid "Include"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/display-conditions/rows/ConditionType.js:13
-#: assets/js/templately.js:25076
+#: assets/js/templately.js:25078
 msgid "Exclude"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/display-conditions/ConditionsWrapper.js:39
-#: assets/js/templately.js:24943
+#: assets/js/templately.js:24945
 msgid "Add New Condition"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/display-conditions/Footer.js:13
-#: assets/js/templately.js:24963
+#: assets/js/templately.js:24965
 msgid "Saving..."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/display-conditions/Footer.js:13
-#: assets/js/templately.js:24963
+#: assets/js/templately.js:24965
 msgid "Save & Close"
 msgstr ""
 
@@ -2792,42 +2815,42 @@ msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/revert/Modal.js:58
-#: assets/js/templately.js:28157
+#: assets/js/templately.js:28166
 msgid "Are you sure you want to revert to your old website?"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/revert/Modal.js:59
-#: assets/js/templately.js:28158
+#: assets/js/templately.js:28167
 msgid "Warning: This will remove your existing settings and content with the previous one."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/revert/Modal.js:66
-#: assets/js/templately.js:28165
+#: assets/js/templately.js:28174
 msgid "Restoring previous version of your website. This usually takes a few moments. Please wait…"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/revert/Modal.js:77
-#: assets/js/templately.js:28176
+#: assets/js/templately.js:28185
 msgid "Processing..."
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/revert/Modal.js:77
-#: assets/js/templately.js:28176
+#: assets/js/templately.js:28185
 msgid "Yes, Revert"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/revert/RevertWrapper.js:28
-#: assets/js/templately.js:28216
+#: assets/js/templately.js:28225
 msgid "Successfully Reverted"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/revert/RevertWrapper.js:29
-#: assets/js/templately.js:28217
+#: assets/js/templately.js:28226
 msgid "Old website has been successfully restored."
 msgstr ""

@@ -5,6 +5,7 @@ namespace Templately\Core\Importer\Runners;
 use Elementor\Plugin;
 use Exception;
 use Templately\Core\Importer\Utils\Utils;
+use Templately\Utils\Helper;
 
 class ElementorContent extends BaseRunner {
 	public function get_name(): string {
@@ -38,7 +39,7 @@ class ElementorContent extends BaseRunner {
 		$results  = $data["imported_data"]["content"] ?? [];
 		$contents = $this->manifest['content'];
 		$path     = $this->dir_path . 'content' . DIRECTORY_SEPARATOR;
-		$processed_templates = $this->origin->get_progress();
+		$processed_templates = $this->get_progress();
 
 		// $total     = array_reduce( $contents, function ( $carry, $item ) {
 		// 	return $carry + count( $item );
@@ -55,12 +56,6 @@ class ElementorContent extends BaseRunner {
 		$active_kit = $kits_manager->get_active_id();
 		$kit        = $kits_manager->get_kit( $active_kit );
 		$old_logo   = $kit->get_settings('site_logo');
-
-		if(empty($processed_templates)){
-			$this->log( 0 );
-			$processed_templates = ["__started__"];
-			$this->origin->update_progress( $processed_templates);
-		}
 
 		if(isset($this->manifest['has_settings']) && $this->manifest['has_settings'] && !in_array("global_colors", $processed_templates)){
 			// backing up the active kit id before updating the new one
@@ -119,7 +114,7 @@ class ElementorContent extends BaseRunner {
 
 				// If there's no old logo id, try to upload a new logo
 				if (empty($old_logo['id'])) {
-					$site_logo = Utils::upload_logo($data['logo']);
+					$site_logo = Utils::upload_logo($data['logo'], $this->session_id);
 
 					// If the upload was successful, use the new logo, otherwise use the old one
 					if(!empty($site_logo['id'])){
@@ -146,7 +141,7 @@ class ElementorContent extends BaseRunner {
 			wp_update_post( $post_data );
 
 			$processed_templates[] = "global_colors";
-			$this->origin->update_progress( $processed_templates, [ 'content' => $results ]);
+			$this->update_progress( $processed_templates);
 		}
 
 		$active_kit = $kits_manager->get_active_id();
@@ -162,46 +157,32 @@ class ElementorContent extends BaseRunner {
 			return $carry + count($item);
 		}, 0);
 
-		foreach ( $contents as $post_type => $post ) {
-			foreach ( $post as $id => $content_settings ) {
-				if (in_array("$post_type::$id", $processed_templates)) {
-					continue;
-				}
+		$results = $this->loop( $contents, function($post_type, $post, $results ) use($path, $imported_data, $total) {
+			return $this->loop( $post, function($id, $content_settings, $result ) use ($post_type, $results, $path, $imported_data, $total) {
 				if ( post_type_exists( $post_type ) ) {
 
 					$import = $this->import_post_type_content( $id, $post_type, $path, $imported_data, $content_settings );
 
 					if ( ! $import ) {
-						$results[ $post_type ]['failed'][ $id ] = $import;
+						$result[ $post_type ]['failed'][ $id ] = $import;
 					} else {
 						Utils::import_page_settings( $import, $content_settings );
-						$results[ $post_type ]['succeed'][ $id ] = $import;
+						$result[ $post_type ]['succeed'][ $id ] = $import;
 					}
 
 					// Broadcast Log
 					$processed = 0;
+					$results = Helper::recursive_wp_parse_args($result, $results);
 					array_walk_recursive($results, function($item) use (&$processed) {
 						$processed++;
 					});
 					$progress   = floor( ( 100 * $processed ) / $total );
-					$this->log( $progress, null, 'eventLog' );
+					$this->log( $progress );
 				}
 
-				// Add the template to the processed templates and update the session data
-				$processed_templates[] = "$post_type::$id";
-				$this->origin->update_progress( $processed_templates, [ 'content' => $results ]);
-
-				// If it's not the last item, send the SSE message and exit
-				// if( end($contents) !== $post || end($post) !== $content_settings) {
-				// 	$this->sse_message( [
-				// 		'type'    => 'continue',
-				// 		'action'  => 'continue',
-				// 		'results' => __METHOD__ . '::' . __LINE__,
-				// 	] );
-				// 	exit;
-				// }
-			}
-		}
+				return $result;
+			}, $post_type); //, true
+		});
 
 		return [ 'content' => $results ];
 	}

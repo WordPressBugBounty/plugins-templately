@@ -299,7 +299,7 @@ class Helper extends Base {
 		if (defined('TEMPLATELY_START_TIME') && ini_get('max_execution_time')) {
 			$max_time = ini_get('max_execution_time');
 			$elapsed  = microtime(true) - TEMPLATELY_START_TIME;
-			$delay    = max(5, $max_time / 20);
+			$delay    = max(5, $max_time * 20 / 100);
 
 			// Check if elapsed time is close to max execution time
 			if ($max_time - $elapsed <= $delay) {
@@ -326,4 +326,27 @@ class Helper extends Base {
 		}
 		return false;
 	}
+
+	/**
+	 * Undocumented function
+	 *
+	 * @param [type] $args
+	 * @param [type] $defaults
+	 * @return array
+	 */
+	public static function recursive_wp_parse_args( $args, $defaults ) {
+		$args     = (array) $args;
+		$defaults = (array) $defaults;
+		$r = $defaults;
+		foreach ( $args as $key => $value ) {
+			if ( is_array( $value ) && isset( $r[ $key ] ) ) {
+				$r[ $key ] = self::recursive_wp_parse_args( $value, $r[ $key ] );
+			}
+			else {
+				$r[$key] = $value;
+			}
+		}
+		return $r;
+	}
+
 }

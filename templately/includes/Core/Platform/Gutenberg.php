@@ -47,6 +47,7 @@ class Gutenberg extends Platform {
     public function hooks(){
         add_action( 'enqueue_block_editor_assets', [ $this, 'scripts' ] );
         add_action( 'admin_footer', [ $this, 'print_admin_js_template' ] );
+        add_action( 'wp_ajax_update_gutenberg_hide_buttons', [ $this, 'update_gutenberg_hide_buttons' ] ); // Register AJAX action
     }
 
     /**
@@ -164,4 +165,24 @@ class Gutenberg extends Platform {
         return $data;
     }
 
+    /**
+     * AJAX handler to update the option `templately-gutenberg-hide-buttons`
+     */
+    public function update_gutenberg_hide_buttons() {
+        // Check nonce for security
+        check_ajax_referer( 'templately_nonce', 'nonce' );
+
+        // Get the new value from the AJAX request
+        $hide_buttons = isset($_GET['hide_buttons']) ? sanitize_text_field($_GET['hide_buttons']) : '';
+
+        // Update the option
+        update_option('templately-gutenberg-hide-buttons', $hide_buttons);
+
+        $hide_buttons = get_option('templately-gutenberg-hide-buttons', 'no');
+        $hide_buttons = $hide_buttons === 'yes' ? 'yes' : 'no';
+        // Send a response back to the JavaScript
+        wp_send_json_success([
+            'hide_buttons' => $hide_buttons,
+        ]);
+    }
 }

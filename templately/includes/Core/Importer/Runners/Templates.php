@@ -6,7 +6,6 @@ use Exception;
 use Templately\Builder\PageTemplates;
 use Templately\Builder\Types\BaseTemplate;
 use Templately\Core\Importer\Utils\Utils;
-use Templately\Core\Importer\WPImport;
 use Templately\Utils\Helper;
 
 class Templates extends BaseRunner {
@@ -39,38 +38,22 @@ class Templates extends BaseRunner {
 
 		$_extra_pages = [];
 
-		// Get the processed templates from the session data
-		$processed_templates = $this->origin->get_progress();
-
-		if(empty($processed_templates)){
-			$this->log( 0 );
-			$processed_templates = ["__started__"];
-			$this->origin->update_progress( $processed_templates);
-			$this->create_page_template();
-		}
 
 		$total     = count( $templates );
 
-
-		foreach ( $templates as $id => $template_settings ) {
-			// Broadcast Log
-			// If the template has been processed, skip it
-			if (in_array($id, $processed_templates)) {
-				continue;
-			}
-
+		$results = $this->loop( $templates, function($id, $template_settings, $results ) use( $path, $total ) {
 			$template_content = Utils::read_json_file( $path . $id . '.json' );
 
 			$import = $this->import_template( $id, $template_settings, $template_content );
 			if ( $import ) {
-				$results['succeed'][ $id ]   = $import['id'];
-				$results['template_types'][] = $template_settings['type'];
+				$results['templates']['succeed'][ $id ]   = $import['id'];
+				$results['templates']['template_types'][] = $template_settings['type'];
 
 				if ( $template_settings['type'] === 'archive' || $template_settings['type'] === 'product_archive' || $template_settings['type'] === 'course_archive' ) {
 					$page_id = $this->create_archive_page( $template_settings, $this->manifest['platform'] );
 					if ( $page_id && isset($template_settings['page_settings']['archive_page_id']) ) {
 						$archive_page_id = $template_settings['page_settings']['archive_page_id'];
-						$_extra_pages['archive_settings'][$archive_page_id] = [
+						$results['archive_settings'][$archive_page_id] = [
 							'old_id'     => $id,
 							'page_id'    => $page_id,
 							'archive_id' => $archive_page_id
@@ -79,35 +62,26 @@ class Templates extends BaseRunner {
 				}
 
 			} else {
-				$results['failed'][ $id ] = $import;
+				$results['templates']['failed'][ $id ] = $import;
 			}
 
 			// Broadcast Log
 			$processed = 0;
-			array_walk_recursive($results, function($item) use (&$processed) {
+			$processed_template = array_merge($results['templates']['succeed'] ?? [], $results['templates']['failed'] ?? []);
+			array_walk_recursive($processed_template, function($item, $key) use (&$processed) {
 				$processed++;
 			});
 			$progress  = floor( ( 100 * $processed ) / $total );
 			$this->log( $progress );
 
-			$results['__attachments'][ $id ] = isset($import['__attachments']) ? $import['__attachments'] : [];
+			$results['templates']['__attachments'][ $id ] = isset($import['__attachments']) ? $import['__attachments'] : [];
 			// Add the template to the processed templates and update the session data
-			$processed_templates[] = $id;
-			$this->origin->update_progress( $processed_templates, array_merge( [ 'templates' => $results ], $_extra_pages ));
 
-			// If it's not the last item, send the SSE message and exit
-			// if( end($templates) !== $template_settings ) {
-			// 	$this->sse_message( [
-			// 		'type'    => 'continue',
-			// 		'action'  => 'continue',
-			// 		'i'       => $id,
-			// 		'results' => __METHOD__ . '::' . __LINE__,
-			// 	] );
-			// 	exit;
-			// }
-		}
 
-		return array_merge( [ 'templates' => $results ], $_extra_pages );
+			return $results;
+		}); // , null, true
+
+		return $results;
 	}
 
 	private function import_template( $id, $template_settings, $template_content ) {

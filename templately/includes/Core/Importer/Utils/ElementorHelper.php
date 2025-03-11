@@ -72,10 +72,10 @@ class ElementorHelper extends ImportHelper {
 							}
 						}
 					}
-					$this->sse_log('prepare', 'Preparing output for finalize, just a moment...' . $plugin, 1, 'eventLog');
+					// $this->sse_log('prepare', 'Preparing output for finalize, just a moment...' . $plugin, 1, 'eventLog');
 				}
 			}
-			$this->sse_log('prepare', 'Preparing output for finalize, just a moment...' . $type, 1, 'eventLog');
+			// $this->sse_log('prepare', 'Preparing output for finalize, just a moment...' . $type, 1, 'eventLog');
 		}
 
 		// $content = $template_json;
@@ -94,7 +94,7 @@ class ElementorHelper extends ImportHelper {
 		 */
 		if(!empty($this->post_id)){
 			$template = templately()->theme_builder::$templates_manager->get( $this->post_id );
-			$this->sse_log('update', 'Updating prepared data, just a moment...', 1, 'eventLog');
+			// $this->sse_log('update', 'Updating prepared data, just a moment...', 1, 'eventLog');
 			$template->import( $this->content );
 		}
 		else{
@@ -144,12 +144,12 @@ class ElementorHelper extends ImportHelper {
 				$this->sse_log('prepare', 'Site Logo', 1, 'eventLog');
 			}
 
-			$this->sse_log('prepare', 'Preparing output for finalize, just a moment...', 1, 'eventLog');
+			// $this->sse_log('prepare', 'Preparing output for finalize, just a moment..Preparing output for finalize.', 1, 'eventLog');
 		}
 	}
 
 	private function nav_menu_update( &$element ) {
-		$this->sse_log('nav-menu', 'Updating nav menus, just a moment...', 1, 'eventLog');
+		// $this->sse_log('nav-menu', 'Updating nav menus, just a moment...', 1, 'eventLog');
 		if ( ! isset( $element['widgetType'] ) ) {
 			return;
 		}
@@ -169,7 +169,7 @@ class ElementorHelper extends ImportHelper {
 	}
 
 	private function replace_query_data( &$element, $data ) {
-		$this->sse_log('query', 'Finalizing query data, just a moment...', 1, 'eventLog');
+		// $this->sse_log('query', 'Finalizing query data, just a moment...', 1, 'eventLog');
 		if ( ! empty( $element['widgetType'] ) ) {
 			if ( in_array( $element['widgetType'], $this->ea_post_widgets ) ) {
 				if ( ! empty( $data['tax_query'] ) ) {
@@ -223,7 +223,7 @@ class ElementorHelper extends ImportHelper {
 
 	private function replace_term_ids( &$element, $keys ) {
 		foreach ( $keys as $key ) {
-			$this->sse_log('terms', 'Finalizing term ids, just a moment...', 1, 'eventLog');
+			// $this->sse_log('terms', 'Finalizing term ids, just a moment...', 1, 'eventLog');
 			if ( ! empty( $element['settings'][ $key ] ) ) {
 				$new_ids = [];
 				foreach ( $element['settings'][ $key ] as $id ) {

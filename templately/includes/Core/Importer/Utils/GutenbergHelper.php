@@ -34,7 +34,10 @@ class GutenbergHelper extends ImportHelper {
 	public function prepare( $template_json, $template_settings, $extra_content = [], $request_params = [] ) {
 		$this->template_settings = $template_settings;
 		$this->post_id           = $this->map_post_ids[ $template_settings['post_id'] ];
-		$this->wp_importer       = new WPImport( null, ['fetch_attachments' => true] );
+		$this->wp_importer       = new WPImport( null, [
+			'session_id'        => $this->session_id,
+			'fetch_attachments' => true,
+		] );
 
 		$parsed_blocks = parse_blocks( $template_json['content'] );
 		if ( ! empty( $extra_content ) ) {

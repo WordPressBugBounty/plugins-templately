@@ -4,7 +4,7 @@ namespace Templately\Core\Importer\Runners;
 
 use Templately\Builder\PageTemplates;
 use Templately\Core\Importer\Utils\Utils;
-use Templately\Core\Importer\WPImport;
+use Templately\Utils\Helper;
 use WP_Error;
 
 /**
@@ -37,16 +37,14 @@ class GutenbergContent extends BaseRunner {
 	}
 
 	public function import( $data, $imported_data ): array {
-		$results  = $data["imported_data"]["content"] ?? [];
 		$contents = $this->manifest['content'];
-		$path     = $this->dir_path . 'content' . DIRECTORY_SEPARATOR;
 
-		$processed_templates = $this->origin->get_progress();
+		$processed_templates = $this->get_progress();
 
 		if(empty($processed_templates)){
 			$this->log( 0 );
 			$processed_templates = ["__started__"];
-			$this->origin->update_progress( $processed_templates);
+			$this->update_progress( $processed_templates);
 		}
 
 		if(isset($this->manifest['has_settings']) && $this->manifest['has_settings'] && !in_array("global_colors", $processed_templates)){
@@ -74,7 +72,7 @@ class GutenbergContent extends BaseRunner {
 			}
 			else if(!empty($data['logo']) && empty(get_option('site_logo'))){
 				// demo logo
-				$site_logo = Utils::upload_logo($data['logo']);
+				$site_logo = Utils::upload_logo($data['logo'], $this->session_id);
 				if(!empty($site_logo['id'])){
 					$settings['site_logo'] = $site_logo['id'];
 					Utils::update_option( 'site_logo', $site_logo['id'] );
@@ -93,7 +91,7 @@ class GutenbergContent extends BaseRunner {
 			Utils::update_option('eb_global_styles', $settings);
 
 			$processed_templates[] = "global_colors";
-			$this->origin->update_progress( $processed_templates, [ 'content' => $results ]);
+			$this->update_progress( $processed_templates);
 		}
 
 		$processed = 0;
@@ -101,44 +99,33 @@ class GutenbergContent extends BaseRunner {
 			return $carry + count($item);
 		}, 0);
 
-		foreach ( $contents as $type => $posts ) {
-			foreach ( $posts as $id => $settings ) {
-				if (in_array("$type::$id", $processed_templates)) {
-					continue;
-				}
+		$results = $this->loop( $contents, function($type, $posts, $results ) use($total) {
+			return $this->loop( $posts, function($id, $settings, $result ) use($type, $total, $results) {
+				$path     = $this->dir_path . 'content' . DIRECTORY_SEPARATOR;
+
 				$import = $this->import_page_content( $id, $type, $path, $settings );
 
 				if ( ! $import ) {
-					$results[ $type ]['failed'][ $id ] = $import;
+					$result[ $type ]['failed'][ $id ] = $import;
 				} else {
 					Utils::import_page_settings( $import['id'], $settings );
-					$results[ $type ]['succeed'][ $id ] = $import['id'];
+					$result[ $type ]['succeed'][ $id ] = $import['id'];
 				}
 
 				// Broadcast Log
 				$processed = 0;
+				$results   = Helper::recursive_wp_parse_args($result, $results);
 				array_walk_recursive($results, function($item) use (&$processed) {
 					$processed++;
 				});
 				$progress   = floor( ( 100 * $processed ) / $total );
-				$this->log( $progress, null, 'eventLog' );
+				$this->log( $progress );
 
+				$result['__attachments'][$type][ $id ] = isset($import['__attachments']) ? $import['__attachments'] : [];
 
-				$results['__attachments'][$type][ $id ] = isset($import['__attachments']) ? $import['__attachments'] : [];
-				// Add the template to the processed templates and update the session data
-				$processed_templates[] = "$type::$id";
-				$this->origin->update_progress( $processed_templates, [ 'content' => $results ]);
-				// If it's not the last item, send the SSE message and exit
-				// if( end($contents) !== $posts || end($posts) !== $settings) {
-				// 	$this->sse_message( [
-				// 		'type'    => 'continue',
-				// 		'action'  => 'continue',
-				// 		'results' => __METHOD__ . '::' . __LINE__,
-				// 	] );
-				// 	exit;
-				// }
-			}
-		}
+				return $result;
+			}, $type);
+		});
 
 		return [ 'content' => $results ];
 	}

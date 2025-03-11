@@ -2,11 +2,6 @@
 
 namespace Templately\Core\Importer\Runners;
 
-use Exception;
-use Templately\Core\Importer\Form;
-use Templately\Core\Importer\Runners\BaseRunner;
-use Templately\Core\Importer\Utils\Utils;
-use Templately\Core\Importer\WPImport;
 
 class Attachments extends WPContent {
 
@@ -34,7 +29,6 @@ class Attachments extends WPContent {
 	}
 
 	public function should_run( $data, $imported_data = [] ): bool {
-		$params = $this->origin->get_request_params();
 		return !empty($this->manifest['has_attachments']);
 	}
 

@@ -11,8 +11,7 @@ class LogHandler {
     }
 
     public static function get_log_file_path() {
-        $request_params = FullSiteImport::_get_session_data();
-        $session_id = $request_params['session_id'];
+        $session_id = Utils::get_session_id();
         $log_dir = self::get_log_dir();
         return trailingslashit($log_dir) . "fsi-$session_id.log";
     }
@@ -30,7 +29,7 @@ class LogHandler {
         }
 
         $data = ['log_type' => 'file'];
-        FullSiteImport::_update_session_data($data);
+        Utils::update_session_data_by_id($data);
 
         if (!is_dir($log_dir)) {
             wp_mkdir_p($log_dir);

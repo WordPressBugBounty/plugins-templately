@@ -5,7 +5,7 @@ Tags: templates, elementor template, Gutenberg template, landing page, WoCommerc
 Requires at least: 5.0
 Tested up to: 6.7
 Requires PHP: 7.2
-Stable tag: 3.2.3
+Stable tag: 3.2.4
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -139,6 +139,13 @@ Every month we are adding new Elementor templates, along with Gutenberg template
 
 
 == Changelog ==
+
+= 3.2.4 – 11-03-2025 =
+Improved: Full pack import process using FSI.
+Fixed: Pagination issue on Templately Cloud.
+Added: Option to hide Templately and “Save Post in Templately” from the Gutenberg editor.
+Fixed: Duplicate viewport issue in Gutenberg-based themes.
+Few minor bug fixes and overall improvements.
 
 = 3.2.3 – 27-02-2025 =
 Fixed: PHP warnings on the Templately dashboard.

@@ -12,11 +12,13 @@ use Templately\Core\Importer\Utils\Utils;
 
 abstract class BaseRunner {
 	use LogHelper;
+	use Loop;
 
 	const META_SESSION_KEY = '_templately_import_session_id';
 	/**
 	 * @var FullSiteImport
 	 */
+	protected $dev_mode;
 	protected $origin;
 	protected $platform;
 	protected $manifest;
@@ -36,16 +38,18 @@ abstract class BaseRunner {
 	/**
 	 * @throws Exception
 	 */
-	public function __construct( FullSiteImport $full_site_import ) {
-		$this->origin   = $full_site_import;
-		$this->dir_path = $full_site_import->dir_path;
-		$this->manifest = &$full_site_import->manifest;
+	public function __construct( $request_params ) {
+		$this->dev_mode = defined('TEMPLATELY_DEV') && TEMPLATELY_DEV;
+		$this->origin   = $request_params['origin'];
+		$this->dir_path = $request_params['dir_path'];
+		$this->manifest = &$request_params['manifest'];
 		$this->platform = $this->manifest['platform'] ?? '';
-		$this->session_id = $full_site_import->session_id;
+		$this->session_id = $request_params['session_id'];
 
 
 		$this->factory = new TemplateFactory( $this->platform );
 		$this->json = Utils::get_json_helper( $this->platform );
+		$this->json->session_id = $this->session_id;
 
 		if ( empty( $this->platform ) ) {
 			throw new Exception( __( 'Platform is not specified. Please try again after specifying the platform.', 'templately' ) );
@@ -84,5 +88,15 @@ abstract class BaseRunner {
 		}
 
 		$this->sse_log( $this->get_name(), $message, min( $progress, 100 ), $action );
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	protected function throw($message, $code = 0) {
+		if ($this->dev_mode) {
+			error_log(print_r($message, 1));
+		}
+		throw new Exception($message);
 	}
 }

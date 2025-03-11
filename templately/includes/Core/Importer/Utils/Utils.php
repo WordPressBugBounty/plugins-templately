@@ -3,8 +3,10 @@
 namespace Templately\Core\Importer\Utils;
 
 use Exception;
+use Templately\Core\Importer\FullSiteImport;
 use Templately\Core\Importer\WPImport;
 use Templately\Utils\Base;
+use Templately\Utils\Helper;
 
 class Utils extends Base {
 
@@ -62,6 +64,12 @@ class Utils extends Base {
 				$result += $post_type['succeed'] ?? [];
 			}
 		}
+
+		// add attachments data
+		if ( !empty( $imported_data['attachments']['succeed'] ) ) {
+			$result += $imported_data['attachments']['succeed'] ?? [];
+		}
+
 
 		return $result;
 	}
@@ -165,7 +173,7 @@ class Utils extends Base {
 		}
 	}
 
-	public static function upload_logo($url) {
+	public static function upload_logo($url, $session_id) {
 		if(empty($url)) {
 			return ['error' => __('URL is empty', 'templately')];
 		}
@@ -176,7 +184,7 @@ class Utils extends Base {
 		}
 
 		$post_data     = self::prepare_post_data($url);
-		$wp_importer   = new WPImport( null, ['fetch_attachments' => true] );
+		$wp_importer   = new WPImport( null, ['fetch_attachments' => true, 'session_id' => $session_id] );
 		$attachment_id = $wp_importer->process_attachment($post_data, $url);
 
 		if(is_wp_error($attachment_id)){
@@ -261,4 +269,38 @@ class Utils extends Base {
 		return $post_data;
 	}
 
+    // Static version of get_session_data
+    public static function get_session_data($session_id): array {
+        $data = get_option(FullSiteImport::SESSION_OPTION_KEY, []);
+        return $data[$session_id] ?? [];
+    }
+
+    // Static version of update_session_data
+    public static function update_session_data($session_id, $data): bool {
+        $old_data = get_option(FullSiteImport::SESSION_OPTION_KEY, []);
+        return update_option(FullSiteImport::SESSION_OPTION_KEY, Helper::recursive_wp_parse_args([$session_id => $data], $old_data));
+    }
+
+	public static function get_session_id(){
+		$session_id = null;
+		if(!empty($_GET['session_id'])){
+			$session_id = sanitize_text_field($_GET['session_id']);
+		}
+		return $session_id;
+	}
+
+	public static function get_session_data_by_id(): array {
+		if($session_id = self::get_session_id()){
+			return self::get_session_data($session_id);
+		}
+		throw new Exception(__('Invalid Session ID.', 'templately'));
+	}
+
+	public static function update_session_data_by_id($data): array {
+		if($session_id = self::get_session_id()){
+			$session_id = self::update_session_data($session_id, $data);
+			return $data[$session_id] ?? [];
+		}
+		throw new Exception(__('Invalid Session ID.', 'templately'));
+	}
 }

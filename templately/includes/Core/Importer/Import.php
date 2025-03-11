@@ -6,20 +6,19 @@ use Exception;
 use Templately\Core\Importer\Runners\Attachments;
 use Templately\Core\Importer\Runners\BaseRunner;
 use Templately\Core\Importer\Runners\Customizer;
+use Templately\Core\Importer\Runners\Dependencies;
 use Templately\Core\Importer\Runners\ElementorContent;
 use Templately\Core\Importer\Runners\ExtraContent;
 use Templately\Core\Importer\Runners\Finalizer;
 use Templately\Core\Importer\Runners\GutenbergContent;
+use Templately\Core\Importer\Runners\Loop;
 use Templately\Core\Importer\Runners\Templates;
 use Templately\Core\Importer\Runners\WPContent;
 
 class Import {
 	use LogHelper;
+	use Loop;
 
-	/**
-	 * @var FullSiteImport
-	 */
-	public $full_site_import;
 
 	/**
 	 * @var array
@@ -27,16 +26,18 @@ class Import {
 	private $manifest;
 
 	private $runners;
+	private $request_params;
+	private $session_id;
 
 	private $imported_data = [];
 
 	/**
 	 * @throws Exception
 	 */
-	public function __construct( $full_site_import ) {
-		$this->full_site_import = $full_site_import;
-
-		$this->manifest = $full_site_import->manifest;
+	public function __construct( $args ) {
+		$this->request_params = $args;
+		$this->manifest = $args['manifest'];
+		$this->session_id = $args['session_id'];
 
 		$this->register_runners();
 	}
@@ -47,37 +48,40 @@ class Import {
 	private function register_runners() {
 		$this->runners = [
 			// TODO: Site Settings Import Runner
-			new Attachments( $this->full_site_import ),
-			new Customizer( $this->full_site_import ),
-			new ExtraContent( $this->full_site_import ),
-			new Templates( $this->full_site_import ),
-			new GutenbergContent( $this->full_site_import ),
-			new ElementorContent( $this->full_site_import ),
-			new WPContent( $this->full_site_import ),
-			new Finalizer( $this->full_site_import )
+			new Dependencies( $this->request_params ),
+			new Attachments( $this->request_params ),
+			new Customizer( $this->request_params ),
+			new ExtraContent( $this->request_params ),
+			new Templates( $this->request_params ),
+			new GutenbergContent( $this->request_params ),
+			new ElementorContent( $this->request_params ),
+			new WPContent( $this->request_params ),
+			new Finalizer( $this->request_params )
 		];
 	}
 
 	public function run( $callable = null ): array {
-		$data = $this->full_site_import->get_request_params();
-		$progress = $this->full_site_import->get_progress();
+		$data = $this->request_params;
 
 		// Get the cached imported_data
-		$this->imported_data = $data['imported_data'] ?? [];
+		// $this->imported_data = $data['imported_data'] ?? [];
 
 		/**
 		 * @var BaseRunner $runner
 		 */
-		foreach ( $this->runners as $id => $runner ) {
-			$import = null;
-			// If the template has been processed, skip it
-			if (in_array($id, $progress)) {
-				continue;
-			}
+		$imported_data = $this->loop( $this->runners, function($id, $runner, $imported_data ) use($data) {
+			$import = [];
+
 			try{
-				if ( $runner->should_run( $data, $this->imported_data ) ) {
-					$import              = $runner->import( $data, $this->imported_data );
-					$this->imported_data = array_merge_recursive( $this->imported_data, $import );
+				if ( $runner->should_run( $data, $imported_data ) ) {
+					$progress = $this->get_progress();
+					if(!in_array($runner->get_name(), $progress)){
+						$runner->log( 0 );
+						$progress[] = $runner->get_name();
+						$this->update_progress( $progress);
+					}
+					$import        = $runner->import( $data, $imported_data );
+					$imported_data = array_merge_recursive( $imported_data, $import );
 
 					if( $runner->get_name() != 'finalize' ) {
 						$runner->log( 100 );
@@ -89,25 +93,10 @@ class Import {
 				error_log($e->getMessage());
 			}
 
-			// Update the progress
-			$progress[] = $id;
-			$this->full_site_import->update_progress($progress, $import);
+			return $imported_data;
+		}, null, true);
 
-			if(end($this->runners) !== $runner) {
-				// $_runner = $this->runners[$id + 1];
-				// if($_runner){
-				// 	$_runner->log();
-				// }
-				$this->sse_message( [
-					'type'    => 'continue',
-					'action'  => 'continue',
-					'results' => $runner->get_label(),
-				] );
-				exit;
-			}
-		}
-
-		return $this->imported_data;
+		return $imported_data;
 	}
 
 	public function get_runners() {
