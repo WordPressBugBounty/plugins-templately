@@ -238,4 +238,11 @@ class ElementorHelper extends ImportHelper {
 
 		}
 	}
+
+	public function parse_images($post_content) {
+		$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+		error_log('parse_images is getting called from ElementorHelper for unknown reasons' . print_r($backtrace, true));
+
+		return [];
+	}
 }

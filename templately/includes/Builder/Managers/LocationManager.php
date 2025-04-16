@@ -33,10 +33,6 @@ class LocationManager {
 	public function __construct( $builder ) {
 		$this->builder = $builder;
 
-		/**
-		 * Don't know yet if we need it or not.
-		 */
-		$this->set_locations();
 
 		/**
 		 * Priority is 13,
@@ -53,6 +49,9 @@ class LocationManager {
 	}
 
 	private function set_locations() {
+		if(!empty($this->locations)) {
+			return;
+		}
 		$this->locations = [
 			'header'  => [
 				'label'    => __( 'Header', 'templately' ),
@@ -117,6 +116,9 @@ class LocationManager {
 					$page_template = $template->get_meta( '_wp_page_template' );
 					$platform      = $template->get_platform();
 
+					if( $platform === 'elementor' && !class_exists('Elementor\Plugin') ) {
+						return $template_path;
+					}
 					if ( ! empty( $platform ) ) {
 						$page_template_module->set_platform( $platform );
 					}
@@ -229,6 +231,11 @@ class LocationManager {
 	}
 
 	public function get_locations(): array {
+		/**
+		 * Don't know yet if we need it or not.
+		 */
+		$this->set_locations();
+
 		$this->register_locations();
 
 		return $this->locations;
