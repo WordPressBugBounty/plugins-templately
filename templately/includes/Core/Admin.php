@@ -6,6 +6,7 @@ use PriyoMukul\WPNotice\Notices;
 use PriyoMukul\WPNotice\Utils\CacheBank;
 use PriyoMukul\WPNotice\Utils\NoticeRemover;
 use Templately\API\Login;
+use Templately\Core\Importer\FullSiteImport;
 use Templately\Utils\Base;
 use Templately\Utils\Helper;
 use Templately\Utils\Options;
@@ -101,9 +102,44 @@ class Admin extends Base {
 	 * @return void
 	 */
 	public function scripts( string $hook ) {
-		if ( ! in_array( $hook, [ 'index.php', 'edit.php', 'toplevel_page_templately', 'elementor', 'gutenberg' ], true ) ) {
+		if ( ! in_array( $hook, [ 'index.php', 'edit.php', 'toplevel_page_templately', 'elementor', 'gutenberg', 'templately_page_templately_settings' ], true ) ) {
 			return;
 		}
+
+		$templately_settings = [];
+		// if('templately_page_templately_settings' === $hook){
+			$kit = null;
+			$el_settings = [];
+			if(defined('ELEMENTOR_VERSION')){
+				$kit = \Elementor\Plugin::$instance->kits_manager->get_active_kit();
+				if($kit){
+					$el_settings = $kit->get_settings();
+				}
+			}
+			$site_logo_id = get_theme_mod( 'custom_logo' );
+			$eb_settings  = get_option('eb_global_styles', []);
+			$eb_settings  = is_array($eb_settings) ? $eb_settings: [];
+			$eb_settings  = array_map(function($item) { return json_decode($item, true); }, $eb_settings);
+			$site_logo    = [
+				'id'   => $site_logo_id,
+				'url'  => $site_logo_id ? wp_get_attachment_url($site_logo_id) : '',
+				// 'size' => (int) get_option('templately_site_logo_size', ''),
+			];
+
+			$templately_settings = [
+				'nonce'             => wp_create_nonce( 'templately_nonce' ),
+				'has_revert'        => FullSiteImport::has_revert(),
+				'has_elementor'     => $this->check_plugin_status( 'elementor/elementor.php' ),
+				'has_eb'            => $this->check_plugin_status( 'essential-blocks/essential-blocks.php' ),
+				'site_logo'         => $site_logo,
+				'elementor'         => $el_settings,
+				'gutenberg'         => $eb_settings,
+				'siteTitle'         => get_option('blogname', ''),
+				'siteTagline'       => get_option('blogdescription', ''),
+				'customCSS'         => get_option('templately_custom_css', ''),
+				// 'imported_platform' => get_option('templately_import_platform', ''),
+			];
+		// }
 
 		if('index.php' === $hook){
 			// need separate condition so we can return if page is index.php
@@ -161,7 +197,7 @@ class Admin extends Base {
 			$script_dependencies[] = $_localize_handle;
 		}
 
-		if ( $hook === 'toplevel_page_templately' || $hook == 'edit.php' ) {
+		if ( $hook === 'toplevel_page_templately' || $hook == 'edit.php' || 'templately_page_templately_settings' === $hook ) {
 			templately()->assets->enqueue( 'templately-admin', 'css/admin.css', [ 'templately' ] );
 		}
 
@@ -216,9 +252,24 @@ class Admin extends Base {
 			'theme'                   => $_current_screen == 'templately' ? 'light' : $platform->ui_theme(),
 			'is_wp_support_gutenberg' => version_compare( get_bloginfo( 'version' ), '5.0.0', '>=' ),
 			'hide_buttons'            => $hide_buttons,
+			'settings'                => $templately_settings,
 		], $templately );
 
 		templately()->assets->localize( $_localize_handle, 'templately', $templately );
+	}
+
+	/**
+	 * Check the status of a plugin.
+	 *
+	 * @param string $plugin_path Plugin path relative to the plugins directory.
+	 * @return mixed true if active, false if not installed, 0 if installed but not active.
+	 */
+	private function check_plugin_status( $plugin_path ) {
+		$plugins = get_plugins();
+		if ( isset( $plugins[ $plugin_path ] ) ) {
+			return is_plugin_active( $plugin_path ) ? true : 0;
+		}
+		return false;
 	}
 
 	/**
@@ -422,7 +473,7 @@ class Admin extends Base {
 	}
 
 	public function display() {
-		Helper::views( 'settings' );
+		Helper::views( 'template-library' );
 	}
 
 	/**

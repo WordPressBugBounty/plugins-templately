@@ -12,31 +12,6 @@
 			}
 		?>
 	</ul>
-
-	<?php if(isset($_GET['type']) && 'settings' === $_GET['type']):?>
-		<div id="templately-fsi-revert-wrapper" style="clear: both; background: #fff; padding: 20px;" class="rendered">
-			<div class="templately-fsi-revert-notice__content">
-				<h3><?php _e("Revert to previous website", "templately");?></h3>
-
-				<p><?php _e("Here you can revert back to your old website. We will restore previous settings, posts, pages, menus, etc.", "templately");?></p>
-
-				<div class="templately-fsi-revert-notice__actions">
-					<button
-						class="button"
-						<?php echo $has_revert ? '' : 'disabled';?>
-						title="<?php echo $has_revert ? '' : __('Nothing to revert', 'templately');?>"
-					>
-						<span><?php _e("Revert Now", 'templately');?></span>
-					</button>
-				</div>
-			</div>
-		</div>
-		<style>
-			#posts-filter, .templately-builder-nav .subsubsub{
-				display: none;
-			}
-		</style>
-	<?php endif;?>
 	<ul class="subsubsub">
 		<?php
 			/**

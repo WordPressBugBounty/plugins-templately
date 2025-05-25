@@ -217,7 +217,6 @@ class Source {
 
 		$template_types = [];
 		$status_args    = [ 'post_type' => 'templately_library' ];
-		$has_revert     = FullSiteImport::has_revert();
 
 		$template_types['all'] = [
 			'url'   => add_query_arg( $status_args, 'edit.php' ),
@@ -236,13 +235,7 @@ class Source {
 			];
 		}
 
-		$status_args['type']          = 'settings';
-		$template_types['settings'] = [
-			'url'   => add_query_arg( $status_args, 'edit.php' ),
-			'label' => __( 'Miscellaneous', 'templately' )
-		];
-
-		$this->builder::$views->get( 'builder/tabs', [ 'tabs' => $tabs, 'template_types' => $template_types, 'has_revert' => $has_revert ] );
+		$this->builder::$views->get( 'builder/tabs', [ 'tabs' => $tabs, 'template_types' => $template_types ] );
 		return [];
 	}
 

@@ -10,6 +10,8 @@
 
 namespace Templately;
 
+use Templately\Admin\API\Settings as APISettings;
+use Templately\Admin\Settings;
 use Templately\API\Conditions;
 use Templately\API\ThemeBuilderApi;
 use Templately\Builder\ThemeBuilder;
@@ -38,9 +40,10 @@ use Templately\Core\Platform\Gutenberg;
 use Templately\Core\Platform\Elementor;
 
 final class Plugin extends Base {
-    public $version = '3.2.5';
+    public $version = '3.2.6';
 
 	public $admin;
+	public $settings;
 	/**
 	 * Enqueue class responsible for assets
 	 * @var Enqueue
@@ -66,6 +69,7 @@ final class Plugin extends Base {
 
 		$this->assets        = Enqueue::get_instance( TEMPLATELY_URL, TEMPLATELY_PATH, $this->version );
 		$this->admin         = Admin::get_instance();
+		$this->settings      = Settings::get_instance();
 		$this->theme_builder = ThemeBuilder::get_instance();
 
 		add_action( 'plugins_loaded', [ $this, 'plugins_loaded' ] );
@@ -145,6 +149,8 @@ final class Plugin extends Base {
 		Profile::get_instance();
 		MyClouds::get_instance();
 		WorkSpaces::get_instance();
+
+		APISettings::get_instance();
 	}
 
 	/**
