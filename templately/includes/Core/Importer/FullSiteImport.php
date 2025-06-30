@@ -328,6 +328,7 @@ class FullSiteImport extends Base {
 			exit;
 		}
 
+		add_filter( 'wp_image_editors', [ $this, 'wp_image_editors' ], 10, 1 );
 
 
 		define('TEMPLATELY_START_TIME', microtime(true));
@@ -462,6 +463,15 @@ class FullSiteImport extends Base {
 			// TODO: cleanup
 			// $this->clear_session_data();
 		// }
+	}
+
+
+	public function wp_image_editors( $editors ) {
+		// If GD is available, use only GD. Otherwise, fallback to all available editors.
+		if ( is_callable( [ 'WP_Image_Editor_GD', 'test' ] ) && call_user_func( [ 'WP_Image_Editor_GD', 'test' ] ) ) {
+			return [ 'WP_Image_Editor_GD' ];
+		}
+		return $editors;
 	}
 
 	// Updated import_status method

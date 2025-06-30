@@ -5,6 +5,12 @@ namespace Templately\Core\Importer\Runners;
 
 class Attachments extends WPContent {
 
+
+	public function __construct( $request_params ) {
+		parent::__construct( $request_params );
+		$this->attachments_init();
+	}
+
 	public function get_name(): string {
 		return 'attachments';
 	}
@@ -129,5 +135,57 @@ class Attachments extends WPContent {
 		$progress = $this->total > 0 ? ceil( ( 100 * ( $this->get_processed() ) ) / $this->total ) : 100;
 
 		$this->log( $progress);
+	}
+
+	public function attachments_init() {
+		add_filter( 'pre_http_request', [ $this, 'pre_http_request' ], 10, 3 );
+		add_filter( 'http_response', [ $this, 'http_response' ], 10, 3 );
+		// attachment insert hooks
+		add_filter( 'wp_insert_attachment_data', [ $this, 'before_insert_attachment' ], 10, 2 );
+		add_action( 'add_attachment', [ $this, 'after_insert_attachment' ], 10, 1 );
+		add_filter( 'wp_update_attachment_metadata', [ $this, 'wp_update_attachment_metadata' ], 99999, 2 );
+
+	}
+
+	public function pre_http_request( $preempt, $parsed_args, $url ) {
+		// error_log(print_r([$preempt, $parsed_args, $url], true));
+
+		$this->sse_log( 'attachments', 'Before downloading attachment: ' . $url, 1, 'eventLog' );
+
+		return $preempt;
+	}
+
+	public function http_response( $response, $parsed_args, $url ) {
+		// error_log(print_r([$response, $parsed_args, $url], true));
+		$this->sse_log( 'attachments', 'After downloading attachment: ' . $url, 1, 'eventLog' );
+		return $response;
+	}
+
+	/**
+	 * Log before inserting attachment.
+	 */
+	public function before_insert_attachment( $data, $postarr ) {
+		$this->sse_log( 'attachments', 'Before inserting attachment: ' . ( $data['post_title'] ?? '' ), 1, 'eventLog' );
+		return $data;
+	}
+
+	/**
+	 * Log after attachment is inserted.
+	 */
+	public function after_insert_attachment( $post_ID ) {
+		$post = get_post( $post_ID );
+		$this->sse_log( 'attachments', 'After inserting attachment: ' . ( $post->post_title ?? '' ), 1, 'eventLog' );
+	}
+
+	public function wp_update_attachment_metadata( $metadata, $attachment_id ) {
+		$this->sse_log( 'attachments', 'Updated attachment metadata: ' . $attachment_id, 1, 'eventLog' );
+		// $this->sse_message([
+		// 	"action" => "eventLog",
+		// 	"type" => "attachments",
+		// 	"progress" => 1,
+		// 	"message" => "Updated attachment metadata => " . $attachment_id,
+		// 	"backtrace" => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 30),
+		// ]);
+		return $metadata;
 	}
 }
