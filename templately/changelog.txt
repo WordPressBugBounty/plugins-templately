@@ -1,4 +1,9 @@
 == Changelog ==
+= 3.2.8 – 12-07-2025 =
+Fixed: Saved templates can’t delete from Templately cloud workspace.
+Improved: Security enhancements (Reported by Patchstack).
+Few minor bug fixes & improvements
+
 = 3.2.7 – 30-06-2025 =
 Improved: Optimized attachment image import process using FSI.
 Fixed: Templately settings page was not loading correctly.
@@ -476,4 +481,3 @@ Few minor bug fix and improvements
 = 0.0.1 - 02-03-2020 =
 
 * Initial release
-

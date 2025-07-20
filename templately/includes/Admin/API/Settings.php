@@ -148,7 +148,7 @@ class Settings extends BaseAPI {
 					foreach ($settings['system_typography'] as $key => $typo) {
 						if(!empty($typography[$typo['_id']])){
 							$settings['system_typography'][$key] = array_merge($typo, $typography[$typo['_id']]);
-							if(class_exists('Elementor\Core\Files\Fonts\Google_Font')){
+							if(class_exists('Elementor\Core\Files\Fonts\Google_Font') && !empty($typo['typography_font_family'])){
 								Google_Font::enqueue( $typo['typography_font_family'] );
 							}
 						}
@@ -158,7 +158,7 @@ class Settings extends BaseAPI {
 					foreach ($settings['custom_typography'] as $key => $typo) {
 						if(!empty($typography[$typo['_id']])){
 							$settings['custom_typography'][$key] = array_merge($typo, $typography[$typo['_id']]);
-							if(class_exists('Elementor\Core\Files\Fonts\Google_Font')){
+							if(class_exists('Elementor\Core\Files\Fonts\Google_Font') && !empty($typo['typography_font_family'])){
 								Google_Font::enqueue( $typo['typography_font_family'] );
 							}
 						}

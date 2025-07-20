@@ -40,7 +40,6 @@ class FullSiteImport extends Base {
 	protected $api_key        = '';
 	protected $session_id        = '';
 	protected $documents_data = [];
-	protected $dependency_data = [];
 	private   $is_import_status_handled = false;
 
 	public    $dir_path;
@@ -255,9 +254,6 @@ class FullSiteImport extends Base {
 		}
 		if (isset($data['download_key'])) {
 			$this->download_key = $data['download_key'];
-		}
-		if (isset($data['dependency_data'])) {
-			$this->dependency_data = $data['dependency_data'];
 		}
 		if (isset($data['is_import_status_handled'])) {
 			$this->is_import_status_handled = $data['is_import_status_handled'];
@@ -755,6 +751,7 @@ class FullSiteImport extends Base {
 		$attachments_errors = !empty($data['attachments_errors']) ? $data['attachments_errors'] : [];
 		$templates          = !empty($data['templates']['succeed']) ? count($data['templates']['succeed']) : 0;
 		$template_types     = !empty($data['templates']['template_types']) ? $data['templates']['template_types'] : [];
+		$dependency_data    = !empty($data['dependency_data']) ? $data['dependency_data'] : [];
 
 		$post_types = [];
 		$content_templates = [];
@@ -786,7 +783,7 @@ class FullSiteImport extends Base {
 			'wp-content'         => $contents,
 			'post_types'         => $post_types,
 			'template_types'     => $template_types,
-			'dependency_data'    => $this->dependency_data,
+			'dependency_data'    => $dependency_data,
 		];
 	}
 

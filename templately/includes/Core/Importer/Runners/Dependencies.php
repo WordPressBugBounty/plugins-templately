@@ -44,7 +44,7 @@ class Dependencies extends BaseRunner {
 		$dependency_data['plugins'] = $this->install_plugins($data);
 
 
-		return  $dependency_data;
+		return  ['dependency_data' => $dependency_data];
 	}
 
 	private function install_plugins($request_params) {
@@ -56,16 +56,18 @@ class Dependencies extends BaseRunner {
 			$total_plugin = count($request_params['plugins']);
 
 			// $total_plugin_installed = $total_plugin;
-			$_installed_plugins     = $this->dependency_data['_installed_plugins'] ?? 0;
+			// $_installed_plugins     = $request_params['dependency_data']['plugins']['_installed_plugins'] ?? 0;
 			$progress['plugin_dependency'] = $progress['plugin_dependency'] ?? [];
 
 			// $this->before_install_hook();
 			// error_log(print_r($request_params['plugins'], true), 3, ABSPATH . 'wp-content/debug.log');
 
-			$results = $this->loop( $request_params['plugins'], function( $key,  $dependency ) use(&$_installed_plugins, $total_plugin) {
+			$results = $this->loop( $request_params['plugins'], function( $key,  $dependency, $results ) use(&$_installed_plugins, $total_plugin) {
 				error_log(print_r([$key,  $dependency['name']], true), 3, ABSPATH . 'wp-content/debug.log');
 
-				$result = [];
+				$_installed_plugins = $results['_installed_plugins'] ?? 0;
+
+				// $result = [];
 				$this->sse_log( 'plugin', 'Installing Required Plugins: ' . $dependency['name'], floor( ( 100 * $_installed_plugins / $total_plugin ) ) );
 
 				$_dependency        = $dependency;
@@ -88,7 +90,7 @@ class Dependencies extends BaseRunner {
 						$this->throw('Installation Failed: ' . $dependency['name'] . ' (' . ($plugin_status['message'] ?? '') . ')');
 					}
 
-					$result['plugins']['failed'][] = [
+					$results['plugins']['failed'][] = [
 						'name'    => $dependency['name'],
 						'slug'    => $dependency['slug'],
 						'link'    => $dependency['link'],
@@ -98,23 +100,23 @@ class Dependencies extends BaseRunner {
 					$_installed_plugins++;
 					// $total_plugin_installed--;
 
-					$result['_installed_plugins'] = $_installed_plugins;
+					$results['_installed_plugins'] = $_installed_plugins;
 				}
 
-				return $result;
-			});
+				return $results;
+			}, null, true);
 
 			// $this->after_install_hook();
 
 			$this->sse_message([
 				'action'   => 'updateLog',
 				'status'   => 'complete',
-				'message'  => "Installed Required Plugins ($_installed_plugins/$total_plugin)",
+				'message'  => "Installed Required Plugins ({$results['_installed_plugins']}/$total_plugin)",
 				'type'     => "plugin",
 				'progress' => 100
 			]);
-			$results['plugins']['total'] = $total_plugin;
-			$results['plugins']['succeed'] = $_installed_plugins;
+			$results['total'] = $total_plugin;
+			$results['succeed'] = $results['_installed_plugins'];
 		} else {
 			$this->removeLog('plugin');
 		}
