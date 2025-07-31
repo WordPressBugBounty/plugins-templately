@@ -270,6 +270,12 @@ class Utils extends Base {
 	}
 
     // Static version of get_session_data
+    public static function get_all_session_data(): array {
+        $data = get_option(FullSiteImport::SESSION_OPTION_KEY, []);
+        return $data ?? [];
+    }
+
+    // Static version of get_session_data
     public static function get_session_data($session_id): array {
         $data = get_option(FullSiteImport::SESSION_OPTION_KEY, []);
         return $data[$session_id] ?? [];
@@ -281,10 +287,22 @@ class Utils extends Base {
         return update_option(FullSiteImport::SESSION_OPTION_KEY, Helper::recursive_wp_parse_args([$session_id => $data], $old_data));
     }
 
+    // Delete specific session data by ID
+    public static function delete_session_data($session_id): bool {
+        $all_data = get_option(FullSiteImport::SESSION_OPTION_KEY, []);
+
+        if (!isset($all_data[$session_id])) {
+            return false; // Session ID doesn't exist
+        }
+
+        unset($all_data[$session_id]);
+        return update_option(FullSiteImport::SESSION_OPTION_KEY, $all_data);
+    }
+
 	public static function get_session_id(){
 		$session_id = null;
-		if(!empty($_GET['session_id'])){
-			$session_id = sanitize_text_field($_GET['session_id']);
+		if(!empty($_REQUEST['session_id'])){
+			$session_id = sanitize_text_field($_REQUEST['session_id']);
 		}
 		return $session_id;
 	}
@@ -303,4 +321,85 @@ class Utils extends Base {
 		}
 		throw new Exception(__('Invalid Session ID.', 'templately'));
 	}
+
+
+
+	/**
+	 * Clean up directory using RecursiveIteratorIterator approach
+	 * This method handles directory cleanup with proper validation
+	 *
+	 * @param string $dir_path The directory path to clean up
+	 * @return bool True on success, false on failure
+	 */
+	public static function cleanup_directory($dir_path) {
+		if (empty($dir_path) || !file_exists($dir_path) || !is_dir($dir_path)) {
+			return false;
+		}
+
+		try {
+			$files = new \RecursiveIteratorIterator(
+				new \RecursiveDirectoryIterator($dir_path, \RecursiveDirectoryIterator::SKIP_DOTS),
+				\RecursiveIteratorIterator::CHILD_FIRST
+			);
+
+			foreach ($files as $fileinfo) {
+				$todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
+				$todo($fileinfo->getRealPath());
+			}
+
+			rmdir($dir_path);
+			return true;
+		} catch (Exception $e) {
+			return false;
+		}
+	}
+
+
+
+
+
+
+
+
+
+	/**
+	 * Clean session data by pack ID, keeping only the current session
+	 * Removes all session entries with the same pack_id except the current session
+	 *
+	 * @param string $pack_id The pack ID to match for cleanup
+	 * @param string $current_session_id The current session ID to preserve
+	 * @return array Array of removed session IDs
+	 */
+	public static function clean_session_data_by_pack_id($pack_id, $current_session_id) {
+		if (empty($pack_id) || empty($current_session_id)) {
+			return [];
+		}
+
+		$all_session_data = self::get_all_session_data();
+		$removed_session_ids = [];
+
+
+		foreach ($all_session_data as $session_id => $session_data) {
+			// Skip the current session
+			if ($session_id === $current_session_id) {
+				continue;
+			}
+
+			// Remove sessions that have the same pack_id
+			if (isset($session_data['id']) && $session_data['id'] === $pack_id) {
+				unset($all_session_data[$session_id]);
+				$removed_session_ids[] = $session_id;
+			}
+		}
+
+		// Update the option with cleaned data if any sessions were removed
+		if (!empty($removed_session_ids)) {
+			update_option(FullSiteImport::SESSION_OPTION_KEY, $all_session_data);
+		}
+
+		return $removed_session_ids;
+	}
+
+
+
 }

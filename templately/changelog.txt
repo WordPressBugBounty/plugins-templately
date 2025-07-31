@@ -1,4 +1,10 @@
 == Changelog ==
+= 3.3.0 – 31-07-2025 =
+Added: New Feature | Build websites with Templately AI
+Improved: Better error handling during template import
+Improved: Overall template import experience
+Few minor bugs fixes & improvements
+
 = 3.2.8 – 12-07-2025 =
 Fixed: Saved templates can’t delete from Templately cloud workspace.
 Improved: Security enhancements (Reported by Patchstack).

@@ -22,8 +22,17 @@ abstract class BaseRunner {
 	protected $origin;
 	protected $platform;
 	protected $manifest;
+	protected $prv_dir;
 	protected $dir_path;
 	protected $session_id;
+	/**
+	 * @var array|mixed
+	 */
+	public $ai_page_ids = [];
+	/**
+	 * @var string|null
+	 */
+	public $process_id = null;
 
 	/**
 	 * @var ImportHelper
@@ -39,17 +48,21 @@ abstract class BaseRunner {
 	 * @throws Exception
 	 */
 	public function __construct( $request_params ) {
-		$this->dev_mode = defined('TEMPLATELY_DEV') && TEMPLATELY_DEV;
-		$this->origin   = $request_params['origin'];
-		$this->dir_path = $request_params['dir_path'];
-		$this->manifest = &$request_params['manifest'];
-		$this->platform = $this->manifest['platform'] ?? '';
+		$this->dev_mode   = defined('TEMPLATELY_DEV') && TEMPLATELY_DEV;
+		$this->origin     = $request_params['origin'];
+		$this->prv_dir    = $request_params['prv_dir'];
+		$this->dir_path   = $request_params['dir_path'];
+		$this->manifest   = &$request_params['manifest'];
+		$this->platform   = $this->manifest['platform'] ?? '';
 		$this->session_id = $request_params['session_id'];
 
 
 		$this->factory = new TemplateFactory( $this->platform );
 		$this->json = Utils::get_json_helper( $this->platform );
 		$this->json->session_id = $this->session_id;
+
+		$this->ai_page_ids = $request_params['ai_page_ids'] ?? [];
+		$this->process_id = $request_params['process_id'] ?? null;
 
 		if ( empty( $this->platform ) ) {
 			throw new Exception( __( 'Platform is not specified. Please try again after specifying the platform.', 'templately' ) );
@@ -98,5 +111,20 @@ abstract class BaseRunner {
 			error_log(print_r($message, 1));
 		}
 		throw new Exception($message);
+	}
+
+	protected function is_ai_content($old_template_id ): bool {
+		if(empty($this->process_id) || empty($this->ai_page_ids) || !is_array($this->ai_page_ids)){
+			return false;
+		}
+		// Get array of AI page IDs, filtering out any non-numeric values
+		$ai_page_ids = array_reduce($this->ai_page_ids, 'array_merge', array());
+		// $ai_page_ids = array_filter(
+		// 	array_map('intval', explode(',', $this->ai_page_ids ?? ''))
+		// );
+
+		$is_ai_content = in_array($old_template_id, $ai_page_ids);
+
+		return $is_ai_content;
 	}
 }

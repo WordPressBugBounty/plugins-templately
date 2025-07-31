@@ -201,7 +201,7 @@ class ElementorContent extends BaseRunner {
 			$file      = $path . $post_type . DIRECTORY_SEPARATOR . "{$id}.json";
 			$post_data = Utils::read_json_file( $file );
 
-			if ( ! empty( $content_settings['data'] ) ) {
+			if ( ! empty( $content_settings['data'] ) || $this->is_ai_content($id) ) {
 				/**
 				 * TODO:
 				 *

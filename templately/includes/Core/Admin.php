@@ -207,6 +207,8 @@ class Admin extends Base {
 			set_url_scheme( '//fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap' )
 		);
 
+		wp_enqueue_style('wp-components');
+
 		wp_enqueue_media();
 		templately()->assets->enqueue( 'templately', 'js/templately.js', $script_dependencies, true );
 		templately()->assets->enqueue( 'templately', 'css/templately.css', ['templately-dmsans'] );
@@ -229,6 +231,7 @@ class Admin extends Base {
 			],
 			'log'                => defined( 'TEMPLATELY_DEBUG_LOG' ) && TEMPLATELY_DEBUG_LOG,
 			'dev_mode'           => defined( 'TEMPLATELY_DEV' ) && TEMPLATELY_DEV,
+			'ai_animate_ignore_mode'           => defined( 'TEMPLATELY_IGNORE_AI_ANIMATE' ) && TEMPLATELY_IGNORE_AI_ANIMATE,
 			"icons"              => [
 				'construction' => templately()->assets->icon( 'icons/construction.gif' ),
 				'profile'      => templately()->assets->icon( 'icons/profile.svg' ),
@@ -253,6 +256,8 @@ class Admin extends Base {
 			'is_wp_support_gutenberg' => version_compare( get_bloginfo( 'version' ), '5.0.0', '>=' ),
 			'hide_buttons'            => $hide_buttons,
 			'settings'                => $templately_settings,
+			'api_key'                 => Options::get_instance()->get('api_key'),
+			'wp_user_avatar'          => get_avatar_url( get_current_user_id(), [ 'size' => 96 ] ),
 		], $templately );
 
 		templately()->assets->localize( $_localize_handle, 'templately', $templately );

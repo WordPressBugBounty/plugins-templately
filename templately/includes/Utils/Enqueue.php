@@ -49,6 +49,9 @@ class Enqueue extends Base {
 			}
 			$version = $asset_config['version'];
 		}
+		else if ((defined('TEMPLATELY_DEV') && TEMPLATELY_DEV) || (defined('WP_DEBUG') && WP_DEBUG)){
+			$version = time() ?? $version;
+		}
 
 		return [
 			'url'          => $url,

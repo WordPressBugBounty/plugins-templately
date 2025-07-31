@@ -46,6 +46,10 @@ trait Loop {
 			}
 
 			$result  = $callback($key, $item, $results);
+			if($result === 'continue'){
+				// If the callback returns 'continue', skip to the next iteration
+				continue;
+			}
 			$results = Helper::recursive_wp_parse_args($result, $results);
 
 

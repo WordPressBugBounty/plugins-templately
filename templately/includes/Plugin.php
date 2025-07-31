@@ -12,6 +12,7 @@ namespace Templately;
 
 use Templately\Admin\API\Settings as APISettings;
 use Templately\Admin\Settings;
+use Templately\API\AIContent;
 use Templately\API\Conditions;
 use Templately\API\ThemeBuilderApi;
 use Templately\Builder\ThemeBuilder;
@@ -40,7 +41,7 @@ use Templately\Core\Platform\Gutenberg;
 use Templately\Core\Platform\Elementor;
 
 final class Plugin extends Base {
-    public $version = '3.2.8';
+    public $version = '3.3.0';
 
 	public $admin;
 	public $settings;
@@ -140,6 +141,7 @@ final class Plugin extends Base {
 		Tags::get_instance();
 		ThemeBuilderApi::get_instance();
 
+		AIContent::get_instance();
 		Items::get_instance();
 		SavedTemplates::get_instance();
 

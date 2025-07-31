@@ -19,8 +19,10 @@ use Exception;
 use Templately\Core\Importer\Exception\NonRetryableErrorException;
 use Templately\Core\Importer\Exception\RetryableErrorException;
 use Templately\Core\Importer\Exception\UnknownErrorException;
+use Templately\Core\Importer\Runners\Finalizer;
 use Templately\Core\Importer\Utils\LogHandler;
 use Templately\Core\Importer\Utils\Utils;
+use Templately\Core\Importer\Utils\AIUtils;
 use Templately\Utils\Base;
 use Templately\Utils\Helper;
 use Templately\Utils\Installer;
@@ -52,6 +54,7 @@ class FullSiteImport extends Base {
 		$this->api_key  = Options::get_instance()->get('api_key');
 
 		$this->add_ajax_action('import_settings', $this);
+		$this->add_ajax_action('create_session_and_download', $this);
 		$this->add_ajax_action('import_status', $this);
 		$this->add_ajax_action('import', $this);
 		$this->add_ajax_action('import_revert', $this);
@@ -59,6 +62,7 @@ class FullSiteImport extends Base {
 		$this->add_ajax_action('import_close_feedback_modal', $this);
 		$this->add_ajax_action('feedback_form', $this);
 		$this->add_ajax_action('google_font', $this);
+		$this->add_ajax_action('ai_get_json', $this);
 
 		add_action('admin_init', [$this, 'admin_init']);
 		// add_action('admin_notices', [$this, 'add_revert_button']);
@@ -99,7 +103,7 @@ class FullSiteImport extends Base {
 			}
 
 			// Call the actual handler method
-			call_user_func([$object, $action]);
+			call_user_func([$this, $action]);
 		});
 	}
 
@@ -113,15 +117,27 @@ class FullSiteImport extends Base {
 	public function import_settings() {
 		$data = wp_unslash($_POST);
 
-		$upload_dir = wp_upload_dir();
-		$session_id = uniqid();
-		$tmp_dir    = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR;
+		$upload_dir  = wp_upload_dir();
 
-		$this->session_id   = $session_id;
+		if(!empty($data['session_id'])){
+			$session_id = $data['session_id'];
+			$session_data = Utils::get_session_data($session_id);
+			$data = array_merge($session_data, $data);
+		}
+		else {
+			$session_id  = uniqid();
+		}
+
+		$tmp_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR;
+		$prv_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'preview' . DIRECTORY_SEPARATOR;
+
+		$this->session_id = $session_id;
 		$data['session_id'] = $session_id;
-		$data['root_dir']   = $tmp_dir;
-		$data['dir_path']   = $tmp_dir . $session_id . DIRECTORY_SEPARATOR;
-		$data['zip_path']   = $tmp_dir . "{$session_id}.zip";
+
+		$data['root_dir'] = $tmp_dir;
+		$data['prv_dir']  = $prv_dir;
+		$data['dir_path'] = $tmp_dir . $session_id . DIRECTORY_SEPARATOR;
+		$data['zip_path'] = $tmp_dir . "{$session_id}.zip";
 
 
 		if ( is_array( $data ) && ! empty( $data ) ) {
@@ -146,6 +162,127 @@ class FullSiteImport extends Base {
 			'is_lightspeed' => !Helper::should_flush(),
 			'session_id'    => $session_id,
 		]);
+	}
+
+	public function import_ai_settings() {
+		$data = wp_unslash($_POST);
+
+		$upload_dir  = wp_upload_dir();
+
+		// passed in post
+		$session_id  = $data['session_id'];
+
+		$tmp_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR;
+		$prv_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'preview' . DIRECTORY_SEPARATOR;
+
+		$this->session_id = $session_id;
+		$data['root_dir'] = $tmp_dir;
+		$data['prv_dir']  = $prv_dir;
+		$data['dir_path'] = $tmp_dir . $session_id . DIRECTORY_SEPARATOR;
+		$data['zip_path'] = $tmp_dir . "{$session_id}.zip";
+
+		if ( is_array( $data ) && ! empty( $data ) ) {
+			foreach ( $data as $key => $value ) {
+				$json         = is_string($value) ? json_decode( $value, true ) : null;
+				$data[ $key ] = $json !== null ? $json : $value;
+			}
+		}
+
+		Utils::update_session_data($session_id, $data);
+
+
+		return $data;
+	}
+
+	public function create_session_and_download() {
+		if ( ! $this->dev_mode && ! wp_doing_ajax() ) {
+			exit;
+		}
+
+		add_filter( 'wp_image_editors', [ $this, 'wp_image_editors' ], 10, 1 );
+
+		define('TEMPLATELY_START_TIME', microtime(true));
+
+		register_shutdown_function( [ $this, 'register_shutdown' ] );
+
+		// $this->finishRequestHeaders();
+
+		try {
+			// Get session data from AJAX request
+			$session_data = $this->import_ai_settings();
+
+			$this->request_params = $session_data;
+			$this->initialize_props();
+			$this->add_revert_hooks();
+			$progress = $this->request_params['progress'] ?? [];
+
+			if(empty($progress['create_log_dir'])){
+				// Create Log Directory and if fail then chose option method
+				LogHandler::create_log_dir();
+
+				$progress['create_log_dir'] = true;
+				$this->update_session_data( [
+					'progress' => $progress,
+				] );
+			}
+
+			$_id = isset($this->request_params['id']) ? (int) $this->request_params['id'] : null;
+
+			if ($_id === null) {
+				$this->throw(__('Invalid Pack ID.', 'templately'));
+			}
+
+			$this->check_writing_permission();
+
+
+			if(empty($progress['download_zip'])){
+
+				/**
+				 * Download the zip
+				 */
+				$this->download_zip( $_id );
+
+				$progress['download_zip'] = true;
+				$this->update_session_data( [
+					'progress' => $progress,
+				] );
+			}
+
+			/**
+			 * Reading Manifest File
+			 */
+			$this->manifest = $this->read_manifest($this->request_params['dir_path']);
+
+			/**
+			 * Version Check
+			 */
+			if ( ! empty( $this->manifest['version'] ) && version_compare( $this->manifest['version'], $this->version, '>' ) ) {
+				$this->throw( __( 'Please update the templately plugin.', 'templately' ) );
+			}
+
+			$platform = $this->manifest['platform'] ?? '';
+			if($platform === 'elementor') {
+				Helper::enable_elementor_container();
+			}
+
+			update_option('templately_import_platform', $platform);
+
+			// Return success response for AJAX
+			wp_send_json_success([
+				'session_id' => $this->session_id,
+				'pack_downloaded' => true,
+				'platform' => $platform,
+				'message' => __('Session created and pack downloaded successfully', 'templately')
+			]);
+
+		} catch ( Exception $e ) {
+			$should_retry = $e instanceof RetryableErrorException;
+
+			wp_send_json_error([
+				'message' => $e->getMessage(),
+				'should_retry' => $should_retry
+			]);
+		}
 	}
 
 	public function import_close_feedback_modal() {
@@ -378,11 +515,19 @@ class FullSiteImport extends Base {
 				'results' => __METHOD__ . '::' . __LINE__,
 			] );
 
-			if(empty($progress['download_zip'])){
+			if(empty($progress['check_writing_permission'])){
 				/**
 				 * Check Writing Permission
 				 */
 				$this->check_writing_permission();
+
+				$progress['check_writing_permission'] = true;
+				$this->update_session_data( [
+					'progress' => $progress,
+				] );
+			}
+
+			if(empty($progress['download_zip'])){
 
 				/**
 				 * Download the zip
@@ -551,7 +696,7 @@ class FullSiteImport extends Base {
 	}
 
 	private function info_get_api_url($id): string {
-		return $this->dev_mode ? 'https://app.templately.dev/api/v1/import/info/pack/' . $id : 'https://app.templately.com/api/v1/import/info/pack/' . $id;
+		return $this->dev_mode ? 'https://app.templately.dev/api/v2/import/info/pack/' . $id : 'https://app.templately.com/api/v2/import/info/pack/' . $id;
 	}
 
 	/**
@@ -560,7 +705,7 @@ class FullSiteImport extends Base {
 	private function download_zip( $id ) {
 		$this->sse_log( 'download', __( 'Downloading Template Pack', 'templately' ), 1 );
 		$response = wp_remote_get( $this->get_api_url( "v2", "import/pack/$id" ), [
-			'timeout' => 30,
+			'timeout' => 90,
 			'headers' => [
 				'Content-Type'         => 'application/json',
 				'Authorization'        => 'Bearer ' . $this->api_key,
@@ -615,10 +760,41 @@ class FullSiteImport extends Base {
 		if (!WP_Filesystem()) {
 			$this->throw(__('WP_Filesystem cannot be initialized', 'templately'));
 		}
-
 		$unzip = unzip_file($this->filePath, $this->dir_path);
 		if (is_wp_error($unzip)) {
 			$unzip = $this->unzip_file($this->filePath, $this->dir_path);
+		}
+
+		$manifest_file = $this->dir_path . 'manifest.json';
+
+		// If manifest.json is missing, but any subdirectory contains manifest.json, move all its contents up and remove the subdirectory.
+		if ( ! file_exists( $manifest_file ) ) {
+			$entries = array_diff( scandir( $this->dir_path ), [ '.', '..' ] );
+			$dirs = array_filter( $entries, fn($e) => is_dir( $this->dir_path . $e ) );
+			$files = array_filter( $entries, fn($e) => is_file( $this->dir_path . $e ) );
+			foreach ($dirs as $subdir) {
+				$subdir_path = $this->dir_path . $subdir . DIRECTORY_SEPARATOR;
+				if ( file_exists( $subdir_path . 'manifest.json' ) ) {
+					copy($subdir_path . 'manifest.json', $manifest_file);
+
+					foreach ( array_diff( scandir( $subdir_path ), [ '.', '..' ] ) as $item ) {
+						$src = $subdir_path . $item;
+						$dst = $this->dir_path . $item;
+						if (is_dir($src)) {
+							if (!file_exists($dst)) {
+								wp_mkdir_p($dst);
+							}
+							// Recursively copy directory
+							$this->copyDirectory($src, $dst);
+						} else {
+							copy($src, $dst);
+						}
+					}
+					// Remove the subdirectory and its contents
+					$this->removeDirectory($subdir_path);
+					break; // Only process the first subdir with manifest.json
+				}
+			}
 		}
 
 		if (is_wp_error($unzip)) {
@@ -637,6 +813,43 @@ class FullSiteImport extends Base {
 			unlink($this->filePath);
 		}
 	}
+
+	/**
+	 * Recursively copy a directory
+	 */
+	private function copyDirectory($src, $dst) {
+		$dir = opendir($src);
+		wp_mkdir_p($dst);
+		while(false !== ($file = readdir($dir))) {
+			if (($file != '.') && ($file != '..')) {
+				if (is_dir($src . DIRECTORY_SEPARATOR . $file)) {
+					$this->copyDirectory($src . DIRECTORY_SEPARATOR . $file, $dst . DIRECTORY_SEPARATOR . $file);
+				} else {
+					copy($src . DIRECTORY_SEPARATOR . $file, $dst . DIRECTORY_SEPARATOR . $file);
+				}
+			}
+		}
+		closedir($dir);
+	}
+
+	/**
+	 * Recursively remove a directory
+	 */
+	private function removeDirectory($dir) {
+		if (!file_exists($dir)) return;
+		$items = array_diff(scandir($dir), ['.', '..']);
+		foreach ($items as $item) {
+			$path = $dir . DIRECTORY_SEPARATOR . $item;
+			if (is_dir($path)) {
+				$this->removeDirectory($path);
+			} else {
+				unlink($path);
+			}
+		}
+		rmdir($dir);
+	}
+
+
 
 	/**
 	 * Unzip a specified ZIP file to a location on the Filesystem.
@@ -730,10 +943,30 @@ class FullSiteImport extends Base {
 
 		update_option('templately_flush_rewrite_rules', true, false);
 
+		$normalized_data = $this->normalize_imported_data($imported_data);
+		// Use timeout-aware wait handler for AI content processing
+		if(!empty($request_params['ai_page_ids']) && empty($normalized_data['ai_content']['processed']['credit_cost'])){
+			$processed_pages = get_option("templately_ai_processed_pages", []);
+			$updated_ids = $processed_pages[$request_params['process_id']] ?? [];
+
+			// Use the static timeout-aware wait handler from AIUtils
+			AIUtils::handle_sse_wait_with_timeout(
+				$this->session_id,
+				'ai_content_import_time',
+				$updated_ids,
+				$request_params['ai_page_ids'],
+				[$this, 'sse_message'],
+				[
+					'name' => 'ai-content',
+					'message' => __('Missing Credit Cost', 'templately'),
+				]
+			);
+		}
+
 		$this->sse_message([
 			'type'    => 'complete',
 			'action'  => 'complete',
-			'results' => $this->normalize_imported_data($imported_data)
+			'results' => $normalized_data,
 		]);
 
 		update_user_meta(get_current_user_id(), 'templately_fsi_pack_id', $request_params["id"]);
@@ -743,9 +976,188 @@ class FullSiteImport extends Base {
 		else{
 			update_user_meta(get_current_user_id(), 'templately_fsi_complete', true);
 		}
+
+		// $this->clear_data_file($request_params);
+	}
+
+	private function clear_data_file($request_params){
+		if(defined('TEMPLATELY_DEV') && TEMPLATELY_DEV){
+			return;
+		}
+
+		// Handle directory cleanup
+		Utils::cleanup_directory($this->dir_path);
+		$upload_dir = wp_upload_dir();
+
+		// Always save to preview directory for AI content workflow
+		$session_id = $request_params['session_id'] ?? '';
+		$pack_id = $request_params['id'] ?? '';
+
+		// Set up directory paths for cleanup
+		$root_dir = $request_params['root_dir'] ?? trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'tmp';
+		$prv_dir = $request_params['prv_dir'] ?? trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'preview';
+
+		$processed_data = AIUtils::get_ai_process_data_by_session_id($session_id);
+
+		// Clean up WordPress options data and corresponding directories
+		if (!empty($pack_id) && !empty($session_id)) {
+			// Clean session data - keep only current session, remove others with same pack_id
+			$removed_session_ids = Utils::clean_session_data_by_pack_id($pack_id, $session_id);
+
+			// Clean AI process data - keep only current process, remove others with same pack_id
+			$current_process_id = !empty($processed_data['process_id']) ? $processed_data['process_id'] : null;
+			$removed_process_ids = AIUtils::clean_ai_process_data_by_pack_id($pack_id, $current_process_id);
+
+			// Directory-based cleanup for session data directories
+			$this->cleanup_session_directories($root_dir, $pack_id, $session_id);
+
+			// Directory-based cleanup for AI process data directories
+			$this->cleanup_ai_process_directories($prv_dir, $pack_id, $current_process_id);
+
+			// Log cleanup results if in dev mode
+			if (defined('TEMPLATELY_DEV') && TEMPLATELY_DEV) {
+				if (!empty($removed_session_ids)) {
+					error_log('Templately: Cleaned up session IDs: ' . implode(', ', $removed_session_ids));
+				}
+				if (!empty($removed_process_ids)) {
+					error_log('Templately: Cleaned up process IDs: ' . implode(', ', $removed_process_ids));
+				}
+			}
+		}
+	}
+
+	/**
+	 * Directory-based cleanup for session data directories
+	 * Scans the actual filesystem directories and removes directories that match cleanup criteria
+	 *
+	 * @param string $root_dir The root directory containing session directories
+	 * @param string $pack_id The pack ID to match for cleanup
+	 * @param string $current_session_id The current session ID to preserve
+	 */
+	private function cleanup_session_directories($root_dir, $pack_id, $current_session_id) {
+		if (empty($root_dir) || !is_dir($root_dir) || empty($pack_id) || empty($current_session_id)) {
+			return;
+		}
+
+		try {
+			// Get all session data to check pack_id associations
+			$all_session_data = Utils::get_all_session_data();
+
+			// Scan the actual directories in the filesystem
+			$directories = scandir($root_dir);
+			if ($directories === false) {
+				return;
+			}
+
+			foreach ($directories as $dir_name) {
+				// Skip current directory, parent directory, and current session
+				if ($dir_name === '.' || $dir_name === '..' || $dir_name === $current_session_id) {
+					continue;
+				}
+
+				$dir_path = trailingslashit($root_dir) . $dir_name;
+
+				// Only process actual directories
+				if (!is_dir($dir_path)) {
+					continue;
+				}
+
+				// Check if this directory should be cleaned up
+				$should_cleanup = false;
+
+				// If we have session data for this directory, check if it matches the pack_id
+				if (isset($all_session_data[$dir_name]) &&
+					isset($all_session_data[$dir_name]['id']) &&
+					$all_session_data[$dir_name]['id'] === $pack_id) {
+					$should_cleanup = true;
+				} else if (!isset($all_session_data[$dir_name])) {
+					// This is an orphaned directory with no corresponding session data
+					$should_cleanup = true;
+				}
+
+				if ($should_cleanup) {
+					Utils::cleanup_directory($dir_path);
+
+					if (defined('TEMPLATELY_DEV') && TEMPLATELY_DEV) {
+						error_log('Templately: Cleaned up session directory: ' . $dir_name);
+					}
+				}
+			}
+		} catch (Exception $e) {
+			if (defined('TEMPLATELY_DEV') && TEMPLATELY_DEV) {
+				error_log('Templately: Error during session directory cleanup: ' . $e->getMessage());
+			}
+		}
+	}
+
+	/**
+	 * Directory-based cleanup for AI process data directories
+	 * Scans the actual filesystem directories and removes directories that match cleanup criteria
+	 *
+	 * @param string $prv_dir The preview directory containing process directories
+	 * @param string $pack_id The pack ID to match for cleanup
+	 * @param string $current_process_id The current process ID to preserve (optional)
+	 */
+	private function cleanup_ai_process_directories($prv_dir, $pack_id, $current_process_id = null) {
+		if (empty($prv_dir) || !is_dir($prv_dir) || empty($pack_id)) {
+			return;
+		}
+
+		try {
+			// Get all AI process data to check pack_id associations
+			$ai_process_data = AIUtils::get_ai_process_data();
+
+			// Scan the actual directories in the filesystem
+			$directories = scandir($prv_dir);
+			if ($directories === false) {
+				return;
+			}
+
+			foreach ($directories as $dir_name) {
+				// Skip current directory, parent directory, and current process
+				if ($dir_name === '.' || $dir_name === '..' ||
+					(!empty($current_process_id) && $dir_name === $current_process_id)) {
+					continue;
+				}
+
+				$dir_path = trailingslashit($prv_dir) . $dir_name;
+
+				// Only process actual directories
+				if (!is_dir($dir_path)) {
+					continue;
+				}
+
+				// Check if this directory should be cleaned up
+				$should_cleanup = false;
+
+				// If we have process data for this directory, check if it matches the pack_id
+				if (isset($ai_process_data[$dir_name]) &&
+					is_array($ai_process_data[$dir_name]) &&
+					isset($ai_process_data[$dir_name]['pack_id']) &&
+					$ai_process_data[$dir_name]['pack_id'] === $pack_id) {
+					$should_cleanup = true;
+				} else if (!isset($ai_process_data[$dir_name])) {
+					// This is an orphaned directory with no corresponding process data
+					$should_cleanup = true;
+				}
+
+				if ($should_cleanup) {
+					Utils::cleanup_directory($dir_path);
+
+					if (defined('TEMPLATELY_DEV') && TEMPLATELY_DEV) {
+						error_log('Templately: Cleaned up AI process directory: ' . $dir_name);
+					}
+				}
+			}
+		} catch (Exception $e) {
+			if (defined('TEMPLATELY_DEV') && TEMPLATELY_DEV) {
+				error_log('Templately: Error during AI process directory cleanup: ' . $e->getMessage());
+			}
+		}
 	}
 
 	private function normalize_imported_data($data) {
+		$request_params     = $this->get_session_data();
 		$attachments        = !empty($data['attachments']['succeed']) ? count($data['attachments']['succeed']) : 0;
 		$attachments_fail   = !empty($data['attachments']['failed']) ? count($data['attachments']['failed']) : 0;
 		$attachments_errors = !empty($data['attachments_errors']) ? $data['attachments_errors'] : [];
@@ -772,9 +1184,15 @@ class FullSiteImport extends Base {
 			}
 		}
 
-		Helper::log($data);
+		$processed_pages  = get_option( "templately_ai_processed_pages", [] );
+		$_processed_pages = $processed_pages[$request_params['process_id']] ?? [];
+		$ai_content = [
+			'requested' => $request_params['ai_page_ids'] ?? [],
+			'processed' => $_processed_pages,
+		];
 
-		return [
+
+		$result = [
 			'attachments'        => $attachments,
 			'attachments_fail'   => $attachments_fail,
 			'attachments_errors' => $attachments_errors,
@@ -783,8 +1201,14 @@ class FullSiteImport extends Base {
 			'wp-content'         => $contents,
 			'post_types'         => $post_types,
 			'template_types'     => $template_types,
+			'ai_content'         => $ai_content,
 			'dependency_data'    => $dependency_data,
 		];
+
+		Helper::log($data);
+		Helper::log($result);
+
+		return $result;
 	}
 
 	public function get_request_params() {
@@ -819,26 +1243,30 @@ class FullSiteImport extends Base {
 		if ($last_error && ($last_error['type'] === E_ERROR || $last_error['type'] === E_CORE_ERROR || $last_error['type'] === E_COMPILE_ERROR || $last_error['type'] === E_USER_ERROR)) {
 			if (!empty($last_error['message'])) {
 				$full_message = $last_error['message'];
-				// Extract the first line from the error message
-				$firstLine = strtok($full_message, "\n");
+				$lines = explode("\n", $full_message);
 
-				// Remove absolute paths by replacing the WordPress directory path with a placeholder
-				$error_message = str_replace(ABSPATH, 'ABSPATH/', $firstLine);
+				// For import status: first 5 lines
+				$import_status_message = implode("\n", array_slice($lines, 0, 5));
+				$import_status_message = str_replace(ABSPATH, 'ABSPATH/', $import_status_message);
+
+				// For SSE: first line only
+				$sse_message = $lines[0];
+				$sse_message = str_replace(ABSPATH, 'ABSPATH/', $sse_message);
 			} else {
 				// Generic error message
-				$error_message = sprintf(__("It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://wpdeveloper.com/support');
+				$import_status_message = sprintf(__("It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://wpdeveloper.com/support');
+				$sse_message = $import_status_message;
 			}
 
-
-			$this->handle_import_status('failed', $error_message);
-			// Handle the error, e.g. log it or display a message to the user
+			$this->handle_import_status('failed', $import_status_message);
 			$this->sse_message([
 				'action'   => 'error',
 				'status'   => 'error',
 				'type'     => "error",
 				'retry'    => true,
 				'title'    => __("Oops!", "templately"),
-				'message'  => $error_message,
+				'message'  => $sse_message,
+				'error'    => $last_error,
 				// 'position' => 'plugin',
 				// 'progress' => '--',
 			]);
@@ -866,6 +1294,22 @@ class FullSiteImport extends Base {
 			'x-templately-ip'  => Helper::get_ip(),
 			'x-templately-url' => home_url('/'),
 		];
+
+
+		$request_params = $this->get_session_data();
+		if(isset($request_params['process_id']) && !empty($request_params['ai_page_ids'])){
+			$processed_pages = get_option( "templately_ai_processed_pages", [] );
+			$updated_ids     = $processed_pages[$request_params['process_id']] ?? [];
+			$updated_pages   = $updated_ids['pages'] ?? [];
+			$ai_page_ids     = array_reduce($request_params['ai_page_ids'], 'array_merge', array());
+
+			$headers['x-templately-ai-process-id']      = $request_params['process_id'];
+			$headers['x-templately-ai-requested-pages'] = implode(',', $ai_page_ids);
+			$headers['x-templately-ai-updated-pages']   = implode(',', array_keys($updated_pages));
+			$headers['x-templately-ai-missing-pages']   = implode(',', array_diff($ai_page_ids, array_keys($updated_pages)));
+			$headers['x-templately-ai-credit-cost']     = $updated_ids['credit_cost'] ?? null;
+		}
+
 
 		$args = [
 			'headers' => $headers,
@@ -928,6 +1372,7 @@ class FullSiteImport extends Base {
 
 		$platform = isset($_GET['platform']) ? $_GET['platform'] : 'elementor';
 		$id       = isset($_GET['id']) ? intval($_GET['id']) : 0;
+		$isAi     = isset($_GET['isAi']) ? $_GET['isAi'] : false;
 
 		$response = wp_remote_get($this->info_get_api_url($id), [
 			'timeout' => 30,
@@ -936,6 +1381,7 @@ class FullSiteImport extends Base {
 				'x-templately-ip'      => Helper::get_ip(),
 				'x-templately-url'     => home_url('/'),
 				'x-templately-version' => TEMPLATELY_VERSION,
+				'x-templately-is-ai'   => $isAi,
 			]
 		]);
 
@@ -958,11 +1404,22 @@ class FullSiteImport extends Base {
 			return;
 		}
 
+		$business_niches = get_option('templately_ai_business_niches', []);
+		$data['data']['business_niches'] = $business_niches;
+
 		if (isset($data['data']['manifest'])) {
 			$data['data']['manifest'] = json_decode($data['data']['manifest'], true);
 		}
 		if (isset($data['data']['settings'])) {
 			$data['data']['settings'] = json_decode($data['data']['settings'], true);
+		}
+
+		if ($isAi) {
+			// Get the latest AI process for the current API key
+			$last_ai_process = AIUtils::get_latest_ai_process_by_api_key();
+			if ($last_ai_process) {
+				$data['data']['ai_process'] = $last_ai_process;
+			}
 		}
 
 		// Return the response body
@@ -1154,5 +1611,171 @@ class FullSiteImport extends Base {
 		wp_send_json_success($result);
 	}
 
+	public function ai_get_json() {
+		$upload_dir = wp_upload_dir();
+		// read json data from post body
+		$body = file_get_contents('php://input');
+		$data = json_decode($body, true);
+
+		if(empty($data['ai_page_ids'])){
+			wp_send_json_error('Invalid ai_page_ids');
+			return;
+		}
+
+		if(!isset($_GET['session_id'])){
+			wp_send_json_error('Invalid session_id');
+			return;
+		}
+
+		$session_id  = isset($_GET['session_id']) ? sanitize_text_field($_GET['session_id']) : null;
+		$process_id  = $data['process_id'] ?? null;
+		$ai_page_ids = $data['ai_page_ids'] ?? null;
+
+
+		$this->request_params = $this->get_session_data();
+		try {
+			$this->manifest       = $this->read_manifest($this->request_params['dir_path']);
+		} catch (\Exception $th) {
+			wp_send_json_error($th->getMessage());
+		}
+
+		if(!empty($session_id) && empty($process_id)){
+			if ( !empty($this->request_params['process_id']) ){
+				$process_id = $this->request_params['process_id'] ?? null;
+			} else {
+				$process_id = AIUtils::get_ai_process_id_by_session_id($session_id);
+			}
+		}
+
+		if(empty($process_id)){
+			wp_send_json_error('Invalid process_id');
+			return;
+		}
+
+		$process_data = AIUtils::get_ai_process_data_by_process_id($process_id);
+		if (!empty($process_data['preview_error'])) {
+			wp_send_json_error($process_data['preview_error']);
+		}
+
+		$finalizer = new Finalizer( array_merge($this->request_params, [
+			'origin'   => $this,
+			'manifest' => $this->manifest,
+		]) );
+		$finalizer->process_id  = $process_id;
+		$finalizer->ai_page_ids = $ai_page_ids;
+
+
+		$result = [];
+		foreach ($ai_page_ids as $key => $ids) {
+			foreach ($ids as $id) {
+				$type_arr = explode('/', $key);
+				$finalizer->type     = $type_arr[0];
+				$finalizer->sub_type = isset($type_arr[1]) ? $type_arr[1] : '';
+				// Check if this is AI content before processing
+				if ($finalizer->isAiContent($id)) {
+					// Process AI content using AIContentHelper trait
+					$ai_result = $finalizer->processAiContent($id);
+					if($ai_result['is_ai'] && !empty($ai_result['template_json'])){
+						$template_json = $ai_result['template_json'];
+						$result[$id] = $template_json;
+					}
+					else if($finalizer->isAiFileSkipped($id)){
+						// must pass array for the js side to work.
+						$result[$id] = [];
+					}
+				}
+			}
+		}
+
+		wp_send_json_success(['process_id' => $process_id, 'templates' => $result]);
+	}
+
+	/**
+	 * Process AI preview content following the ai_get_json() pattern
+	 *
+	 * @param string $process_id The AI process ID
+	 * @param array $ai_page_ids The AI page IDs data structure
+	 * @param array $ai_preview_ids The AI preview IDs to process
+	 * @return array Processed AI content data
+	 */
+	private function process_ai_preview_content($process_id, $ai_page_ids, $ai_preview_ids) {
+		if (empty($process_id) || empty($ai_page_ids) || empty($ai_preview_ids)) {
+			return [];
+		}
+
+		$all_ai_process_data = AIUtils::get_ai_process_data();
+		if (empty($all_ai_process_data[$process_id])) {
+			return [];
+		}
+		$ai_process_data = $all_ai_process_data[$process_id];
+		$_REQUEST['is_lightspeed'] = 'true';
+		$_REQUEST['session_id'] = $ai_process_data['session_id'] ?? null;
+		// Initialize session data and manifest following ai_get_json() pattern
+		$this->request_params = $this->get_session_data();
+		$this->manifest = $this->read_manifest($this->request_params['dir_path']);
+
+		// Create Finalizer instance with the same configuration as ai_get_json()
+		$finalizer = new Finalizer(array_merge($this->request_params, [
+			'origin'   => $this,
+			'manifest' => $this->manifest,
+		]));
+		$finalizer->process_id = $process_id;
+		$finalizer->ai_page_ids = $ai_page_ids;
+
+		$result = [];
+
+		// Process each AI preview ID
+		foreach ($ai_preview_ids as $preview_id) {
+			// Extract type and sub_type metadata from ai_page_ids structure
+			$type_info = $this->extract_content_metadata($preview_id, $ai_page_ids);
+
+			if ($type_info) {
+				$finalizer->type = $type_info['type'];
+				$finalizer->sub_type = $type_info['sub_type'];
+
+				// Check if this is AI content before processing
+				if ($finalizer->isAiContent($preview_id)) {
+					// Process AI content using AIContentHelper trait
+					$ai_result = $finalizer->processAiContent($preview_id);
+					if ($ai_result['is_ai'] && !empty($ai_result['template_json'])) {
+						$template_json = $ai_result['template_json'];
+						$result[$preview_id] = $template_json;
+					} else if ($finalizer->isAiFileSkipped($preview_id)) {
+						// Handle skipped AI files
+						$result[$preview_id] = [];
+					}
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Extract content metadata (type and sub_type) from ai_page_ids structure
+	 *
+	 * @param string $preview_id The preview ID to find
+	 * @param array $ai_page_ids The AI page IDs data structure
+	 * @return array|null Array with 'type' and 'sub_type' keys, or null if not found
+	 */
+	private function extract_content_metadata($preview_id, $ai_page_ids) {
+		if (empty($ai_page_ids) || !is_array($ai_page_ids)) {
+			return null;
+		}
+
+		// Search through the ai_page_ids structure to find the preview_id
+		foreach ($ai_page_ids as $key => $ids) {
+			if (is_array($ids) && in_array($preview_id, $ids)) {
+				// Extract type and sub_type from the key (e.g., 'content/page' or 'templates')
+				$type_arr = explode('/', $key);
+				return [
+					'type' => $type_arr[0],
+					'sub_type' => isset($type_arr[1]) ? $type_arr[1] : ''
+				];
+			}
+		}
+
+		return null;
+	}
 
 }

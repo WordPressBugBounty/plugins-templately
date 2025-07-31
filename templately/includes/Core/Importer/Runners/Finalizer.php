@@ -4,16 +4,20 @@ namespace Templately\Core\Importer\Runners;
 
 
 use Exception;
+use Templately\Core\Importer\Utils\AIContentHelper;
 use Templately\Core\Importer\Utils\Utils;
+use Templately\Core\Importer\Utils\AIUtils;
 use Templately\Utils\Helper;
 
 class Finalizer extends BaseRunner {
+	use AIContentHelper;
 	private $options       = [];
 	private $type_to_check = [ 'templates', 'content' ];
 	private $imported_data;
 
-	private $type     = '';
-	private $sub_type = '';
+	public $type     = '';
+	private $data     = [];
+	public $sub_type = '';
 	private $extra_content;
 
 	private $total_counts    = 0;
@@ -39,7 +43,7 @@ class Finalizer extends BaseRunner {
 		return __( 'Finalizing Your Imports', 'templately' );
 	}
 
-	public function should_run( $data, $imported_data = [] ): bool {
+	public function should_run( $param_data, $imported_data = [] ): bool {
 		$data = [];
 
 		foreach ( $this->type_to_check as $type ) {
@@ -62,7 +66,7 @@ class Finalizer extends BaseRunner {
 			return;
 		}
 		foreach ( $templates as $id => $template ) {
-			if ( ! isset( $template['data'] ) && !isset( $template['__attachments']) && !isset($template['has_logo']) ) {
+			if ( ! isset( $template['data'] ) && !isset( $template['__attachments']) && !isset($template['has_logo']) && !$this->is_ai_content($id) ) {
 				continue;
 			}
 
@@ -81,6 +85,7 @@ class Finalizer extends BaseRunner {
 	}
 
 	public function import( $data, $imported_data ): array {
+		$this->data = &$data;
 		$this->imported_data = &$imported_data;
 
 		$this->json->imported_data = $this->imported_data;
@@ -122,14 +127,15 @@ class Finalizer extends BaseRunner {
 
 	private function finalize_imports( $templates, $type, $post_type = null ) {
 		// used for counting
+		$processed = $this->get_progress([], 'finalized_imports', false);
+		$path      = $this->dir_path . $this->type . DIRECTORY_SEPARATOR;
 
-		$this->loop( $templates, function($old_template_id, $template_settings ) use($type, $post_type) {
-			$processed = $this->get_progress([], 'finalized_imports', false);
+		if ( ! empty( $this->sub_type ) ) {
+			$path     .= $this->sub_type . DIRECTORY_SEPARATOR;
+		}
+
+		$this->loop( $templates, function($old_template_id, $template_settings ) use($type, $post_type, $path, $processed) {
 			try {
-				$path = $this->dir_path . $this->type . DIRECTORY_SEPARATOR;
-				if ( ! empty( $this->sub_type ) ) {
-					$path .= $this->sub_type . DIRECTORY_SEPARATOR;
-				}
 
 				if($post_type && isset($this->imported_data[$type]['__attachments'][$post_type][$old_template_id])){
 					$template_settings['__attachments'] = $this->imported_data[$type]['__attachments'][$post_type][$old_template_id];
@@ -138,8 +144,37 @@ class Finalizer extends BaseRunner {
 					$template_settings['__attachments'] = $this->imported_data[$type]['__attachments'][$old_template_id];
 				}
 
-				$path          .= "{$old_template_id}.json";
-				$template_json = Utils::read_json_file( $path );
+				// Read the original template file for non-AI content
+				$original_file = $path . "{$old_template_id}.json";
+				$template_json = Utils::read_json_file($original_file);
+
+				$processed_pages = get_option("templately_ai_processed_pages", []);
+				$updated_ids = $processed_pages[$this->process_id] ?? [];
+				$ai_paths = $this->generateAiFilePaths($old_template_id);
+				if(!empty($this->process_id) && is_numeric($this->process_id) && $this->is_ai_content($old_template_id) && !file_exists($ai_paths['ai_file_path'])){
+					// Use the static timeout-aware wait handler from AIUtils
+					AIUtils::handle_sse_wait_with_timeout(
+						$this->session_id,
+						'ai_content_time',
+						$updated_ids,
+						$this->ai_page_ids,
+						[$this, 'sse_message'],
+						[
+							'name' => method_exists($this, 'get_name') ? $this->get_name() : '',
+							'post_type' => $post_type,
+							'id' => $old_template_id,
+						]
+					);
+				}
+				// Check if this is AI content before processing
+				if ($this->isAiContent($old_template_id)) {
+					// Process AI content using AIContentHelper trait
+					$ai_result = $this->processAiContent($old_template_id);
+					if($ai_result['is_ai'] && !empty($ai_result['template_json'])){
+						$template_json = $ai_result['template_json'];
+					}
+				}
+
 				$params = $this->origin->get_request_params();
 				$this->json->prepare( $template_json, $template_settings, $this->extra_content['form'][ $old_template_id ] ?? [], $params )->update();
 
@@ -164,4 +199,8 @@ class Finalizer extends BaseRunner {
 	public function post_log($id, $size_dimension = null){
 		$this->log(-1, "Imported attachment: $id" . ( $size_dimension ? " - $size_dimension" : ''), 'eventLog');
 	}
+
+
+
+
 }

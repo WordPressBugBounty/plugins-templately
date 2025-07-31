@@ -154,7 +154,7 @@ class Dependencies extends API {
 		// Get parameters from request
 		$dependencies = $this->get_param( 'dependencies', [], null );
 		$platform = $this->get_param( 'platform', 'elementor' );
-		$categories = $this->get_param( 'categories', [] );
+		$categories = $this->get_param( 'categories', [], null );
 
 		// Get all plugins for checking status
 		$all_plugins = array();

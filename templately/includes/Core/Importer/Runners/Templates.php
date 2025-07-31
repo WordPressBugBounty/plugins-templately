@@ -125,6 +125,14 @@ class Templates extends BaseRunner {
 		$template_content['id']              = $id;
 		unset($template_settings['conditions']);
 		$template_content['import_settings'] = $template_settings;
+
+		if($this->platform === 'elementor' && $this->is_ai_content($id)){
+			$template_content['content'] = [];
+		}
+		else if($this->platform === 'gutenberg' && $this->is_ai_content($id)){
+			$template_content['content'] = '';
+		}
+
 		$template->import( $template_content );
 
 		if($template->has_logo($template_content)){

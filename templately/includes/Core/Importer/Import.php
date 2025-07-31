@@ -3,6 +3,7 @@
 namespace Templately\Core\Importer;
 
 use Exception;
+use Templately\Core\Importer\Runners\AIContent;
 use Templately\Core\Importer\Runners\Attachments;
 use Templately\Core\Importer\Runners\BaseRunner;
 use Templately\Core\Importer\Runners\Customizer;
@@ -56,6 +57,7 @@ class Import {
 			new GutenbergContent( $this->request_params ),
 			new ElementorContent( $this->request_params ),
 			new WPContent( $this->request_params ),
+			// new AIContent( $this->request_params ),
 			new Finalizer( $this->request_params )
 		];
 	}

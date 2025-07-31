@@ -62,6 +62,35 @@ class Dependencies extends BaseRunner {
 			// $this->before_install_hook();
 			// error_log(print_r($request_params['plugins'], true), 3, ABSPATH . 'wp-content/debug.log');
 
+			// Sort plugins to ensure pro plugins are activated after free versions
+			$plugin_order = [
+				'elementor/elementor.php',
+				'elementor-pro/elementor-pro.php',
+				'essential-addons-for-elementor-lite/essential_adons_elementor.php',
+				'essential-addons-elementor/essential_adons_elementor.php'
+			];
+
+			usort($request_params['plugins'], function($a, $b) use ($plugin_order) {
+				$pos_a = array_search($a['plugin_file'], $plugin_order);
+				$pos_b = array_search($b['plugin_file'], $plugin_order);
+
+				// If both plugins are in the order array, sort by their position
+				if ($pos_a !== false && $pos_b !== false) {
+					return $pos_a - $pos_b;
+				}
+
+				// If only one plugin is in the order array, prioritize it
+				if ($pos_a !== false) {
+					return -1;
+				}
+				if ($pos_b !== false) {
+					return 1;
+				}
+
+				// If neither plugin is in the order array, maintain original order
+				return 0;
+			});
+
 			$results = $this->loop( $request_params['plugins'], function( $key,  $dependency, $results ) use(&$_installed_plugins, $total_plugin) {
 				error_log(print_r([$key,  $dependency['name']], true), 3, ABSPATH . 'wp-content/debug.log');
 
@@ -90,7 +119,7 @@ class Dependencies extends BaseRunner {
 						$this->throw('Installation Failed: ' . $dependency['name'] . ' (' . ($plugin_status['message'] ?? '') . ')');
 					}
 
-					$results['plugins']['failed'][] = [
+					$results['failed'][] = [
 						'name'    => $dependency['name'],
 						'slug'    => $dependency['slug'],
 						'link'    => $dependency['link'],
@@ -99,10 +128,9 @@ class Dependencies extends BaseRunner {
 				} else {
 					$_installed_plugins++;
 					// $total_plugin_installed--;
-
-					$results['_installed_plugins'] = $_installed_plugins;
 				}
 
+				$results['_installed_plugins'] = $_installed_plugins;
 				return $results;
 			}, null, true);
 

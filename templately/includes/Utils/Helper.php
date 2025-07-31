@@ -1,11 +1,14 @@
 <?php
+
 namespace Templately\Utils;
 
 use Elementor\Plugin;
+use Templately\Core\Importer\Utils\Utils;
 use WP_Error;
 use WP_REST_Response;
 use function get_plugins;
 use function is_plugin_active;
+
 /**
  * Utility Helper for Templately
  *
@@ -18,15 +21,15 @@ class Helper extends Base {
 	 * Get installed WordPress Plugin List
 	 * @return array
 	 */
-	public static function get_plugins(){
-		if( ! function_exists( 'get_plugins' ) ) {
+	public static function get_plugins() {
+		if (! function_exists('get_plugins')) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
 		return get_plugins();
 	}
-	public static function is_plugins_installed($plugin_file){
+	public static function is_plugins_installed($plugin_file) {
 		$_plugins     = self::get_plugins();
-		$is_installed = isset( $_plugins[ $plugin_file ] );
+		$is_installed = isset($_plugins[$plugin_file]);
 		return $is_installed;
 	}
 
@@ -34,11 +37,11 @@ class Helper extends Base {
 	 * Get installed WordPress Plugin List
 	 * @return boolean
 	 */
-	public static function is_plugin_active( $plugin ){
-		if( ! function_exists( 'is_plugin_active' ) ) {
+	public static function is_plugin_active($plugin) {
+		if (! function_exists('is_plugin_active')) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
-		return is_plugin_active( $plugin );
+		return is_plugin_active($plugin);
 	}
 
 	/**
@@ -48,15 +51,15 @@ class Helper extends Base {
 	 */
 	public static function get_ip() {
 		$ip = '127.0.0.1'; // Local IP
-		if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
+		if (! empty($_SERVER['HTTP_CLIENT_IP'])) {
 			$ip = $_SERVER['HTTP_CLIENT_IP'];
-		} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+		} elseif (! empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
 			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
 		} else {
-			$ip = ! empty( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : $ip;
+			$ip = ! empty($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : $ip;
 		}
 
-		return sanitize_text_field( $ip );
+		return sanitize_text_field($ip);
 	}
 
 	/**
@@ -66,12 +69,12 @@ class Helper extends Base {
 	 * @param array $data
 	 * @return void
 	 */
-	public static function views( $name, $data = [] ){
-		extract( $data );
+	public static function views($name, $data = []) {
+		extract($data);
 		$helper = self::class;
 		$file = TEMPLATELY_PATH . 'views/' . $name . '.php';
 
-		if( is_readable( $file ) ) {
+		if (is_readable($file)) {
 			include_once $file;
 		}
 	}
@@ -84,13 +87,13 @@ class Helper extends Base {
 	 *
 	 * @return bool|string
 	 */
-	public static function sanitize( $value, $type = 'text' ){
-		switch ( $type ) {
+	public static function sanitize($value, $type = 'text') {
+		switch ($type) {
 			case 'boolean':
-				$sanitized_value = rest_sanitize_boolean( $value );
+				$sanitized_value = rest_sanitize_boolean($value);
 				break;
 			default:
-				$sanitized_value = sanitize_text_field( $value );
+				$sanitized_value = sanitize_text_field($value);
 				break;
 		}
 
@@ -107,13 +110,16 @@ class Helper extends Base {
 	 * @param array $additional_data
 	 * @return WP_Error
 	 */
-	public static function error( $error_code, $error_message, $endpoint = '', $status = 500, $additional_data = [] ) {
+	public static function error($error_code, $error_message, $endpoint = '', $status = 500, $additional_data = []) {
 		$additional_data['status'] = $status;
-		if ( ! empty( $endpoint ) ) {
+		if (! empty($endpoint)) {
 			$additional_data['endpoint'] = $endpoint;
 		}
+		// Add browser padding to avoid browsers not serving small JSON responses
+		$padding_length = 512;
+		$additional_data['browser_padding'] = str_repeat(' ', $padding_length);
 
-		return new WP_Error( $error_code, $error_message, $additional_data );
+		return new WP_Error($error_code, $error_message, $additional_data);
 	}
 
 	/**
@@ -122,8 +128,8 @@ class Helper extends Base {
 	 * @param mixed $data
 	 * @return WP_REST_Response
 	 */
-	public static function success( $data ) {
-		return new WP_REST_Response( $data, 200 );
+	public static function success($data) {
+		return new WP_REST_Response($data, 200);
 	}
 
 	/**
@@ -135,40 +141,40 @@ class Helper extends Base {
 	 *
 	 * @return array
 	 */
-	public function normalizeFavourites( $favourites, $_favourites = [], $undo = false ){
-		if( $undo ) {
-			$_favourites[ $favourites['type'] ] = array_values(array_filter( $_favourites[ $favourites['type'] ], function( $item ) use( $favourites ) {
+	public function normalizeFavourites($favourites, $_favourites = [], $undo = false) {
+		if ($undo) {
+			$_favourites[$favourites['type']] = array_values(array_filter($_favourites[$favourites['type']], function ($item) use ($favourites) {
 				return $item != $favourites['id'];
-			} ));
+			}));
 			return $_favourites;
 		}
 
-		array_map( function( $item ) use ( &$_favourites) {
-			if( ! is_null( $item ) ) {
+		array_map(function ($item) use (&$_favourites) {
+			if (! is_null($item)) {
 				$item = (array) $item;
-				if ( isset( $_favourites[ $item['type'] ] ) ){
-					$_favourites[ $item['type'] ][] = $item['id'];
+				if (isset($_favourites[$item['type']])) {
+					$_favourites[$item['type']][] = $item['id'];
 				} else {
-					$_favourites[ $item['type'] ] = [ $item['id'] ];
+					$_favourites[$item['type']] = [$item['id']];
 				}
 			}
 			return $_favourites;
-		}, $favourites );
+		}, $favourites);
 
 		return $_favourites;
 	}
 
-	public function normalizeReviews( $favourites, $_favourites = [], $undo = false ){
-		array_map( function( $item ) use ( &$_favourites) {
-			if( ! is_null( $item ) ) {
+	public function normalizeReviews($favourites, $_favourites = [], $undo = false) {
+		array_map(function ($item) use (&$_favourites) {
+			if (! is_null($item)) {
 				$item = (array) $item;
-				if ( !isset( $_favourites[ $item['type'] ] ) ){
-					$_favourites[ $item['type'] ] = [];
+				if (!isset($_favourites[$item['type']])) {
+					$_favourites[$item['type']] = [];
 				}
-				$_favourites[ $item['type'] ][$item['type_id']] = $item['rating'];
+				$_favourites[$item['type']][$item['type_id']] = $item['rating'];
 			}
 			return $_favourites;
-		}, $favourites );
+		}, $favourites);
 
 		return $_favourites;
 	}
@@ -179,8 +185,8 @@ class Helper extends Base {
 	 * @param object $triggered_by
 	 * @return void
 	 */
-	public static function trigger_error( $triggered_by, $method = 'get_instance' ){
-		$class = get_class( $triggered_by );
+	public static function trigger_error($triggered_by, $method = 'get_instance') {
+		$class = get_class($triggered_by);
 		$trace = debug_backtrace(); // phpcs:ignore PHPCompatibility.FunctionUse.ArgumentFunctionsReportCurrentValue.NeedsInspection
 		$file = $trace[0]['file'];
 		$line = $trace[0]['line'];
@@ -193,18 +199,18 @@ class Helper extends Base {
 	 * @param mixed $log
 	 * @return void
 	 */
-	public static function log( $log ){
-		if ( defined('WP_DEBUG_LOG') && WP_DEBUG_LOG ) {
-			if ( is_array( $log ) || is_object( $log ) ) {
-				error_log( print_r( $log, true ) );
+	public static function log($log) {
+		if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+			if (is_array($log) || is_object($log)) {
+				error_log(print_r($log, true));
 			} else {
-				error_log( $log ?: '' );
+				error_log($log ?: '');
 			}
 		}
 	}
 
-	public static function should_flush(){
-		if(isset($_GET['is_lightspeed']) && $_GET['is_lightspeed'] === 'true'){
+	public static function should_flush() {
+		if (isset($_REQUEST['is_lightspeed']) && $_REQUEST['is_lightspeed'] === 'true') {
 			return false;
 		}
 		return (!defined('TEMPLATELY_IGNORE_FLUSH_ALL') || !TEMPLATELY_IGNORE_FLUSH_ALL) && strpos($_SERVER['SERVER_SOFTWARE'], 'LiteSpeed') === false;
@@ -216,7 +222,7 @@ class Helper extends Base {
 		while (!empty($queue)) {
 			$current_block = array_shift($queue);
 
-			if($search === $current_block['blockName']){
+			if ($search === $current_block['blockName']) {
 				return $current_block;
 			}
 
@@ -240,11 +246,11 @@ class Helper extends Base {
 		$user = wp_get_current_user();
 
 		// Multisite super admin has all caps by definition, Unless specifically denied.
-		if ( is_multisite() && is_super_admin( $user->ID ) ) {
+		if (is_multisite() && is_super_admin($user->ID)) {
 			return true;
 		}
 
-		$caps = map_meta_cap( $cap, $user->ID, ...$args );
+		$caps = map_meta_cap($cap, $user->ID, ...$args);
 
 		switch ($cap) {
 			case 'install_plugins':
@@ -266,22 +272,22 @@ class Helper extends Base {
 		}
 
 		// Maintain BC for the argument passed to the "user_has_cap" filter.
-		$args = array_merge( array( $cap, $user->ID ), $args );
+		$args = array_merge(array($cap, $user->ID), $args);
 
 		/**
 		 * See WP_User::has_cap() for description.
 		 */
-		$capabilities = apply_filters( 'user_has_cap', $user->allcaps, $caps, $args, $user );
+		$capabilities = apply_filters('user_has_cap', $user->allcaps, $caps, $args, $user);
 
 		// Everyone is allowed to exist.
 		$capabilities['exist'] = true;
 
 		// Nobody is allowed to do things they are not allowed to do.
-		unset( $capabilities['do_not_allow'] );
+		unset($capabilities['do_not_allow']);
 
 		// Must have ALL requested caps.
-		foreach ( (array) $caps as $cap ) {
-			if ( empty( $capabilities[ $cap ] ) ) {
+		foreach ((array) $caps as $cap) {
+			if (empty($capabilities[$cap])) {
 				return false;
 			}
 		}
@@ -316,11 +322,11 @@ class Helper extends Base {
 	 *
 	 * @return boolean
 	 */
-	public static function enable_elementor_container(){
-		if(class_exists('Elementor\Plugin')) {
-			$control_name = Plugin::instance()->experiments->get_feature_option_key( 'container' );
-			if(get_option( $control_name ) === 'inactive') {
-				update_option( $control_name, 'active' );
+	public static function enable_elementor_container() {
+		if (class_exists('Elementor\Plugin')) {
+			$control_name = Plugin::instance()->experiments->get_feature_option_key('container');
+			if (get_option($control_name) === 'inactive') {
+				update_option($control_name, 'active');
 				return true;
 			}
 		}
@@ -334,19 +340,134 @@ class Helper extends Base {
 	 * @param [type] $defaults
 	 * @return array
 	 */
-	public static function recursive_wp_parse_args( $args, $defaults ) {
+	public static function recursive_wp_parse_args($args, $defaults) {
 		$args     = (array) $args;
 		$defaults = (array) $defaults;
 		$r = $defaults;
-		foreach ( $args as $key => $value ) {
-			if ( is_array( $value ) && isset( $r[ $key ] ) ) {
-				$r[ $key ] = self::recursive_wp_parse_args( $value, $r[ $key ] );
-			}
-			else {
+		foreach ($args as $key => $value) {
+			if (is_array($value) && isset($r[$key])) {
+				// also handle numeric array. if both $value and $r[ $key ] are numeric array. wp_is_numeric_array()
+				if (wp_is_numeric_array($value) && wp_is_numeric_array($r[$key])) {
+					foreach ($value as $k => $v) {
+						if (!in_array($v, $r[$key])) {
+							if (!isset($r[$key][$k])) {
+								$r[$key][$k] = $v;
+							} else {
+								$r[$key][] = $v;
+							}
+						}
+					}
+				} else {
+					$r[$key] = self::recursive_wp_parse_args($value, $r[$key]);
+				}
+			} else {
 				$r[$key] = $value;
 			}
 		}
 		return $r;
 	}
 
+	/**
+	 * Save template data to file
+	 *
+	 * Common function for saving templates to files, used by AI content operations
+	 *
+	 * @param string $process_id The process ID
+	 * @param string $content_id The content ID
+	 * @param string $template The template data (base64 encoded or raw)
+	 * @param array $ai_page_ids Array of AI page IDs
+	 * @param bool $is_preview Whether this is a preview operation
+	 * @param bool $is_skipped Whether the template was skipped
+	 * @return array|WP_Error Result array with status and data
+	 */
+	public static function save_template_to_file($process_id, $content_id, $template, $ai_page_ids, $is_preview = false, $is_skipped = false) {
+		$upload_dir = wp_upload_dir();
+
+		// Always save to preview directory for AI content workflow
+		$tmp_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'preview' . DIRECTORY_SEPARATOR . $process_id . DIRECTORY_SEPARATOR;
+
+		// Decode template if it's base64 encoded
+		if (! empty($template) && base64_decode($template, true) !== false) {
+			$template = base64_decode($template);
+		}
+
+		// Handle empty template (skipped)
+		if (empty($template)) {
+			$template = json_encode([
+				"isSkipped" => true,
+			]);
+		}
+
+		// Find the correct directory for the content ID
+		$found_key = null;
+		foreach ($ai_page_ids as $key => $ids) {
+			if (in_array($content_id, $ids)) {
+				$found_key = $key;
+				break;
+			}
+		}
+
+		if ($found_key === null) {
+			return self::error('invalid_content_id', __('Content ID not found in AI page IDs.', 'templately'), 'save_template_to_file', 400);
+		}
+
+		// Create directory and file path
+		$page_dir = $tmp_dir . $found_key . DIRECTORY_SEPARATOR;
+		$file_path = $page_dir . $content_id . '.ai.json';
+		wp_mkdir_p($page_dir);
+
+		// Save the file
+		$is_success = file_put_contents($file_path, $template);
+
+		if ($is_success) {
+			// Update processed pages option
+			$processed_pages = get_option("templately_ai_processed_pages", []);
+			$processed_pages[$process_id] = $processed_pages[$process_id] ?? [];
+			$processed_pages[$process_id]['pages'][$content_id] = $is_skipped;
+			update_option("templately_ai_processed_pages", $processed_pages, false);
+
+			return [
+				'status' => 'success',
+				'data'   => [
+					'process_id'      => $process_id,
+					// 'file_path'       => $file_path,
+					'content_id'      => $content_id,
+				],
+			];
+		}
+
+		return self::error('file_save_failed', __('Failed to save template file.', 'templately'), 'save_template_to_file', 500);
+	}
+
+	/**
+	 * Get matched session data by process ID
+	 *
+	 * Helper function to retrieve session data for a given process ID
+	 *
+	 * @param string $process_id The process ID to match
+	 * @return array|false Returns matched data array or false if not found
+	 */
+	public static function get_matched_session_data($process_id) {
+		if (empty($process_id)) {
+			return false;
+		}
+
+		$all_data = Utils::get_all_session_data();
+
+		if (empty($all_data) || ! is_array($all_data)) {
+			return false;
+		}
+
+		// INSERT_YOUR_CODE
+		if (is_array($all_data)) {
+			$all_data = array_reverse($all_data);
+		}
+		foreach ($all_data as $data) {
+			if (isset($data['process_id']) && ($data['process_id'] === $process_id)) {
+				return $data;
+			}
+		}
+
+		return false;
+	}
 }

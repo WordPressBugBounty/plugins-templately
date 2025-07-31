@@ -42,6 +42,7 @@ class ElementorHelper extends ImportHelper {
 
 		$extraContent = $extra_content;
 		$_data        = [];
+		$template_settings['data'] = $template_settings['data'] ?? [];
 		foreach ( $template_settings['data'] as $type => $type_data ) {
 			if ( empty( $type_data ) ) {
 				continue;

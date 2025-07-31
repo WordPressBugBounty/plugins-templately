@@ -126,9 +126,12 @@ abstract class API extends Base {
 	 * @return WP_Error|boolean
 	 */
 	public function _permission_check( WP_REST_Request $request ) {
+		$this->request = $request;
 		if(!current_user_can('delete_posts')){
 			return false;
 		}
+
+		add_filter('wp_redirect', '__return_false', 999);
 
 		return $this->permission_check( $request );
 	}

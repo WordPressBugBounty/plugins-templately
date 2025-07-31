@@ -161,8 +161,8 @@ abstract class BaseTemplate {
 			return $document->get_content( $with_css );
 		}
 		$post = get_post( $this->get_main_id() );
-
-		return $post->post_content;
+		$content = $post->post_content;
+		return apply_filters( 'templately_template_content', $content, $this->get_main_id() );
 	}
 
 	public function import( array $data ) {
