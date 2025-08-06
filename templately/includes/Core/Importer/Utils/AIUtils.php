@@ -44,8 +44,8 @@ class AIUtils {
 			return true;
 		}
 
-		// Check if time difference is less than 2 minutes (timeout condition)
-		if (empty($last_time) || ($current_time - $last_time) < 2 * MINUTE_IN_SECONDS) {
+		// Check if time difference is less than 5 minutes (timeout condition)
+		if (empty($last_time) || ($current_time - $last_time) < 5 * MINUTE_IN_SECONDS) {
 			// Only update time if progress has changed
 			if ($progress_percentage !== $last_progress) {
 				$updated_progress = $session_data['progress'] ?? [];

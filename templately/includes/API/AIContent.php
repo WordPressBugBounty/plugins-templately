@@ -149,12 +149,13 @@ class AIContent extends API {
 		$response = wp_remote_post($this->get_api_url("ai/modify-content/pack"), [
 			'timeout' => 15 * MINUTE_IN_SECONDS,
 			'headers' => [
-				'Accept'               => 'application/json',
-				'Content-Type'         => 'application/json',
-				'Authorization'        => 'Bearer ' . $this->api_key,
-				'x-templately-ip'      => Helper::get_ip(),
-				'x-templately-url'     => home_url('/'),
-				'x-templately-version' => TEMPLATELY_VERSION,
+				'Accept'                  => 'application/json',
+				'Content-Type'            => 'application/json',
+				'Authorization'           => 'Bearer ' . $this->api_key,
+				'x-templately-ip'         => Helper::get_ip(),
+				'x-templately-url'        => home_url('/'),
+				'x-templately-version'    => TEMPLATELY_VERSION,
+				'x-templately-session-id' => $session_id,
 			],
 			'body' => json_encode([
 				'business_name'   => $name,
@@ -245,6 +246,7 @@ class AIContent extends API {
 				'message'    => __('The content is being generated in the queue', 'templately'),
 				'process_id' => $process_id,
 				'templates'  => !empty($data['templates']) ? $data['templates'] : null,
+				'is_local_site'  => !empty($data['is_local_site']) ? $data['is_local_site'] : null,
 			];
 		}
 

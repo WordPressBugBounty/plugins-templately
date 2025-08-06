@@ -49,6 +49,9 @@ class FullSiteImport extends Base {
 	protected $tmp_dir        = null;
 	public    $request_params = [];
 
+	// Polling-specific property for ai_poll_template()
+	private   $polling_is_last_part = null;
+
 	public function __construct() {
 		$this->dev_mode = defined('TEMPLATELY_DEV') && TEMPLATELY_DEV;
 		$this->api_key  = Options::get_instance()->get('api_key');
@@ -63,6 +66,7 @@ class FullSiteImport extends Base {
 		$this->add_ajax_action('feedback_form', $this);
 		$this->add_ajax_action('google_font', $this);
 		$this->add_ajax_action('ai_get_json', $this);
+		$this->add_ajax_action('ai_poll_template', $this);
 
 		add_action('admin_init', [$this, 'admin_init']);
 		// add_action('admin_notices', [$this, 'add_revert_button']);
@@ -240,7 +244,7 @@ class FullSiteImport extends Base {
 				/**
 				 * Download the zip
 				 */
-				$this->download_zip( $_id );
+				$this->download_zip( $_id, true );
 
 				$progress['download_zip'] = true;
 				$this->update_session_data( [
@@ -702,16 +706,18 @@ class FullSiteImport extends Base {
 	/**
 	 * @throws Exception
 	 */
-	private function download_zip( $id ) {
+	private function download_zip( $id, $is_ai = false ) {
 		$this->sse_log( 'download', __( 'Downloading Template Pack', 'templately' ), 1 );
 		$response = wp_remote_get( $this->get_api_url( "v2", "import/pack/$id" ), [
 			'timeout' => 90,
 			'headers' => [
-				'Content-Type'         => 'application/json',
-				'Authorization'        => 'Bearer ' . $this->api_key,
-				'x-templately-ip'      => Helper::get_ip(),
-				'x-templately-url'     => home_url('/'),
-				'x-templately-version' => TEMPLATELY_VERSION,
+				'Content-Type'            => 'application/json',
+				'Authorization'           => 'Bearer ' . $this->api_key,
+				'x-templately-ip'         => Helper::get_ip(),
+				'x-templately-url'        => home_url('/'),
+				'x-templately-version'    => TEMPLATELY_VERSION,
+				'x-templately-is-ai'      => $is_ai,
+				'x-templately-session-id' => $this->session_id,
 			]
 		]);
 
@@ -1687,7 +1693,139 @@ class FullSiteImport extends Base {
 			}
 		}
 
-		wp_send_json_success(['process_id' => $process_id, 'templates' => $result]);
+		// Check if this is called from polling endpoint and include additional data
+		$response_data = ['process_id' => $process_id, 'templates' => $result];
+
+		if (isset($this->polling_is_last_part)) {
+			$response_data['is_last_part'] = $this->polling_is_last_part;
+
+			// Clean up the polling property
+			unset($this->polling_is_last_part);
+		}
+
+		wp_send_json_success($response_data);
+	}
+
+	/**
+	 * AJAX handler for polling AI template generation status on local sites
+	 * Makes GET request to API endpoint and returns data in same format as ai_get_json()
+	 */
+	public function ai_poll_template() {
+		// Read JSON data from post body
+		$body = file_get_contents('php://input');
+		$data = json_decode($body, true);
+
+		$process_id = $data['process_id'] ?? null;
+		$ai_page_ids = $data['ai_page_ids'] ?? null;
+
+		if(empty($process_id)){
+			wp_send_json_error('Invalid process_id');
+			return;
+		}
+
+		// first check if pooling is already complete
+		$processed_pages = get_option("templately_ai_processed_pages", []);
+		if(isset($processed_pages[$process_id]['is_last_part']) && $processed_pages[$process_id]['is_last_part']){
+			$this->ai_get_json();
+			return;
+		}
+
+		// Make GET request to API endpoint
+		$api_url = $this->get_api_url('v2', "ai/{$process_id}/template");
+
+		$response = wp_remote_get($api_url, [
+			'timeout' => 30,
+			'headers' => [
+				'Content-Type'         => 'application/json',
+				'Authorization'        => 'Bearer ' . $this->api_key,
+				'x-templately-ip'      => Helper::get_ip(),
+				'x-templately-url'     => home_url('/'),
+				'x-templately-version' => TEMPLATELY_VERSION,
+			]
+		]);
+
+		if (is_wp_error($response)) {
+			// wp_send_json_error($response->get_error_message());
+			$this->ai_get_json();
+			return;
+		}
+
+		$response_code = wp_remote_retrieve_response_code($response);
+		if ($response_code !== 200) {
+			// wp_send_json_error('API request failed with response code ' . $response_code, $response_code);
+			$this->ai_get_json();
+			return;
+		}
+
+		$body = wp_remote_retrieve_body($response);
+		$api_data = json_decode($body, true);
+
+		if (!isset($api_data['status']) || $api_data['status'] !== 'success') {
+			// wp_send_json_error($api_data['message'] ?? 'API response indicates failure.');
+			$this->ai_get_json();
+			return;
+		}
+
+		$response_data = $api_data['data'] ?? [];
+
+		// Extract required fields from API response
+		$is_last_part = $response_data['is_last_part'] ?? false;
+		$credit_cost = $response_data['credit_cost'] ?? 0;
+		$templates = $response_data['templates'] ?? [];
+		$template_id = $response_data['template_id'] ?? null;
+
+		// Save credit_cost following the same pattern as AIContent.php
+		if ($credit_cost > 0) {
+			$processed_pages = get_option("templately_ai_processed_pages", []);
+			$processed_pages[$process_id] = $processed_pages[$process_id] ?? [];
+			$processed_pages[$process_id]['credit_cost'] = $credit_cost;
+			update_option("templately_ai_processed_pages", $processed_pages, false);
+		}
+
+		if ($is_last_part) {
+			$processed_pages = get_option("templately_ai_processed_pages", []);
+			$processed_pages[$process_id] = $processed_pages[$process_id] ?? [];
+			$processed_pages[$process_id]['is_last_part'] = $is_last_part;
+			update_option("templately_ai_processed_pages", $processed_pages, false);
+		}
+
+		// Process templates if available
+		$processed_templates = [];
+		if (!empty($templates) && is_array($templates)) {
+			// Get AI process data to access ai_page_ids
+			$ai_process_data = AIUtils::get_ai_process_data();
+			if (!empty($ai_process_data[$process_id]['ai_page_ids'])) {
+				$ai_page_ids = $ai_process_data[$process_id]['ai_page_ids'];
+
+				foreach ($templates as $content_id => $template_data) {
+					// Save template to file using the common helper function
+					$result = Helper::save_template_to_file(
+						$process_id,
+						$content_id,
+						$template_data,
+						$ai_page_ids,
+						true, // Always use preview mode
+						false // Not skipped
+					);
+
+					if (!is_wp_error($result)) {
+						// Decode template if it's base64 encoded for response
+						if (!empty($template_data) && base64_decode($template_data, true) !== false) {
+							$processed_templates[$content_id] = base64_decode($template_data);
+						} else {
+							$processed_templates[$content_id] = $template_data;
+						}
+					}
+				}
+			}
+		}
+
+		// Store is_last_part before calling ai_get_json()
+		$this->polling_is_last_part = $is_last_part;
+
+		// After saving files, call ai_get_json() to process and return the data
+		// This reuses all the existing logic without duplication
+		$this->ai_get_json();
 	}
 
 	/**

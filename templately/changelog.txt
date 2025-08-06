@@ -1,4 +1,8 @@
 == Changelog ==
+= 3.3.1 - 6-8-2025 =
+Added: Local sites support in AI import.
+Few minor bug fixes & improvements
+
 = 3.3.0 – 31-07-2025 =
 Added: New Feature | Build websites with Templately AI
 Improved: Better error handling during template import
