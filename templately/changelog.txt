@@ -1,11 +1,15 @@
 == Changelog ==
-= 3.3.2 - 13-8-2025 =
+= 3.3.3 - 01-09-2025 =
+Added: Build with Templately AI option in pack details page.
+Few minor bug fixes and improvements
+
+= 3.3.2 - 13-08-2025 =
 Added: ‘Save to Templately’ option to the Elementor Editor top bar.
 Improved: user authentication after signup.
 Improved: Disabled template kit download and push to Cloud options.
 Few minor bug fixes and improvements
 
-= 3.3.1 - 6-8-2025 =
+= 3.3.1 - 6-08-2025 =
 Added: Local sites support in AI import.
 Few minor bug fixes & improvements
 
