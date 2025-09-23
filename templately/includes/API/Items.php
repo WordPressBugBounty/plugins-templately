@@ -63,6 +63,8 @@ class Items extends API {
 		$this->post( 'items/rating', [ $this, 'set_rating' ] );
 		$this->get( 'items-count', [ $this, 'get_counts' ] );
 		$this->get( 'featured-items', [ $this, 'featured_items' ] );
+		$this->get( 'trending-items', [ $this, 'trending_items' ] );
+		$this->get( 'related-items', [ $this, 'related_items' ]);
 	}
 
 	/**
@@ -156,14 +158,21 @@ class Items extends API {
 			return $this->error( 'invalid_type_call', __( 'Invalid Type Call', 'templately' ) );
 		}
 
-		$items_params = 'id, name, rating, type, description, slug, price, features, favourite_count, thumbnail, downloads, categories{ id, name, slug }, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link }, tags{ name, id }, categories{ name, id }, screenshots{ url }, banner, pack{ id, name, slug, items{ id, price, name, type, slug, thumbnail } }, live_url, template_type{ id, name, slug }';
+		$items_params = 'id, name, rating, type, description, slug, price, features, favourite_count, is_favourite, is_reviewed, thumbnail, downloads, categories{ id, name, slug }, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link }, tags{ name, id }, categories{ name, id }, screenshots{ url }, banner, published_at, updated_at, is_trending, badges, pack{ id, name, slug, items{ id, price, name, type, slug, thumbnail } }, live_url, template_type{ id, name, slug }';
 		$params       = 'data { ' . $items_params . ', variations { name, slug, type, platform } }';
 
 		if ( $type == 'packs' ) {
-			$params = 'data { id, fullsite_import, ai_compatible, has_settings, has_attachments, name, rating, type, slug, live_url, price, features, favourite_count, thumbnail, downloads, categories{ id, name, slug }, items { ' . $items_params . ' }, variations { name, slug, type, platform } }';
+			$params = 'data { id, fullsite_import, ai_compatible, has_settings, has_attachments, name, rating, type, slug, live_url, price, features, favourite_count, is_favourite, is_reviewed, thumbnail, description, tags{ name, id }, banner, published_at, updated_at, is_trending, badges, template_type{ id, name, slug } downloads, categories{ id, name, slug }, items { ' . $items_params . ' }, variations { name, slug, type, platform } }';
 		}
 
-		$response = $this->http()->query( $type, $params, [ 'slug' => $slug ] )->post();
+		$args = [
+			'slug' => $slug,
+		];
+		if (!empty($this->api_key)) {
+			$args['api_key'] = $this->api_key;
+		}
+
+		$response = $this->http()->query( $type, $params, $args )->post();
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -275,7 +284,7 @@ class Items extends API {
 				'type'    => $type == 'block' || $type == 'page' ? 'item' : 'pack'
 			];
 
-			if( $response == 1 ) {
+			if( $response == 1 || $response === false ) {
 				$_favourites = $this->utils('options')->get('favourites');
 				$_favourites = $this->utils('helper')->normalizeFavourites( $_temp_data, $_favourites, true );
 				$this->utils('options')->set('favourites', $_favourites);
@@ -458,5 +467,84 @@ class Items extends API {
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Get Trending Item List
+	 * @param WP_REST_Request $request
+	 * @return mixed
+	 */
+	public function trending_items(WP_REST_Request $request){
+		$defaults = Database::get_transient( 'trendingItems' );
+		if( $defaults ) {
+			return $defaults;
+		}
+
+		$platform = $request->get_param( 'platform' );
+		$funcArgs = [
+			// 'page'     => 1,
+			// 'per_page' => 10,
+			'platform' => $platform,
+		];
+		$response = $this->http()->query(
+			'trendingItems',
+			'data{ id, name, slug, price, type, thumbnail }',
+			$funcArgs
+		)->post();
+
+		if( ! is_wp_error( $response ) ) {
+			Database::set_transient( 'trendingItems', $response );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Get Related Item List
+	 * @param WP_REST_Request $request
+	 * @return mixed
+	 */
+	public function related_items(WP_REST_Request $request){
+		$item_id = (int) $request->get_param( 'item_id' );
+		$type = $request->get_param( '_type' );
+
+		if ( empty( $item_id ) ) {
+			return $this->error(
+				'invalid_item_id',
+				__( 'Item ID cannot be empty.', 'templately' ),
+				'related-items',
+				'400'
+			);
+		}
+
+		if ( empty( $type ) ) {
+			return $this->error(
+				'invalid_type',
+				__( 'Type cannot be empty.', 'templately' ),
+				'related-items',
+				'400'
+			);
+		}
+
+		$funcArgs = [
+			'id'       => $item_id,
+			'type'     => $type,
+			'limit'    => 3,           // Limit to 3 related items
+		];
+
+		$response = $this->http()->query(
+			'relatedItems',
+			'id, name, slug, price, type, thumbnail',
+			$funcArgs
+		)->post();
+
+		if( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		return [
+			'status' => 'success',
+			'data' => $response,
+		];
 	}
 }

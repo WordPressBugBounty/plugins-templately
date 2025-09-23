@@ -18,6 +18,25 @@ use function is_plugin_active;
  */
 class Helper extends Base {
 	/**
+	 * Check if development API should be used
+	 *
+	 * This method maintains backward compatibility by checking both TEMPLATELY_DEV_API
+	 * and falling back to TEMPLATELY_DEV if needed. This fallback logic should NOT be
+	 * removed as it ensures existing setups continue to work.
+	 *
+	 * @return bool True if development API should be used
+	 */
+	public static function is_dev_api(){
+		// Primary check: TEMPLATELY_DEV_API constant
+		if ( defined( 'TEMPLATELY_DEV_API' ) ) {
+			return constant( 'TEMPLATELY_DEV_API' );
+		}
+
+		// Fallback: Legacy TEMPLATELY_DEV constant for backward compatibility
+		return defined( 'TEMPLATELY_DEV' ) && constant( 'TEMPLATELY_DEV' );
+	}
+
+	/**
 	 * Get installed WordPress Plugin List
 	 * @return array
 	 */
@@ -77,6 +96,100 @@ class Helper extends Base {
 		if (is_readable($file)) {
 			include_once $file;
 		}
+	}
+
+	/**
+	 * Get API URL for Templately endpoints
+	 *
+	 * @param string $endpoint API endpoint path (e.g., 'v2/import/pack/123')
+	 * @return string Complete API URL
+	 */
+	public static function get_api_url($endpoint): string {
+		$base_url = self::is_dev_api() ? 'https://app.templately.dev' : 'https://app.templately.com';
+		return "{$base_url}/api/{$endpoint}";
+	}
+
+	/**
+	 * Make a unified API request to Templately API
+	 *
+	 * @param string $method HTTP method (GET or POST)
+	 * @param string $api_url Complete API URL
+	 * @param array $body Request body data (for POST requests)
+	 * @param array $extra_headers Additional headers beyond the standard ones
+	 * @param int $timeout Request timeout in seconds (default: 30)
+	 * @return array|WP_Error Response array or WP_Error on failure
+	 */
+	private static function make_api_request($method, $api_url, $body = [], $extra_headers = [], $timeout = 30) {
+		$api_key = Options::get_instance()->get('api_key');
+
+		$headers = [
+			'Authorization'        => 'Bearer ' . $api_key,
+			'x-templately-ip'      => self::get_ip(),
+			'x-templately-url'     => home_url('/'),
+			'x-templately-version' => defined( 'TEMPLATELY_VERSION' ) ? constant( 'TEMPLATELY_VERSION' ) : '1.0.0',
+		];
+
+		// Add Content-Type for POST requests
+		if (strtoupper($method) === 'POST') {
+			$headers['Content-Type'] = 'application/json';
+		}
+
+		// Merge additional headers
+		$headers = array_merge($headers, $extra_headers);
+
+		$args = [
+			'timeout' => $timeout,
+			'headers' => $headers,
+		];
+
+		// Apply filter to allow network admin or other functionality to modify request args
+		$args = apply_filters( 'templately_api_request_params', $args, $method, $api_url );
+
+		// Add body for POST requests
+		if (strtoupper($method) === 'POST') {
+			$args['body'] = is_array($body) ? json_encode($body) : $body;
+		}
+
+		// Make the appropriate request
+		if (strtoupper($method) === 'POST') {
+			return wp_remote_post($api_url, $args);
+		} else {
+			return wp_remote_get($api_url, $args);
+		}
+	}
+
+	/**
+	 * Make a GET request to Templately API
+	 *
+	 * @param string $endpoint API endpoint path (e.g., 'v2/import/pack/123')
+	 * @param array $query_params Query parameters as key-value pairs
+	 * @param array $extra_headers Additional headers beyond the standard ones
+	 * @param int $timeout Request timeout in seconds (default: 30)
+	 * @return array|WP_Error Response array or WP_Error on failure
+	 */
+	public static function make_api_get_request($endpoint, $query_params = [], $extra_headers = [], $timeout = 30) {
+		$api_url = self::get_api_url($endpoint);
+
+		// Add query parameters if provided
+		if (!empty($query_params)) {
+			$api_url = add_query_arg($query_params, $api_url);
+		}
+
+		return self::make_api_request('GET', $api_url, [], $extra_headers, $timeout);
+	}
+
+	/**
+	 * Make a POST request to Templately API
+	 *
+	 * @param string $endpoint API endpoint path (e.g., 'v2/feedback/store')
+	 * @param array $body Request body data
+	 * @param array $extra_headers Additional headers beyond the standard ones
+	 * @param int $timeout Request timeout in seconds (default: 30)
+	 * @return array|WP_Error Response array or WP_Error on failure
+	 */
+	public static function make_api_post_request($endpoint, $body = [], $extra_headers = [], $timeout = 30) {
+		$api_url = self::get_api_url($endpoint);
+		return self::make_api_request('POST', $api_url, $body, $extra_headers, $timeout);
 	}
 
 	/**
@@ -367,107 +480,4 @@ class Helper extends Base {
 		return $r;
 	}
 
-	/**
-	 * Save template data to file
-	 *
-	 * Common function for saving templates to files, used by AI content operations
-	 *
-	 * @param string $process_id The process ID
-	 * @param string $content_id The content ID
-	 * @param string $template The template data (base64 encoded or raw)
-	 * @param array $ai_page_ids Array of AI page IDs
-	 * @param bool $is_preview Whether this is a preview operation
-	 * @param bool $is_skipped Whether the template was skipped
-	 * @return array|WP_Error Result array with status and data
-	 */
-	public static function save_template_to_file($process_id, $content_id, $template, $ai_page_ids, $is_preview = false, $is_skipped = false) {
-		$upload_dir = wp_upload_dir();
-
-		// Always save to preview directory for AI content workflow
-		$tmp_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'preview' . DIRECTORY_SEPARATOR . $process_id . DIRECTORY_SEPARATOR;
-
-		// Decode template if it's base64 encoded
-		if (! empty($template) && base64_decode($template, true) !== false) {
-			$template = base64_decode($template);
-		}
-
-		// Handle empty template (skipped)
-		if (empty($template)) {
-			$template = json_encode([
-				"isSkipped" => true,
-			]);
-		}
-
-		// Find the correct directory for the content ID
-		$found_key = null;
-		foreach ($ai_page_ids as $key => $ids) {
-			if (in_array($content_id, $ids)) {
-				$found_key = $key;
-				break;
-			}
-		}
-
-		if ($found_key === null) {
-			return self::error('invalid_content_id', __('Content ID not found in AI page IDs.', 'templately'), 'save_template_to_file', 400);
-		}
-
-		// Create directory and file path
-		$page_dir = $tmp_dir . $found_key . DIRECTORY_SEPARATOR;
-		$file_path = $page_dir . $content_id . '.ai.json';
-		wp_mkdir_p($page_dir);
-
-		// Save the file
-		$is_success = file_put_contents($file_path, $template);
-
-		if ($is_success) {
-			// Update processed pages option
-			$processed_pages = get_option("templately_ai_processed_pages", []);
-			$processed_pages[$process_id] = $processed_pages[$process_id] ?? [];
-			$processed_pages[$process_id]['pages'][$content_id] = $is_skipped;
-			update_option("templately_ai_processed_pages", $processed_pages, false);
-
-			return [
-				'status' => 'success',
-				'data'   => [
-					'process_id'      => $process_id,
-					// 'file_path'       => $file_path,
-					'content_id'      => $content_id,
-				],
-			];
-		}
-
-		return self::error('file_save_failed', __('Failed to save template file.', 'templately'), 'save_template_to_file', 500);
-	}
-
-	/**
-	 * Get matched session data by process ID
-	 *
-	 * Helper function to retrieve session data for a given process ID
-	 *
-	 * @param string $process_id The process ID to match
-	 * @return array|false Returns matched data array or false if not found
-	 */
-	public static function get_matched_session_data($process_id) {
-		if (empty($process_id)) {
-			return false;
-		}
-
-		$all_data = Utils::get_all_session_data();
-
-		if (empty($all_data) || ! is_array($all_data)) {
-			return false;
-		}
-
-		// INSERT_YOUR_CODE
-		if (is_array($all_data)) {
-			$all_data = array_reverse($all_data);
-		}
-		foreach ($all_data as $data) {
-			if (isset($data['process_id']) && ($data['process_id'] === $process_id)) {
-				return $data;
-			}
-		}
-
-		return false;
-	}
 }

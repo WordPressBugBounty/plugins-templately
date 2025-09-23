@@ -10,10 +10,13 @@
 namespace Templately\API;
 
 use Error;
+use Exception;
 use Templately\Utils\Helper;
 use WP_REST_Request;
+use WP_Error;
 use Templately\Core\Importer\Utils\Utils;
 use Templately\Core\Importer\Utils\AIUtils;
+use Templately\Core\Importer\Parsers\WXR_Parser;
 
 class AIContent extends API {
 	private $endpoint  = 'ai-content';
@@ -27,7 +30,6 @@ class AIContent extends API {
 	 * @param array  $settings Settings.
 	 */
 	public function __construct() {
-	    $this->dev_mode = (defined('TEMPLATELY_DEV') && TEMPLATELY_DEV) || (defined('IMPORT_DEBUG') && IMPORT_DEBUG);
 
 		parent::__construct();
 
@@ -35,6 +37,7 @@ class AIContent extends API {
 
 	public function _permission_check(WP_REST_Request $request) {
 		$this->request = $request;
+		$this->api_key = $this->utils('options')->get( 'api_key' );
 		$process_id    = $this->get_param('process_id');
 
 		$_route = $request->get_route();
@@ -49,8 +52,13 @@ class AIContent extends API {
 				return true;
 			}
 
-			return (bool) Helper::get_matched_session_data($process_id);
+			return (bool) AIUtils::get_matched_session_data($process_id);
 		}
+
+		// // Allow access to attachments endpoint
+		// if ('/templately/v1/ai-content/attachments' === $_route) {
+		// 	return true;
+		// }
 
 		return parent::permission_check($request);
 	}
@@ -61,6 +69,71 @@ class AIContent extends API {
 		$this->post($this->endpoint . '/modify-content', [$this, 'modify_content']);
 		$this->post($this->endpoint . '/ai-update', [$this, 'ai_update']);
 		$this->post($this->endpoint . '/ai-update-preview', [$this, 'ai_update_preview']);
+		$this->get($this->endpoint . '/attachments', [$this, 'get_attachments'], [
+			'type' => [
+				'default' => 'pack',
+				'required' => false,
+				'sanitize_callback' => 'sanitize_text_field',
+			],
+			'id' => [
+				'required' => false,
+				'sanitize_callback' => 'sanitize_text_field',
+			],
+			'pack_id' => [
+				'required' => false,
+				'sanitize_callback' => 'sanitize_text_field',
+			],
+		]);
+		$this->get($this->endpoint . '/images', [$this, 'search_images'], [
+			'query' => [
+				'required' => false,
+				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => function($param, $request, $key) {
+					return is_string($param) && strlen($param) <= 255;
+				},
+			],
+			'orientation' => [
+				'required' => false,
+				'default' => 'all',
+				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => function($param, $request, $key) {
+					$allowed_orientations = ['all', 'landscape', 'portrait', 'square'];
+					return in_array($param, $allowed_orientations, true);
+				},
+			],
+			'size' => [
+				'required' => false,
+				'default' => 'medium',
+				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => function($param, $request, $key) {
+					$allowed_sizes = ['small', 'medium', 'large'];
+					return in_array($param, $allowed_sizes, true);
+				},
+			],
+			'color' => [
+				'required' => false,
+				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => function($param, $request, $key) {
+					return is_string($param) && strlen($param) <= 50;
+				},
+			],
+			'page' => [
+				'required' => false,
+				'default' => 1,
+				'sanitize_callback' => 'absint',
+				'validate_callback' => function($param, $request, $key) {
+					return is_numeric($param) && $param > 0 && $param <= 1000;
+				},
+			],
+			'per_page' => [
+				'required' => false,
+				'default' => 20,
+				'sanitize_callback' => 'absint',
+				'validate_callback' => function($param, $request, $key) {
+					return is_numeric($param) && $param > 0 && $param <= 100;
+				},
+			],
+		]);
 		// die(rest_url( 'templately/v1/ai-content/ai-update' ));
 	}
 
@@ -78,17 +151,10 @@ class AIContent extends API {
 			return $this->error('invalid_id', __('Invalid ID.', 'templately'), 'calculate_credit', 400);
 		}
 
-		$response = wp_remote_get($this->get_api_url("ai/calculate-credit/pack/$pack_id"), [
-			'timeout' => 30,
-			'headers' => [
-				'Accept'               => 'application/json',
-				'Content-Type'         => 'application/json',
-				'Authorization'        => 'Bearer ' . $this->api_key,
-				'x-templately-ip'      => Helper::get_ip(),
-				'x-templately-url'     => home_url('/'),
-				'x-templately-version' => TEMPLATELY_VERSION,
-			]
-		]);
+		$extra_headers = [
+			'Accept' => 'application/json',
+		];
+		$response = Helper::make_api_get_request("v2/ai/calculate-credit/pack/$pack_id", [], $extra_headers, 30);
 
 
 		// return $response;
@@ -118,6 +184,7 @@ class AIContent extends API {
 		$content_ids         = $this->get_param('content_ids', [], null);
 		$session_id          = $this->get_param('session_id');                  // Add session_id parameter
 		$preview_pages       = $this->get_param('preview_pages', [], null);
+		$image_replace       = $this->get_param('imageReplace', [], null);
 		$platform            = $this->get_param('platform');
 
 		// ai content fields
@@ -146,32 +213,25 @@ class AIContent extends API {
 		// $response    = get_transient( '__templately_ai_process_id' );
 
 		// if(empty($response)) {
-		$response = wp_remote_post($this->get_api_url("ai/modify-content/pack"), [
-			'timeout' => 15 * MINUTE_IN_SECONDS,
-			'headers' => [
-				'Accept'                  => 'application/json',
-				'Content-Type'            => 'application/json',
-				'Authorization'           => 'Bearer ' . $this->api_key,
-				'x-templately-ip'         => Helper::get_ip(),
-				'x-templately-url'        => home_url('/'),
-				'x-templately-version'    => TEMPLATELY_VERSION,
-				'x-templately-session-id' => $session_id,
-			],
-			'body' => json_encode([
-				'business_name'   => $name,
-				'business_niches' => $category,
-				'prompt'          => $description,
-				'email'           => $email,
-				'phone'           => $contactNumber,
-				'address'         => $businessAddress,
-				'openingHour'     => $openingHour,
-				'pack_id'         => $pack_id,
-				'content_ids'     => $content_ids,
-				'platform'        => $platform,
-				'preview_pages'   => $preview_pages,
-				'callback'        => defined('TEMPLATELY_CALLBACK') ? TEMPLATELY_CALLBACK . '/wp-json/templately/v1/ai-content/ai-update' : rest_url('templately/v1/ai-content/ai-update'),
-			]),
-		]);
+		$extra_headers = [
+			'Accept'                  => 'application/json',
+			'x-templately-session-id' => $session_id,
+		];
+		$body_data = [
+			'business_name'   => $name,
+			'business_niches' => $category,
+			'prompt'          => $description,
+			'email'           => $email,
+			'phone'           => $contactNumber,
+			'address'         => $businessAddress,
+			'openingHour'     => $openingHour,
+			'pack_id'         => $pack_id,
+			'content_ids'     => $content_ids,
+			'platform'        => $platform,
+			'preview_pages'   => $preview_pages,
+			'callback'        => defined('TEMPLATELY_CALLBACK') ? TEMPLATELY_CALLBACK . '/wp-json/templately/v1/ai-content/ai-update' : rest_url('templately/v1/ai-content/ai-update'),
+		];
+		$response = Helper::make_api_post_request('v2/ai/modify-content/pack', $body_data, $extra_headers, 15 * MINUTE_IN_SECONDS);
 
 		// 	set_transient( '__templately_ai_process_id', $response, 60 * 60 * 24 * 30 );
 		// }
@@ -199,26 +259,26 @@ class AIContent extends API {
 		if (isset($data['status']) && $data['status'] === 'success' && isset($data['process_id'])) {
 			$process_id = $data['process_id'];
 
-			// Save templates to files if available using the common function
-			if (!empty($data['templates']) && is_array($data['templates'])) {
-				foreach ($data['templates'] as $content_id => $template_data) {
-					// Decode template if it's base64 encoded
-					if (! empty($template_data) && base64_decode($template_data, true) !== false) {
-						$data['templates'][$content_id] = base64_decode($template_data);
-					}
+			// // Save templates to files if available using the common function
+			// if (!empty($data['templates']) && is_array($data['templates'])) {
+			// 	foreach ($data['templates'] as $content_id => $template_data) {
+			// 		// Decode template if it's base64 encoded
+			// 		if (! empty($template_data) && base64_decode($template_data, true) !== false) {
+			// 			$data['templates'][$content_id] = base64_decode($template_data);
+			// 		}
 
-					if (!empty($template_data)) {
-						Helper::save_template_to_file(
-							$process_id,
-							$content_id,
-							$template_data,
-							$ai_page_ids,
-							true, // Always use preview mode for AI content workflow
-							isset($template_data['isSkipped']) ? $template_data['isSkipped'] : false
-						);
-					}
-				}
-			}
+			// 		if (!empty($template_data)) {
+			// 			AIUtils::save_template_to_file(
+			// 				$process_id,
+			// 				$content_id,
+			// 				$template_data,
+			// 				$ai_page_ids,
+			// 				true, // Always use preview mode for AI content workflow
+			// 				isset($template_data['isSkipped']) ? $template_data['isSkipped'] : false
+			// 			);
+			// 		}
+			// 	}
+			// }
 
 			$ai_process_data[$process_id] = [
 				'name'            => $name,
@@ -235,7 +295,8 @@ class AIContent extends API {
 				'content_ids'     => $content_ids,
 				'platform'        => $platform,
 				'api_key'         => $this->api_key,
-				'session_id'      => $session_id, // Store session_id for coordination
+				'session_id'      => $session_id,        // Store session_id for coordination
+				'imageReplace'    => $image_replace,    // Store session_id for coordination
 			];
 
 			// Update using API key-based storage with automatic count-based cleanup
@@ -283,22 +344,22 @@ class AIContent extends API {
 		}
 
 		// Always use preview mode for AI content workflow
-		// Get AI process data using API key-based storage
-		$ai_process_data = AIUtils::get_ai_process_data();
-
-		if (empty($ai_process_data[$process_id]['ai_page_ids'])) {
-			return $this->error('invalid_process_id', __('Invalid process id.', 'templately'), 'ai-content/ai-update', 400);
+		// Validate and get process data using centralized method
+		$process_data = AIUtils::validate_and_get_process_data($process_id);
+		if (is_wp_error($process_data)) {
+			return $process_data;
 		}
 
-		$ai_page_ids = $ai_process_data[$process_id]['ai_page_ids'];
+		$session_id = $process_data['session_id'];
+		$ai_page_ids = $process_data['ai_page_ids'];
 
-		// Use the common helper function to save the template (always preview mode)
-		$result = Helper::save_template_to_file(
+		// Use the common helper function to save the template
+		$result = AIUtils::save_template_to_file(
 			$process_id,
+			$session_id,
 			$content_id,
 			$template,
 			$ai_page_ids,
-			true, // Always use preview mode
 			$isSkipped
 		);
 
@@ -344,14 +405,14 @@ class AIContent extends API {
 		}
 
 		// Always use preview mode for AI content workflow
-		// Get AI process data using API key-based storage
-		$ai_process_data = AIUtils::get_ai_process_data();
-
-		if (empty($ai_process_data[$process_id]['ai_page_ids'])) {
-			return $this->error('invalid_process_id', __('Invalid process id.', 'templately'), 'ai-content/ai-update-preview', 400);
+		// Validate and get process data using centralized method
+		$process_data = AIUtils::validate_and_get_process_data($process_id);
+		if (is_wp_error($process_data)) {
+			return $process_data;
 		}
 
-		$ai_page_ids = $ai_process_data[$process_id]['ai_page_ids'];
+		$session_id = $process_data['session_id'];
+		$ai_page_ids = $process_data['ai_page_ids'];
 		$results = [];
 		$success_count = 0;
 		$error_count = 0;
@@ -359,12 +420,12 @@ class AIContent extends API {
 		// Process each content_id/template pair
 		foreach ($template as $content_id => $template_data) {
 			// Use the common helper function to save the template (always preview mode)
-			$result = Helper::save_template_to_file(
+			$result = AIUtils::save_template_to_file(
 				$process_id,
+				$session_id,
 				$content_id,
 				$template_data,
 				$ai_page_ids,
-				true, // Always use preview mode
 				$isSkipped
 			);
 
@@ -394,10 +455,333 @@ class AIContent extends API {
 		];
 	}
 
+	/**
+	 * Get attachments from API endpoint
+	 *
+	 * @return array
+	 */
+	public function get_attachments() {
+		// Get parameters from request
+		$type = $this->get_param('type', 'pack');
+		$id = $this->get_param('pack_id');
+
+		// Require ID parameter - return error if not provided
+		if (empty($id)) {
+			return $this->error('missing_id', __('Pack ID or ID parameter is required.', 'templately'), 'get_attachments', 400);
+		}
+
+		try {
+			// Construct API endpoint URL
+			$api_endpoint = "get-xml-attachment/{$type}/{$id}";
+
+			// Make API call
+			$extra_headers = [
+				'Accept' => 'application/xml, text/xml',
+			];
+			$response = Helper::make_api_get_request("v2/$api_endpoint", [], $extra_headers, 30);
+
+			// Check for HTTP errors
+			if (is_wp_error($response)) {
+				return $this->error('api_request_failed', __('Failed to fetch attachments from API.', 'templately'), 'get_attachments', 500, $response->get_error_message());
+			}
+
+			$response_code = wp_remote_retrieve_response_code($response);
+			$xml_content = wp_remote_retrieve_body($response);
+
+			if ($response_code !== 200) {
+				// check if $xml_content contains valid json
+				// ex. '{"status":"error","message":"Attachment XML file not found in pack archive."}'
+				$error_data = @json_decode($xml_content, true);
+				if(is_array($error_data) && isset($error_data['status']) && $error_data['status'] === 'error' && !empty($error_data['message'])){
+					return $this->error('api_http_error', $error_data['message'], 'get_attachments', $response_code);
+				}
+				return $this->error('api_http_error', sprintf(__('API returned HTTP %d error.', 'templately'), $response_code), 'get_attachments', $response_code);
+			}
+
+			// Validate we have XML content
+			if (empty($xml_content)) {
+				return $this->error('no_xml_content', __('No XML content found in API response.', 'templately'), 'get_attachments', 404);
+			}
+
+			// Parse the XML content from API response
+			$parsed_data = $this->parse_xml_content($xml_content);
+
+			if (is_wp_error($parsed_data)) {
+				return $this->error('xml_parse_error', __('Failed to parse XML content.', 'templately'), 'get_attachments', 500, $parsed_data->get_error_message());
+			}
+
+			// Extract attachments from parsed data
+			$attachments = $this->extract_attachments_from_parsed_data($parsed_data);
+
+			return [
+				'status' => 'success',
+				'data' => $attachments,
+				'message' => sprintf(__('Found %d attachments.', 'templately'), count($attachments)),
+			];
+
+		} catch (Exception $e) {
+			return $this->error('exception', __('An unexpected error occurred while fetching attachments.', 'templately'), 'get_attachments', 500, $e->getMessage());
+		}
+	}
 
 
-	private function get_api_url($end_point): string {
-		$dev_mode = defined('TEMPLATELY_DEV') && TEMPLATELY_DEV;
-		return $dev_mode ? "https://app.templately.dev/api/v2/" . $end_point : "https://app.templately.com/api/v2/" . $end_point;
+
+	/**
+	 * Parse XML content string using WXR Parser
+	 *
+	 * @param string $xml_content XML content string
+	 * @return array|WP_Error Parsed data or error
+	 */
+	private function parse_xml_content($xml_content) {
+		// Ensure WordPress filesystem functions are available
+		if (!function_exists('wp_tempnam')) {
+			require_once(ABSPATH . 'wp-admin/includes/file.php');
+		}
+
+		// Create a temporary file to store XML content
+		$temp_file = wp_tempnam('templately_attachments');
+		if (!$temp_file) {
+			return new WP_Error('temp_file_failed', __('Failed to create temporary file.', 'templately'));
+		}
+
+		// Write XML content to temporary file
+		$bytes_written = file_put_contents($temp_file, $xml_content);
+		if ($bytes_written === false) {
+			unlink($temp_file);
+			return new WP_Error('write_failed', __('Failed to write XML content to temporary file.', 'templately'));
+		}
+
+		try {
+			// Initialize WXR Parser
+			$parser = new WXR_Parser();
+
+			// Parse the temporary XML file
+			$parsed_data = $parser->parse($temp_file);
+
+			// Clean up temporary file
+			unlink($temp_file);
+
+			return $parsed_data;
+
+		} catch (Exception $e) {
+			// Clean up temporary file on exception
+			if (file_exists($temp_file)) {
+				unlink($temp_file);
+			}
+			return new WP_Error('parse_exception', $e->getMessage());
+		}
+	}
+
+	/**
+	 * Extract attachments from parsed WXR data
+	 *
+	 * @param array $parsed_data Parsed WXR data
+	 * @return array Array of attachment data
+	 */
+	private function extract_attachments_from_parsed_data($parsed_data) {
+		$attachments = [];
+
+		if (isset($parsed_data['posts']) && is_array($parsed_data['posts'])) {
+			foreach ($parsed_data['posts'] as $post) {
+				// Check if this is an attachment
+				if (isset($post['post_type']) && $post['post_type'] === 'attachment') {
+					$attachment = [
+						'id' => isset($post['post_id']) ? (int) $post['post_id'] : 0,
+						'url' => isset($post['attachment_url']) ? (string) $post['attachment_url'] : '',
+						'title' => isset($post['post_title']) ? (string) $post['post_title'] : '',
+					];
+
+					// Extract metadata including dimensions and medium URL
+					$metadata = $this->extract_medium_size_url($post, $attachment['url']);
+
+					// Filter out small images (width or height <= 150px) to ignore small icons
+					if ($metadata && isset($metadata['width']) && isset($metadata['height'])) {
+						if ($metadata['width'] < 150 || $metadata['height'] < 150) {
+							continue; // Skip small images/icons
+						}
+
+						// Add dimensions to attachment data
+						$attachment['width'] = $metadata['width'];
+						$attachment['height'] = $metadata['height'];
+
+						// Add medium URL if available
+						if (isset($metadata['medium_url'])) {
+							$attachment['medium_url'] = $metadata['medium_url'];
+						}
+					} else {
+						// Skip attachments without metadata or dimensions
+						continue;
+					}
+
+					// Only add if we have the required data
+					if ($attachment['id'] && $attachment['url'] && $attachment['title']) {
+						$attachments[] = $attachment;
+					}
+				}
+			}
+		}
+
+		return $attachments;
+	}
+
+	/**
+	 * Extract medium size URL from attachment metadata and get image dimensions
+	 *
+	 * @param array $post Post data from WXR parser
+	 * @param string $original_url Original attachment URL
+	 * @return array|null Array with medium_url and dimensions if found, null otherwise
+	 */
+	private function extract_medium_size_url($post, $original_url) {
+		if (!isset($post['postmeta']) || !is_array($post['postmeta'])) {
+			return null;
+		}
+
+		foreach ($post['postmeta'] as $meta) {
+			if (!isset($meta['key']) || !isset($meta['value'])) {
+				continue;
+			}
+
+			// Only check _wp_attachment_metadata
+			if ($meta['key'] === '_wp_attachment_metadata') {
+				$attachment_metadata = @unserialize($meta['value']);
+				if (is_array($attachment_metadata)) {
+					$result = [];
+
+					// Get original image dimensions
+					$width = isset($attachment_metadata['width']) ? (int) $attachment_metadata['width'] : 0;
+					$height = isset($attachment_metadata['height']) ? (int) $attachment_metadata['height'] : 0;
+
+					$result['width'] = $width;
+					$result['height'] = $height;
+
+					// Check if medium size exists
+					if (isset($attachment_metadata['sizes']['medium']['file'])) {
+						// Construct medium URL from original URL and medium filename
+						$medium_filename = $attachment_metadata['sizes']['medium']['file'];
+						$original_path = dirname(parse_url($original_url, PHP_URL_PATH));
+						$base_url = str_replace(parse_url($original_url, PHP_URL_PATH), '', $original_url);
+						$result['medium_url'] = $base_url . $original_path . '/' . $medium_filename;
+					}
+
+					return $result;
+				}
+			}
+		}
+
+		return null;
+	}
+
+
+
+	/**
+	 * Search images endpoint
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function search_images(WP_REST_Request $request) {
+		// Get and sanitize parameters
+		$query = $this->get_param('query', '');
+		$orientation = $this->get_param('orientation', 'all');
+		$size = $this->get_param('size', 'medium');
+		$color = $this->get_param('color', '');
+		$page = $this->get_param('page', 1, 'absint');
+		$per_page = $this->get_param('per_page', 20, 'absint');
+
+		// Validate required query parameter
+		if (empty($query)) {
+			return $this->error(
+				'missing_query',
+				__('Search query is required.', 'templately'),
+				'search_images',
+				400
+			);
+		}
+
+		// Prepare API request parameters
+		$api_params = [
+			'query' => urlencode($query),
+			'page' => $page,
+			'per_page' => $per_page,
+		];
+
+		// Add optional parameters if provided
+		if ($orientation !== 'all') {
+			$api_params['orientation'] = $orientation;
+		}
+
+		if (!empty($size)) {
+			$api_params['size'] = $size;
+		}
+
+		if (!empty($color)) {
+			$api_params['color'] = $color;
+		}
+
+		// Make API request to external image service
+		$extra_headers = [
+			'Content-Type' => 'application/json',
+		];
+
+		$response = Helper::make_api_get_request('v2/images', $api_params, $extra_headers, 30);
+
+		// Handle API response errors
+		if (is_wp_error($response)) {
+			return $this->error(
+				'api_request_failed',
+				__('Failed to fetch images from external service.', 'templately'),
+				'search_images',
+				500
+			);
+		}
+
+		$response_code = wp_remote_retrieve_response_code($response);
+		$response_body = wp_remote_retrieve_body($response);
+
+		if ($response_code !== 200) {
+			return $this->error(
+				'api_response_error',
+				sprintf(__('External API returned error code: %d', 'templately'), $response_code),
+				'search_images',
+				$response_code
+			);
+		}
+
+		// Parse and validate response
+		$data = json_decode($response_body, true);
+		if (json_last_error() !== JSON_ERROR_NONE) {
+			return $this->error(
+				'invalid_response',
+				__('Invalid response from external service.', 'templately'),
+				'search_images',
+				500
+			);
+		}
+
+		// Check if the response has the expected structure and success status
+		if (!isset($data['status']) || $data['status'] !== 'success') {
+			return $this->error(
+				'api_response_error',
+				__('External API returned an error status.', 'templately'),
+				'search_images',
+				500
+			);
+		}
+
+		// Extract nested data from the response
+		$response_data = $data['data'] ?? [];
+		$images = $response_data['images'] ?? [];
+		$total_results = $response_data['total_results'] ?? 0;
+		$current_page = $response_data['page'] ?? $page;
+		$per_page_count = $response_data['per_page'] ?? $per_page;
+
+		// Return successful response with properly mapped data
+		return $this->success([
+			'images' => $images,
+			'total' => $total_results,
+			'page' => $current_page,
+			'per_page' => $per_page_count,
+			'total_pages' => $total_results > 0 ? ceil($total_results / $per_page_count) : 0,
+		]);
 	}
 }

@@ -229,10 +229,7 @@ class Admin extends Base {
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
 				'endpoint' => get_rest_url( null, 'templately/v1/' )
 			],
-			'log'                => defined( 'TEMPLATELY_DEBUG_LOG' ) && TEMPLATELY_DEBUG_LOG,
-			'dev_mode'           => defined( 'TEMPLATELY_DEV' ) && TEMPLATELY_DEV,
-			'ai_animate_ignore_mode'           => defined( 'TEMPLATELY_IGNORE_AI_ANIMATE' ) && TEMPLATELY_IGNORE_AI_ANIMATE,
-			"icons"              => [
+			"icons"                  => [
 				'construction' => templately()->assets->icon( 'icons/construction.gif' ),
 				'profile'      => templately()->assets->icon( 'icons/profile.svg' ),
 				'warning'      => templately()->assets->icon( 'icons/warning.png' )
@@ -256,9 +253,12 @@ class Admin extends Base {
 			'is_wp_support_gutenberg' => version_compare( get_bloginfo( 'version' ), '5.0.0', '>=' ),
 			'hide_buttons'            => $hide_buttons,
 			'settings'                => $templately_settings,
-			'api_key'                 => Options::get_instance()->get('api_key'),
 			'wp_user_avatar'          => get_avatar_url( get_current_user_id(), [ 'size' => 96 ] ),
+			'allowed_mime_types'      => get_allowed_mime_types(),
 		], $templately );
+
+		// Apply filter to allow network admin modifications
+		$templately = apply_filters( 'templately_admin_localized_data', $templately );
 
 		templately()->assets->localize( $_localize_handle, 'templately', $templately );
 	}

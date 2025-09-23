@@ -40,8 +40,8 @@ class Http extends Base {
      *
      * @return string
      */
-    public function url() {
-        if ( $this->dev_mode ) {
+    public function url($is_live_api = false) {
+        if ( !$is_live_api && Helper::is_dev_api() ) {
             $this->url = 'https://app.templately.dev/api/plugin';
         }
         return $this->url;
@@ -138,6 +138,7 @@ class Http extends Base {
             $query = $this->query;
         }
 
+        $is_live_api = null;
         $headers = [
             'Content-Type'         => 'application/json',
             'x-templately-ip'      => Helper::get_ip(),
@@ -148,6 +149,11 @@ class Http extends Base {
         if ( ! empty( $args['headers'] ) ) {
             $headers = wp_parse_args( $args['headers'], $headers );
             unset( $args['headers'] );
+        }
+
+        if ( ! empty( $args['is_live_api'] ) ) {
+            $is_live_api = $args['is_live_api'];
+            unset( $args['is_live_api'] );
         }
 
         if ( defined( 'TEMPLATELY_DEBUG_LOG' ) && TEMPLATELY_DEBUG_LOG ) {
@@ -167,7 +173,7 @@ class Http extends Base {
         $maxRetries = defined('TEMPLATELY_HTTP_RETRY') ? TEMPLATELY_HTTP_RETRY : 3;
         $args       = wp_parse_args( $args, $_default_args );
         do {
-            $response = wp_remote_post( $this->url(), $args );
+            $response = wp_remote_post( $this->url($is_live_api), $args );
             $retryCount++;
         } while ( is_wp_error( $response ) && $retryCount < $maxRetries );
 

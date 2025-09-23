@@ -163,7 +163,8 @@ class Finalizer extends BaseRunner {
 							'name' => method_exists($this, 'get_name') ? $this->get_name() : '',
 							'post_type' => $post_type,
 							'id' => $old_template_id,
-						]
+						],
+						$old_template_id // Pass template ID for local site polling
 					);
 				}
 				// Check if this is AI content before processing

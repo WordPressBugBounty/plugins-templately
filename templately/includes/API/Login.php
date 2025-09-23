@@ -35,7 +35,7 @@ class Login extends API {
 			return $data;
 		}
 
-		$query = 'id, price, name, discounted_price, type, sites';
+		$query = 'id, price, name, discounted_price, type, sites, coupon';
 		$response = $this->http()->query(
 			'subscriptionPlans',
 			$query
@@ -60,6 +60,8 @@ class Login extends API {
             'ip'       => $_ip,
             'site_url' => $_site_url
         ];
+
+        $postArgs = [];
 
         if ( $viaAPI ) {
             $api_key             = $this->get_param( 'api_key' );
@@ -91,7 +93,7 @@ class Login extends API {
             $viaAPI ? 'connectWithApiKey' : 'connect',
             $query,
             $funcArgs
-        )->post();
+        )->post($postArgs);
 
         if ( is_wp_error( $response ) ) {
             return $response;
@@ -133,6 +135,8 @@ class Login extends API {
 			unset( $response['user']['reviews'] );
 			$meta['reviews'] = $_reviews;
 		}
+
+        // No longer need to manage is_live_api state - API selection is now handled by TEMPLATELY_DEV_API constant
 
         $this->utils( 'options' )->set( 'user', $response['user'] );
         $response['user']['meta'] = $this->user_meta( $meta );

@@ -633,7 +633,18 @@ class WPImport extends WP_Importer {
 				'succeed' => [],
 				'failed'  => [],
 			];
-			$post = apply_filters( 'wp_import_post_data_raw', $post );
+
+			$original_post_id = $post['post_id'];
+			$post = apply_filters( 'wp_import_post_data_raw', $post, $this );
+
+			if(empty($post)){
+				return $result;
+			}
+
+			if(!is_array($post) && is_numeric($post)){
+				$result['succeed'][ $original_post_id ] = $post;
+				return $result;
+			}
 
 			if ( ! post_type_exists( $post['post_type'] ) ) {
 				/* translators: 1: Post title, 2: Post type. */
@@ -704,7 +715,10 @@ class WPImport extends WP_Importer {
 				'post_password'  => $post['post_password'],
 			];
 
-			$original_post_id = $post['post_id'];
+			if(isset($post['original_attachment_url'])){
+				$postdata['original_attachment_url'] = $post['original_attachment_url'];
+			}
+
 			$postdata         = apply_filters( 'wp_import_post_data_processed', $postdata, $post );
 
 			$postdata = wp_slash( $postdata );
@@ -1116,13 +1130,22 @@ class WPImport extends WP_Importer {
 		}
 
 		if($saved_image = $this->get_saved_image($url)){
-			$this->url_remap[ $url ] = wp_get_attachment_url( $saved_image );
-			$this->url_remap[ $this->remove_extension($url) ] = $this->remove_extension(wp_get_attachment_url( $saved_image ));
+			// $this->url_remap[ $url ] = wp_get_attachment_url( $saved_image );
+			// $this->url_remap[ $this->remove_extension($url) ] = $this->remove_extension(wp_get_attachment_url( $saved_image ));
+			$upload_url = wp_get_attachment_url( $saved_image );
+			$this->set_url_map($url, $upload_url, true);
+
+			if(!empty($post['original_attachment_url']) && !$this->get_saved_image($post['original_attachment_url'])){
+				add_post_meta( $saved_image, '_elementor_source_image_hash', sha1( $post['original_attachment_url'] ) );
+				self::$_replace_image_ids[ sha1( $post['original_attachment_url'] ) ] = $post_id;
+			}
 
 			$full_size_path = get_attached_file($saved_image);
 			$metadata       = wp_get_attachment_metadata($saved_image);
-			$metadata       = $this->import_sizes($sizes, $metadata, $full_size_path, $saved_image);
-			wp_update_attachment_metadata( $saved_image, $metadata );
+			$updated_metadata = $this->import_sizes($sizes, $metadata, $full_size_path, $saved_image);
+			if ($updated_metadata !== false) {
+				wp_update_attachment_metadata( $saved_image, $updated_metadata );
+			}
 			return $saved_image;
 		}
 
@@ -1168,7 +1191,8 @@ class WPImport extends WP_Importer {
 			return new WP_Error( 'attachment_processing_error', esc_html__( 'Invalid file type', 'elementor' ) );
 		}
 
-		$this->url_remap[ $post['guid'] ] = $upload['url']; // r13735, really needed?
+		// $this->url_remap[ $post['guid'] ] = $upload['url']; // r13735, really needed?
+		// $this->set_url_map($post['guid'], $upload['url']);
 		$post['guid'] = $upload['url'];
 
 		// As per wp-admin/includes/upload.php.
@@ -1186,19 +1210,44 @@ class WPImport extends WP_Importer {
 		// error_log('Metadata: ' . print_r($metadata, true));
 
 		// For gutenberg pages
-		$metadata = $this->import_sizes($sizes, $metadata, $upload['file'], $post_id);
+		$updated_metadata = $this->import_sizes($sizes, $metadata, $upload['file'], $post_id);
 
 		// error_log('Metadata: ' . print_r($metadata, true));
-		wp_update_attachment_metadata( $post_id, $metadata );
+		if ($updated_metadata !== false) {
+			wp_update_attachment_metadata( $post_id, $updated_metadata );
+		} else {
+			wp_update_attachment_metadata( $post_id, $metadata );
+		}
 
 		// @todo: add missing image sizes
+		if(defined('TEMPLATELY_DEV') && TEMPLATELY_DEV){
+			update_post_meta( $post_id, '_templately_original_id', $original_post_id );
+			update_post_meta( $post_id, '_templately_original_url', $url );
+
+			if(!empty($post['original_attachment_url'])){
+				update_post_meta( $post_id, '_templately_demo_url', $post['original_attachment_url'] );
+			}
+		}
 
 		update_post_meta( $post_id, '_elementor_source_image_hash', sha1( $url ) );
 		self::$_replace_image_ids[ sha1( $url ) ] = $post_id;
 
+		// add a second hash for original demo url
+		// if user is replacing image.
+		// so we can also match original demo url to new image
+		if(!empty($post['original_attachment_url'])){
+			$hash_meta_id = add_post_meta( $post_id, '_elementor_source_image_hash', sha1( $post['original_attachment_url'] ) );
+			add_post_meta( $post_id, '_templately_image_hash_meta_id', $hash_meta_id );
+			self::$_replace_image_ids[ sha1( $post['original_attachment_url'] ) ] = $post_id;
+		}
+
 		// Remap resized image URLs, works by stripping the extension and remapping the URL stub.
 		if ( preg_match( '!^image/!', $info['type'] ) ) {
-			$this->url_remap[ $this->remove_extension($url) ] = $this->remove_extension($upload['url']);
+			// $this->url_remap[ $this->remove_extension($url) ] = $this->remove_extension($upload['url']);
+			$this->set_url_map($url, $upload['url'], true);
+			if(!empty($post['original_attachment_url'])){
+				$this->set_url_map($post['original_attachment_url'], $upload['url'], true);
+			}
 		}
 
 		return $post_id;
@@ -1209,6 +1258,15 @@ class WPImport extends WP_Importer {
 		$name  = basename($parts['basename'], ".{$parts['extension']}"); // PATHINFO_FILENAME in PHP 5.2
 
 		return $parts['dirname'] . '/' . $name;
+	}
+
+	public function set_url_map($original_url, $new_url, $remove_extension = false){
+		$this->url_remap[ $original_url ] = $new_url;
+		if($remove_extension){
+			$original_url = $this->remove_extension($original_url);
+			$new_url = $this->remove_extension($new_url);
+			$this->url_remap[ $original_url ] = $new_url;
+		}
 	}
 
 	/**
@@ -1349,10 +1407,10 @@ class WPImport extends WP_Importer {
 		];
 
 		// Keep track of the old and new urls so we can substitute them later.
-		$this->url_remap[ $url ]          = $upload['url'];
+		$this->set_url_map($url, $upload['url']);
 		// Keep track of the destination if the remote url is redirected somewhere else.
 		if ( isset( $headers['x-final-location'] ) && $headers['x-final-location'] !== $url ) {
-			$this->url_remap[ $headers['x-final-location'] ] = $upload['url'];
+			$this->set_url_map($headers['x-final-location'], $upload['url']);
 		}
 
 		return $upload;
@@ -1368,7 +1426,7 @@ class WPImport extends WP_Importer {
 	 *
 	 * @param string $url The image URL.
 	 *
-	 * @return false|array New image ID  or false.
+	 * @return false|int New image ID  or false.
 	 */
 	private function get_saved_image( $url ) {
 		global $wpdb;
@@ -1399,6 +1457,8 @@ class WPImport extends WP_Importer {
 
 
     public function import_sizes($sizes, $metadata, $full_size_file, $post_id) {
+		$metadata_modified = false;
+
 		if (!empty($sizes)) {
 			do_action('templately_import.finalize_gutenberg_attachment', $post_id);
 
@@ -1413,13 +1473,16 @@ class WPImport extends WP_Importer {
 						if ($missing_size && !is_wp_error($missing_size)) {
 							unset($missing_size['path']);
 							$metadata['sizes'][$size_name] = $missing_size;
+							$metadata_modified = true;
 							do_action('templately_import.finalize_gutenberg_attachment', $post_id, $size_dimension);
 						}
 					}
 				}
 			}
 		}
-		return $metadata;
+
+		// Only return metadata if new sizes were actually added
+		return $metadata_modified ? $metadata : false;
 	}
 
 	public function generate_missing_size_from_full($full_size_file, $destination_file, $size) {
@@ -1444,7 +1507,7 @@ class WPImport extends WP_Importer {
 
 	public function size_exists_in_metadata($size_file, $metadata) {
 		if (isset($metadata['sizes']) && is_array($metadata['sizes'])) {
-			foreach ($metadata['sizes'] as $size => $size_info) {
+			foreach ($metadata['sizes'] as $size_info) {
 				if ($size_info['file'] == $size_file) {
 					return true;
 				}
@@ -1650,7 +1713,7 @@ class WPImport extends WP_Importer {
 	 *
 	 * @return void
 	 */
-	private function update_post_meta( $post_id ) {
+	public function update_post_meta( $post_id ) {
 		foreach ( $this->posts_meta as $meta_key => $meta_value ) {
 			update_post_meta( $post_id, $meta_key, $meta_value );
 		}

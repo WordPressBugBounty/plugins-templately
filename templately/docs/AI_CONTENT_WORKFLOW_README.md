@@ -170,8 +170,27 @@ const aiTemplates = useSelector(
 // When AI templates detected
 useEffect(() => {
     if (aiTemplates && iframeLoaded) {
-        // Send AI data to iframe
-        sendAIDataToIframe(live_url, aiTemplates, version, platform);
+        // Prepare URL arguments and body with both AI templates and image mappings
+        const urlArgs = {
+            plugin_preview: version,
+            has_ai_json: 'true',
+            platform: platform,
+            dev_mode: window.templately.dev_mode || false,
+            log: window.templately.log || false,
+            ai_page_ids: JSON.stringify(ai_page_ids),
+        };
+
+        const body = {
+            templates: aiTemplates.templates
+        };
+
+        // Add image mappings if available
+        if (aiTemplates.imageMappings && Object.keys(aiTemplates.imageMappings).length > 0) {
+            body.imageMappings = aiTemplates.imageMappings;
+        }
+
+        // Send consolidated AI data to iframe
+        sendAIDataToIframe(live_url, urlArgs, body);
 
         // Start polling for AI content updates
         pollAIContent(processId, aiPageIds, onUpdate, onComplete, onError);
@@ -190,7 +209,8 @@ state.general.fullSiteImport = {
     aiSidebarContext: {
         id: null,
         show: false,
-        content: {}
+        content: {},
+        expanded: false
     },
     fsiModalContext: {
         show: false,
@@ -201,19 +221,122 @@ state.general.fullSiteImport = {
 }
 ```
 
-### Key Actions
+### AI Sidebar Actions
+
+The AI sidebar has multiple action creators for different purposes, each designed to preserve state while updating specific properties:
 
 ```javascript
-// AI Sidebar Management
-showAiSidebar(args) → SHOW_AI_SIDEBAR
-hideAiSidebar() → HIDE_AI_SIDEBAR
+// Show/Hide Sidebar (preserves expanded and content state)
+showAiSidebar(args = {}) → SHOW_AI_SIDEBAR
+hideAiSidebar(args = {}) → HIDE_AI_SIDEBAR
 
+// Expand/Collapse Sidebar (preserves show, id, and content state)
+expandAiSidebar(args = {}) → EXPAND_AI_SIDEBAR
+collapseAiSidebar(args = {}) → COLLAPSE_AI_SIDEBAR
+
+// Update Entire Context (replaces entire aiSidebarContext)
+setAiSidebarContext(payload) → SET_AI_SIDEBAR_CONTEXT
+```
+
+#### Action Behavior Details
+
+**`showAiSidebar(args = {})`**
+- Sets `show: true` and `id: args?.id ?? null`
+- Preserves existing `expanded` and `content` state
+- Only updates `expanded` and `content` if explicitly passed in args
+- Example: `showAiSidebar({ id: 'pack-123', content: { step: 1 } })`
+
+**`hideAiSidebar(args = {})`**
+- Sets `show: false` and `id: null` (always resets pack association)
+- Preserves existing `expanded` and `content` state
+- Only updates `expanded` and `content` if explicitly passed in args
+- The `id` is always set to `null` and cannot be overridden by args
+- Example: `hideAiSidebar({ content: {} })` // clears content while hiding
+
+**`expandAiSidebar(args = {})`**
+- Sets `expanded: true`
+- Preserves existing `show`, `id`, and `content` state
+- Only updates other properties if explicitly passed in args
+- Example: `expandAiSidebar({ content: { newData: true } })`
+
+**`collapseAiSidebar(args = {})`**
+- Sets `expanded: false`
+- Preserves existing `show`, `id`, and `content` state
+- Only updates other properties if explicitly passed in args
+- Example: `collapseAiSidebar()` // just collapses, preserves everything else
+
+**`setAiSidebarContext(payload)`**
+- Replaces entire `aiSidebarContext` object
+- Use when you need to update multiple properties at once
+- Example: `setAiSidebarContext({ id: 'pack-123', show: true, expanded: true, content: { step: 2 } })`
+
+### Other Key Actions
+
+```javascript
 // FSI Modal Management
 showFSIModal(args) → SHOW_FSI_MODAL
 hideFSIModal() → HIDE_FSI_MODAL
 
 // Pack Information
 fetchPackImportInfoRequest(packId, isAi) → FETCH_PACK_IMPORT_INFO_REQUEST
+```
+
+### Usage Examples
+
+```javascript
+// Common usage patterns
+import { showAiSidebar, hideAiSidebar, expandAiSidebar, collapseAiSidebar } from '../redux/actions';
+
+// Show sidebar for a specific pack (preserves expanded state)
+dispatch(showAiSidebar({ id: 'pack-123' }));
+
+// Hide sidebar and reset pack association (id becomes null)
+dispatch(hideAiSidebar());
+
+// Expand sidebar without affecting visibility
+dispatch(expandAiSidebar());
+
+// Collapse and hide in one action
+dispatch(collapseAiSidebar({ show: false }));
+
+// Chain actions (each preserves other properties)
+dispatch(showAiSidebar({ id: 'pack-123' }));
+dispatch(expandAiSidebar());
+
+// Update content while showing
+dispatch(showAiSidebar({
+    id: 'pack-123',
+    content: { step: 1, data: 'initial' }
+}));
+
+// Clear content when hiding (id is always set to null)
+dispatch(hideAiSidebar({ content: {} }));
+
+// Note: hideAiSidebar always resets id to null, even if passed in args
+dispatch(hideAiSidebar({ id: 'pack-123' })); // id will still be null
+```
+
+### State Validation
+
+```javascript
+// Verify state preservation
+const currentState = state.general.fullSiteImport.aiSidebarContext;
+
+// After showAiSidebar({ id: 'pack-123' })
+// ✅ show: true, id: 'pack-123'
+// ✅ expanded: preserved from previous state
+// ✅ content: preserved from previous state
+
+// After hideAiSidebar()
+// ✅ show: false, id: null (always reset)
+// ✅ expanded: preserved from previous state
+// ✅ content: preserved from previous state
+
+// After expandAiSidebar()
+// ✅ expanded: true
+// ✅ show: preserved from previous state
+// ✅ id: preserved from previous state
+// ✅ content: preserved from previous state
 ```
 
 ### Action Flow
@@ -241,7 +364,7 @@ User Action → Component Dispatch → Redux Reducer → State Update → Compon
 
 ### 4. Customizer AI Integration
 - **Automatic Detection**: Monitors Redux state for AI templates
-- **Iframe Communication**: `sendAIDataToIframe()` for preview data
+- **Iframe Communication**: `sendAIDataToIframe()` for consolidated preview data (templates + image mappings)
 - **Polling System**: `pollAIContent()` for real-time updates
 
 ### 5. Code Architecture Improvements
@@ -271,6 +394,35 @@ User Action → Component Dispatch → Redux Reducer → State Update → Compon
 2. **User Feedback**: Error states displayed to users appropriately
 3. **Graceful Degradation**: Fallback behaviors for failed operations
 4. **Logging**: Comprehensive console logging for debugging
+5. **Abort Error Handling**: Proper detection and handling of intentionally cancelled requests
+
+#### AbortController Error Handling Pattern
+
+The ImageReplacePanel implements comprehensive abort error detection to prevent false error messages when requests are intentionally cancelled:
+
+```javascript
+} catch (error) {
+    // Check if error is due to request cancellation
+    if (
+        error?.name === 'AbortError' ||
+        error?.message?.includes('abort') ||
+        error?.message?.includes('cancelled') ||
+        abortController.signal.aborted
+    ) {
+        // Don't show error message for user-initiated cancellation
+        return;
+    }
+
+    // Handle genuine errors
+    setSearchError(error.message || __('Failed to search images. Please try again.', 'templately'));
+}
+```
+
+**Key Benefits:**
+
+- Prevents "You are probably offline" messages for intentional request cancellations
+- Allows new search results to display properly without interference from aborted requests
+- Maintains clean error state management during rapid user interactions
 
 ### Performance Optimizations
 
@@ -785,15 +937,97 @@ test('renders conversation steps', () => {
 ### Redux Testing
 
 ```javascript
-import { showFSIModal, hideFSIModal } from './actions';
+import { showAiSidebar, hideAiSidebar, expandAiSidebar, collapseAiSidebar } from './actions';
 import reducer from './reducer';
 
-test('showFSIModal action', () => {
-    const action = showFSIModal({ aiTemplates: { test: 'data' } });
-    const newState = reducer(initialState, action);
+// Test state preservation with AI sidebar actions
+test('AI sidebar state preservation', () => {
+    const initialState = {
+        fullSiteImport: {
+            aiSidebarContext: {
+                id: 'pack-123',
+                show: false,
+                content: { step: 2, data: 'preserved' },
+                expanded: true
+            }
+        }
+    };
 
-    expect(newState.fullSiteImport.fsiModalContext.show).toBe(true);
-    expect(newState.fullSiteImport.fsiModalContext.aiTemplates).toEqual({ test: 'data' });
+    // Test showAiSidebar preserves expanded and content
+    const showAction = showAiSidebar({ id: 'pack-456' });
+    const afterShow = reducer(initialState, showAction);
+
+    expect(afterShow.fullSiteImport.aiSidebarContext).toEqual({
+        id: 'pack-456',
+        show: true,
+        content: { step: 2, data: 'preserved' }, // preserved
+        expanded: true // preserved
+    });
+
+    // Test hideAiSidebar resets id and preserves expanded and content
+    const hideAction = hideAiSidebar();
+    const afterHide = reducer(afterShow, hideAction);
+
+    expect(afterHide.fullSiteImport.aiSidebarContext).toEqual({
+        id: null, // always reset to null
+        show: false,
+        content: { step: 2, data: 'preserved' }, // preserved
+        expanded: true // preserved
+    });
+
+    // Test expandAiSidebar preserves other properties
+    const expandAction = expandAiSidebar();
+    const afterExpand = reducer(afterHide, expandAction);
+
+    expect(afterExpand.fullSiteImport.aiSidebarContext).toEqual({
+        id: 'pack-456', // preserved
+        show: false, // preserved
+        content: { step: 2, data: 'preserved' }, // preserved
+        expanded: true
+    });
+
+    // Test collapseAiSidebar preserves other properties
+    const collapseAction = collapseAiSidebar();
+    const afterCollapse = reducer(afterExpand, collapseAction);
+
+    expect(afterCollapse.fullSiteImport.aiSidebarContext).toEqual({
+        id: null, // was reset by hideAiSidebar
+        show: false, // preserved
+        content: { step: 2, data: 'preserved' }, // preserved
+        expanded: false
+    });
+});
+
+// Test action chaining
+test('AI sidebar action chaining', () => {
+    const initialState = {
+        fullSiteImport: {
+            aiSidebarContext: {
+                id: null,
+                show: false,
+                content: {},
+                expanded: false
+            }
+        }
+    };
+
+    // Chain: show → expand → update content → hide
+    let state = initialState;
+
+    state = reducer(state, showAiSidebar({ id: 'pack-123' }));
+    expect(state.fullSiteImport.aiSidebarContext.show).toBe(true);
+    expect(state.fullSiteImport.aiSidebarContext.id).toBe('pack-123');
+
+    state = reducer(state, expandAiSidebar({ content: { step: 1 } }));
+    expect(state.fullSiteImport.aiSidebarContext.expanded).toBe(true);
+    expect(state.fullSiteImport.aiSidebarContext.content).toEqual({ step: 1 });
+    expect(state.fullSiteImport.aiSidebarContext.show).toBe(true); // preserved
+
+    state = reducer(state, hideAiSidebar());
+    expect(state.fullSiteImport.aiSidebarContext.show).toBe(false);
+    expect(state.fullSiteImport.aiSidebarContext.id).toBe(null); // always reset
+    expect(state.fullSiteImport.aiSidebarContext.expanded).toBe(true); // preserved
+    expect(state.fullSiteImport.aiSidebarContext.content).toEqual({ step: 1 }); // preserved
 });
 ```
 

@@ -46,6 +46,8 @@ class GutenbergHelper extends ImportHelper {
 		if ( isset($this->template_settings['__attachments']) ) {
 			$this->process_images();
 			// Make sure we do the longest urls first, in case one is a substring of another.
+		}
+		if(!empty($this->wp_importer->url_remap)){
 			uksort( $this->wp_importer->url_remap, function ( $a, $b ) {
 				// Return the difference in length between two strings.
 				return strlen( $b ) - strlen( $a );

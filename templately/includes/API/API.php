@@ -127,6 +127,7 @@ abstract class API extends Base {
 	 */
 	public function _permission_check( WP_REST_Request $request ) {
 		$this->request = $request;
+		$this->api_key = $this->utils('options')->get( 'api_key' );
 		if(!current_user_can('delete_posts')){
 			return false;
 		}

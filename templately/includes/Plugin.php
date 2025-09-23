@@ -33,15 +33,17 @@ use Templately\API\MyClouds;
 use Templately\API\WorkSpaces;
 use Templately\API\Categories;
 use Templately\API\Dependencies;
+use Templately\API\DeveloperSettings;
 use Templately\API\TemplateTypes;
 use Templately\API\SavedTemplates;
 use Templately\Core\Maintenance;
 use Templately\Core\Migrator;
+use Templately\Core\Developer;
 use Templately\Core\Platform\Gutenberg;
 use Templately\Core\Platform\Elementor;
 
 final class Plugin extends Base {
-    public $version = '3.3.3';
+    public $version = '3.4.0';
 
 	public $admin;
 	public $settings;
@@ -55,6 +57,11 @@ final class Plugin extends Base {
 	 * @var ThemeBuilder
 	 */
 	public $theme_builder;
+
+	/**
+	 * @var Developer
+	 */
+	public $developer;
 
 	/**
 	 * Plugin constructor.
@@ -72,6 +79,7 @@ final class Plugin extends Base {
 		$this->admin         = Admin::get_instance();
 		$this->settings      = Settings::get_instance();
 		$this->theme_builder = ThemeBuilder::get_instance();
+		$this->developer     = Developer::get_instance();
 
 		add_action( 'plugins_loaded', [ $this, 'plugins_loaded' ] );
 		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
@@ -153,6 +161,7 @@ final class Plugin extends Base {
 		WorkSpaces::get_instance();
 
 		APISettings::get_instance();
+		DeveloperSettings::get_instance();
 	}
 
 	/**

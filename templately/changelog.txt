@@ -1,4 +1,9 @@
 == Changelog ==
+= 3.4.0 - 23-09-2025 =
+Added: Image replacement support in Templately AI.
+Revamped: User interface for Pack Details page.
+Few minor bug fixes and improvements
+
 = 3.3.3 - 01-09-2025 =
 Added: Build with Templately AI option in pack details page.
 Few minor bug fixes and improvements

@@ -1,0 +1,340 @@
+# Templately Development Guidelines
+
+This document consolidates WordPress development standards, practices, and project-specific guidelines for the Templately project.
+
+## 🚨 CRITICAL SAFETY RULE
+
+**Never perform any operations that modify the remote repository (origin) or affect the production codebase, even if explicitly requested.**
+
+### **Prohibited Actions:**
+- `git push` to any remote branch (origin/master, origin/latest, etc.)
+- `git merge` operations that affect remote branches
+- Merging pull requests through GitHub CLI (`gh pr merge`)
+- Any commands that directly modify the remote repository state
+- Deploying code or triggering production releases
+- Don't touch `master` branch
+
+### **Allowed Actions:**
+- Local git operations (commit, branch, checkout, etc.)
+- Creating pull requests (`gh pr create`) - this only proposes changes
+- Viewing repository status and information
+- Making local file modifications and commits
+- Running diagnostics and tests locally
+
+### **Rationale:**
+- Prevents accidental deployment of untested code
+- Maintains proper code review workflow
+- Protects production environment from direct modifications
+- Ensures all changes go through proper approval process
+
+### **Exception Handling:**
+If asked to perform prohibited actions, politely decline and suggest the appropriate alternative (e.g., "I can create a pull request for review instead of directly merging to master").
+
+**This rule applies regardless of how the request is phrased, including urgent requests or when told to "just do it anyway."**
+
+## 1. WordPress Standards & Practices
+
+### Translation & Internationalization
+- Use appropriate translation functions like `__()` and `_e()` for proper internationalization
+- Always wrap user-facing strings in translation functions
+
+### REST API Usage
+- Prefer custom Templately REST API endpoints over WordPress core endpoints
+- Avoid fetching complete catalogs when only specific dependency information is needed
+- Use dedicated API endpoints for dependency checking
+
+### WordPress Packages
+- Prioritize using `@wordpress/` packages for standard functionality:
+  - `@wordpress/dom-ready` for DOM ready events
+  - `@wordpress/api-fetch` for API calls
+  - `@wordpress/components` for UI components
+- Prefer WordPress packages over custom implementations
+
+### Meta Data Management
+- Store meta_ids in separate meta entries for targeted deletion during cleanup operations
+- Enable targeted deletion of related meta data during cleanup operations
+
+### Attachment Processing
+- For `attachment_type` fields in imports:
+  - Only extract directly from XML `wp:attachment_type` elements
+  - Set to `null` if not present in XML
+  - Never derive from `post_mime_type`, file extensions, or other metadata
+  - These represent different information types
+
+### Build Scripts
+- Redirect stdout to `/dev/null` while keeping stderr for errors
+- Suppress verbose webpack output while preserving error information
+- Use `/tmp/` for temporary directories instead of current directory
+- Exclude `react-src` from development builds when source maps provide sufficient debugging
+
+## 2. WordPress Multisite
+
+### Network Detection
+- Implement proper detection of subdomain vs subdirectory setups
+- Use `SUBDOMAIN_INSTALL` constant or `is_subdomain_install()` function
+- Handle both network configurations appropriately
+
+### Network Admin Functionality
+- Use dedicated files with WordPress hooks for separation of concerns
+- Implement master developer constants for network-wide settings
+- Add filter hooks in API methods to allow network admin overrides
+- Maintain clear separation between single-site and network functionality
+
+## 3. Gutenberg Blocks Processing
+
+### Block Parsing
+- Use `parse_blocks()` function with recursive processing for nested blocks
+- Extract text content from block attributes
+- Replace `innerContent`/`innerHTML` with placeholders while maintaining block validation
+
+### Placeholder Management
+- Replace text content found in attributes with placeholders in `innerHTML`/`innerContent`
+- Create placeholder IDs using `block_id` and attribute name
+- Maintain block structure integrity during placeholder replacement
+
+### Block Attributes
+- `tagName` should not be in `text_field_keys` as it represents a tag name
+- Focus on actual text content that needs translation, not structural elements
+
+## 4. Elementor Integration
+
+### Module Architecture
+- Extend `elementorModules.editor.utils.Module` class
+- Follow Elementor's organized module component architecture patterns
+- Maintain consistency with Elementor's development standards
+
+### Module Refactoring
+- Replace jQuery event listeners with proper Module lifecycle methods
+- Move hook registrations out of jQuery document ready
+- Use Module's built-in event system instead of direct jQuery bindings
+
+### Document Options Menu
+- Use `registerAction` with `overwrite: true` and `visible: false` props
+- Avoid complex removal methods for menu items
+- Leverage Elementor's action system for clean integration
+
+## 5. API & Data Management
+
+### API Refactoring Patterns
+- Extract API logic into pure functions that return Promises
+- Implement caching with search parameters as cache keys
+- Fix pagination by calculating page numbers based on `startIndex` and `stopIndex`
+
+### Centralized API Requests
+- Create `makeApiRequest()` static functions in Helper class
+- Include standard headers: site URL and API key
+- Maintain consistent API request patterns across the application
+
+### Race Condition Prevention
+- Use `AbortController` to cancel previous ongoing requests
+- Cancel ongoing requests before initiating new requests
+- Implement proper cleanup in component unmounting
+
+### Development API Configuration
+- Use `TEMPLATELY_DEV_API` constant for API endpoint selection
+- Simple boolean logic: `true` = dev server, `false`/`undefined` = live API
+- Avoid complex state tracking for API endpoint management
+
+## 6. Hooks & Navigation
+
+### Modal Management
+- Create custom hooks for modal management with browser navigation prevention
+- Implement navigation prevention during import operations
+- Use specific alert messages for user guidance during critical operations
+
+### Navigation Effects
+- Only use `location` as a dependency in navigation-related `useEffect` hooks
+- Avoid additional dependencies that may cause unexpected issues
+- Keep navigation effects focused and minimal
+
+### Navigation Blocking
+- Use React Router's `useBlocker` hook in parent components where import status is available
+- Implement navigation blocking during import operations
+- Prefer parent component implementation over child component blocking
+
+## 7. Redux Implementation
+
+### Saga Patterns
+- Use centralized saga approach with specific action types
+- Store data with loading states and error handling
+- Implement proper error boundaries and fallback states
+
+### State Structure
+- Prefer nested state structure with `data`/`loading`/`error` objects
+- Avoid flat state structure for complex data
+- Maintain consistent state shape across reducers
+
+### Data Preprocessing
+- Use `useSelector` hooks to normalize numeric fields with `Number()` function
+- Ensure consistent data types from API responses
+- Handle type conversion at the selector level
+
+## 8. Error Handling & Logging
+
+### Gateway Timeout Handling
+- Implement polling mechanism for 504 Gateway Timeout errors
+- Use appropriate intervals between polling attempts
+- Respect `AbortSignal` and clear intervals on component exit
+
+### Polling Implementation
+- Implement sequential calls with delays between them
+- Avoid fixed intervals; use dynamic timing based on response
+- Implement proper cleanup and cancellation
+
+### TypeScript Logging
+- Create wrapper functions for `console.log` that check `devMode` flags internally
+- Centralize logging configuration and control
+- Avoid direct console calls in production code
+
+### Boolean Flag Handling
+- Be explicit about default behavior in TypeScript
+- Avoid patterns like `event.data.property !== false`
+- Use clear, explicit boolean checks
+
+## 9. AI Content Processing
+
+### Content Validation
+- Check if content is AI-generated before processing
+- Implement proper content type detection
+- Use traits over static classes for AI processing
+
+### Class Name Processing
+- Support indexed class names with dot notation (e.g., `'eb-feature-list-title.0'`)
+- Implement flexible class name targeting
+- Handle dynamic class name patterns
+
+### AI Workflow Phases
+- Use phased approach: backend session/pack download → parallel AI content generation → customizer integration
+- Implement proper phase transitions and error handling
+- Maintain state consistency across workflow phases
+
+### Component Lifecycle
+- Cancel all promises/intervals/timeouts when `aiconversation` component unmounts
+- Prevent memory leaks in AI processing components
+- Implement proper cleanup in `useEffect` cleanup functions
+
+### Image Mapping
+- Process both `img src` attributes and CSS `background-image` properties
+- Ensure comprehensive image replacement functionality
+- Handle various image reference patterns
+
+## 10. Code Organization & Refactoring
+
+### Separation of Concerns
+- Move specific logic to separate files for better separation of concerns
+- Use full OOP class encapsulation
+- Maintain clear boundaries between different functionality areas
+
+### Async Patterns
+- Prefer async/await syntax over callback patterns for better readability
+- Implement proper error handling in async operations
+- Use consistent async patterns across the codebase
+
+### PHP Traits
+- PHP traits cannot be checked with `class_exists()`
+- Static methods should be called through implementing classes, not directly on the trait
+- Use traits for shared functionality across multiple classes
+
+### Package Management
+- Use pnpm as the package manager for the Templately project instead of npm
+- Leverage pnpm's better caching and performance benefits
+- Maintain consistent package management across the project
+
+## 11. Project Context & Workflow
+
+### Working Directory Verification
+- Always verify working directory is `/Users/alim/Sites/git/templately` unless otherwise mentioned
+- Use absolute paths from project root for all operations
+- Leverage `cwd` parameter in launch-process for correct context
+- Confirm target project before starting work in multi-project workspace
+
+### File Operations
+- Always use CLI commands (ls/ll, mkdir, touch) with absolute paths before creating/updating files
+- Work with absolute paths consistently throughout the workflow
+- Validate working directory matches intended project root
+
+### Multi-Project Workspace
+- Always confirm target project before operations
+- Use explicit directory context with cwd parameter
+- Request clarification when project scope is ambiguous rather than making assumptions
+- If expected files don't exist in current workspace, ask user to verify workspace directory
+
+## 12. Testing Standards
+
+### Test Organization
+- Keep test files organized by removing unrelated files
+- Place test configuration in main directory or config/ folder for Playwright pickup
+- Ensure tests/ directory is in .gitignore to avoid committing test files
+
+### Playwright Configuration
+- Use Playwright configuration file at `.config/playwright.json` in project root
+- Structure testing projects as standalone repositories over subdirectories
+- Use pnpm instead of npm for better caching and performance
+
+### Test Repository Management
+- The local templately-playwright-tests repository is at `/Users/alim/Sites/git/templately-playwright-tests`
+- When making test changes, edit files there, commit and push to GitHub
+- Fetch the new version in the main Templately project to get updates
+- Use `git add -f tests/playwright/` to force-add the Playwright test suite to version control
+
+## 13. Version Bump & Release Management
+
+### Version Bump Checklist
+When updating the plugin version (e.g., from 3.3.4 to 3.4.0), update version numbers in these files:
+
+#### Core Plugin Files
+1. **templately.php** (main plugin file)
+   - Update `Version: X.X.X` in the plugin header comment
+
+2. **includes/Plugin.php**
+   - Update `public $version = 'X.X.X';` property
+
+3. **package.json**
+   - Update `"version": "X.X.X"` field
+
+4. **languages/templately.pot**
+   - Update `Project-Id-Version: Templately X.X.X` in the header
+
+#### Documentation Files
+5. **readme.txt** (WordPress.org readme)
+   - Update `Stable tag: X.X.X` in the header
+   - Add new changelog entry at the top of the `== Changelog ==` section
+
+6. **changelog.txt**
+   - Add new changelog entry at the top
+
+#### Developer Files (if applicable)
+7. **includes/Core/Developer/*.php** and **includes/API/DeveloperSettings.php**
+   - Update `@since X.X.X` annotations in new features added in this version
+
+### Changelog Format
+Use this format for changelog entries:
+```
+= X.X.X - DD-MM-YYYY =
+Added: [New features]
+Revamped: [Major UI/UX changes]
+Improved: [Enhancements]
+Fixed: [Bug fixes]
+Few minor bug fixes and improvements
+```
+
+### Version Bump Process
+1. Verify current version across all files
+2. Update all version references consistently
+3. Add changelog entries with proper formatting
+4. Run diagnostics to check for syntax errors
+5. Test critical functionality
+6. Commit with descriptive message: `feat: update version to X.X.X and enhance changelog`
+
+## 14. Commit Workflow
+
+### Pre-Commit Verification
+- Run diagnostics on modified files to check for syntax errors and warnings
+- Verify changes align with requirements
+- Use launch-process for git commands with file paths in messages
+
+### Commit Process
+- If no issues found, create git commit with descriptive message and brief success confirmation
+- If issues found, provide specific details with file/line numbers and ask for instructions
+- Don't commit critical errors but mention minor warnings and ask to proceed
+- Use clear, descriptive commit messages that explain the changes made

@@ -29,14 +29,7 @@ trait AIContentHelper {
 	 * @return bool True if AI file exists and is not skipped, false otherwise
 	 */
 	protected function hasAiFile($ai_file_path) {
-		if (file_exists($ai_file_path)) {
-			$ai_file = Utils::read_json_file($ai_file_path);
-			if (isset($ai_file['isSkipped']) && $ai_file['isSkipped']) {
-				return false;
-			}
-			return true;
-		}
-		return false;
+		return AIUtils::has_ai_file($ai_file_path) && !AIUtils::is_ai_file_skipped($ai_file_path);
 	}
 
 	/**
@@ -45,19 +38,14 @@ trait AIContentHelper {
 	 * @param string $old_template_id The template ID
 	 * @return array Array containing paths for original, AI, and previous AI files
 	 */
-	protected function generateAiFilePaths($old_template_id) {
-		$path = $this->dir_path . $this->type . DIRECTORY_SEPARATOR;
-		$prv_path = $this->prv_dir . $this->process_id . DIRECTORY_SEPARATOR . $this->type . DIRECTORY_SEPARATOR;
-
-		if (!empty($this->sub_type)) {
-			$path .= $this->sub_type . DIRECTORY_SEPARATOR;
-			$prv_path .= $this->sub_type . DIRECTORY_SEPARATOR;
-		}
-
-		return [
-			'original_file' => $path . "{$old_template_id}.json",
-			'ai_file_path'  => $prv_path . "{$old_template_id}.ai.json",
-		];
+	public function generateAiFilePaths($old_template_id) {
+		return AIUtils::generate_ai_file_paths(
+			$this->session_id,
+			$this->type,
+			$this->sub_type,
+			$old_template_id,
+			$this->dir_path
+		);
 	}
 
 	/**
@@ -67,16 +55,14 @@ trait AIContentHelper {
 	 * @return bool True if this is AI content, false otherwise
 	 */
 	public function isAiContent($old_template_id) {
-		// Generate file paths
-		$paths = $this->generateAiFilePaths($old_template_id);
-
-		// Check if this template ID is in the AI page IDs list
-		$is_ai_template = $this->is_ai_content($old_template_id);
-
-		// Check if AI files exist
-		$has_ai_file = $this->hasAiFile($paths['ai_file_path']);
-
-		return $is_ai_template || $has_ai_file;
+		return AIUtils::should_process_as_ai_content(
+			$this->session_id,
+			$this->type,
+			$this->sub_type,
+			$old_template_id,
+			$this->ai_page_ids,
+			$this->dir_path
+		);
 	}
 
 	/**
@@ -88,17 +74,7 @@ trait AIContentHelper {
 	public function isAiFileSkipped($old_template_id) {
 		// Generate file paths
 		$paths = $this->generateAiFilePaths($old_template_id);
-		$ai_file_path = $paths['ai_file_path'];
-
-		// Check if file exists
-		if (file_exists($ai_file_path)) {
-			$ai_file = Utils::read_json_file($ai_file_path);
-			// Return true if the file exists AND is marked as skipped
-			return isset($ai_file['isSkipped']) && $ai_file['isSkipped'];
-		}
-
-		// Return false if file doesn't exist
-		return false;
+		return AIUtils::is_ai_file_skipped($paths['ai_file_path']);
 	}
 
 	/**
@@ -108,7 +84,7 @@ trait AIContentHelper {
 	 * @param array $flat Reference to the flattened array
 	 * @return array The flattened array
 	 */
-	protected function flattenById($array, &$flat = []) {
+	public static function flattenById($array, &$flat = []) {
 		foreach ($array as $key => $value) {
 			if (is_array($value)) {
 				// If this is an element with 'widgetType' and 'contents', use its parent key as ID
@@ -116,7 +92,7 @@ trait AIContentHelper {
 					$flat[$key] = $value;
 				}
 				// Recurse into children
-				$this->flattenById($value, $flat);
+				self::flattenById($value, $flat);
 			}
 		}
 		return $flat;
@@ -131,7 +107,7 @@ trait AIContentHelper {
 	 * @param array $path The path as an array of keys
 	 * @param mixed $value The value to set
 	 */
-	protected function setNestedValue(&$array, $path, $value) {
+	public static function setNestedValue(&$array, $path, $value) {
 		$key = array_shift($path);
 
 		if (empty($path)) {
@@ -144,7 +120,7 @@ trait AIContentHelper {
 			}
 
 			// Continue recursively
-			$this->setNestedValue($array[$key], $path, $value);
+			self::setNestedValue($array[$key], $path, $value);
 		}
 	}
 
@@ -173,12 +149,19 @@ trait AIContentHelper {
 		$template_json = Utils::read_json_file($file);
 
 		if ($isAi) {
+			// Read original template JSON content for merging
+			$original_template_json = Utils::read_json_file($original_file);
+			$ai_template_json = $template_json;
+
 			if($this->platform === 'elementor'){
-				$template_json = $this->mergeAiContentWithOriginal($template_json, $original_file, $file);
+				$template_json = self::mergeAiContentWithOriginal($ai_template_json, $original_template_json);
 			}
 			else if($this->platform === 'gutenberg'){
-				$template_json = $this->mergeAiContentWithOriginalGutenberg($template_json, $original_file, $file);
+				$template_json = self::mergeAiContentWithOriginalGutenberg($ai_template_json, $original_template_json);
 			}
+
+			// Write debug files after merging
+			$this->writeDebugFile($original_file, $template_json, 'ao');
 		}
 
 		return [
@@ -192,22 +175,16 @@ trait AIContentHelper {
 	 * Merge AI content with the original template
 	 *
 	 * @param array $ai_template_json The AI template JSON
-	 * @param string $original_file Path to the original template file
-	 * @param string $ai_file Path to the AI file being processed
+	 * @param array $original_template_json The original template JSON data
 	 * @return array The merged template JSON
 	 */
-	protected function mergeAiContentWithOriginal($ai_template_json, $original_file, $ai_file) {
-		$original_template_json = Utils::read_json_file($original_file);
-
+	public static function mergeAiContentWithOriginal($ai_template_json, $original_template_json) {
 		// 1. Flatten the AI template
-		$flat = $this->flattenById($ai_template_json);
+		$flat = self::flattenById($ai_template_json);
 		$keys = array_keys($flat);
 
 		// 2. Loop through original content only once and update elements directly
-		$this->updateElementorContentRecursively($flat, $keys, $original_template_json['content']);
-
-		// Save the processed content for debugging (optional)
-		$this->writeDebugFile($original_file, $original_template_json, 'ao');
+		self::updateElementorContentRecursively($flat, $keys, $original_template_json['content']);
 
 		return $original_template_json;
 	}
@@ -219,7 +196,7 @@ trait AIContentHelper {
 	 * @param array $keys Array of element IDs from the flat array
 	 * @param array $content Reference to the original content to update
 	 */
-	protected function updateElementorContentRecursively($flat, array $keys, &$content) {
+	public static function updateElementorContentRecursively($flat, array $keys, &$content) {
 		if (!is_array($content)) {
 			return;
 		}
@@ -241,7 +218,7 @@ trait AIContentHelper {
 						// Support for dot notation in attribute paths
 						if (strpos($item['attribute'], '.') !== false) {
 							$path = explode('.', $item['attribute']);
-							$this->setNestedValue($content['settings'], $path, $content_value);
+							self::setNestedValue($content['settings'], $path, $content_value);
 						} else {
 							$content['settings'][$item['attribute']] = $content_value;
 						}
@@ -253,14 +230,14 @@ trait AIContentHelper {
 		// Recurse through elements array
 		if (isset($content['elements']) && is_array($content['elements'])) {
 			foreach ($content['elements'] as &$element) {
-				$this->updateElementorContentRecursively($flat, $keys, $element);
+				self::updateElementorContentRecursively($flat, $keys, $element);
 			}
 		}
 
 		// Recurse through all other array elements
 		foreach ($content as &$value) {
 			if (is_array($value)) {
-				$this->updateElementorContentRecursively($flat, $keys, $value);
+				self::updateElementorContentRecursively($flat, $keys, $value);
 			}
 		}
 	}
@@ -269,35 +246,34 @@ trait AIContentHelper {
 	 * Merge AI content with the original Gutenberg template using advanced content replacement
 	 *
 	 * @param array $ai_template_json The AI template JSON
-	 * @param string $original_file Path to the original template file
-	 * @param string $ai_file Path to the AI file being processed
+	 * @param array $original_template_json The original template JSON data
 	 * @return array The merged template JSON
 	 */
-	protected function mergeAiContentWithOriginalGutenberg($ai_template_json, $original_file, $ai_file) {
-		$original_template_json = Utils::read_json_file($original_file);
+	public static function mergeAiContentWithOriginalGutenberg($ai_template_json, $original_template_json) {
 		if (empty($original_template_json['content'])) {
 			return $original_template_json;
 		}
 
 		// 1. Flatten the AI template by block ID (for blocks with 'contents')
 		$flat = [];
-		$this->flattenGutenbergById($ai_template_json, $flat);
+		self::flattenGutenbergById($ai_template_json, $flat);
 		$generated = $flat;
 		$keys = array_keys($generated);
 
 		// 2. Parse the original Gutenberg content
 		$blocks = parse_blocks($original_template_json['content']);
-		// 5. Save the processed content for debugging (optional)
-		$this->writeDebugFile($original_file, $blocks, 'og');
 
-		// 3. Replace content recursively using advanced replacer logic
-		$blocks = $this->replaceGutenbergContentRecursively($generated, $keys, $blocks);
+		// 3. Clean invalid blocks from parsed content
+		$blocks = self::cleanInvalidBlocks($blocks);
 
-		// 4. Serialize the updated blocks back to content
+		// 4. Replace content recursively using advanced replacer logic
+		$blocks = self::replaceGutenbergContentRecursively($generated, $keys, $blocks);
+
+		// 4. Clean invalid blocks before serialization
+		$blocks = self::cleanInvalidBlocks($blocks);
+
+		// 5. Serialize the updated blocks back to content
 		$original_template_json['content'] = serialize_blocks($blocks);
-
-		// 5. Save the processed content for debugging (optional)
-		$this->writeDebugFile($original_file, $blocks, 'ao');
 
 		return $original_template_json;
 	}
@@ -305,20 +281,30 @@ trait AIContentHelper {
 	/**
 	 * Replace content recursively in Gutenberg blocks (ported from GutenbergContentReplacer)
 	 */
-	protected function replaceGutenbergContentRecursively($generated, array $keys, &$blocks) {
+	public static function replaceGutenbergContentRecursively($generated, array $keys, &$blocks) {
+		$htmlSources = [
+			'testimonial',
+			'feature-list',
+			'notice',
+			'pricing-table',
+			'typing-text',
+			'interactive-promo',
+			'call-to-action'
+		];
+
 		foreach ($blocks as &$block) {
 			if (!empty($block['attrs']['blockId'])) {
 				$blockId = $block['attrs']['blockId'];
 				if (in_array($blockId, $keys)) {
 					$blockData = $generated[$blockId];
-					$block_name = $this->cleanBlockName( $block['blockName'] );
+					$block_name = self::cleanBlockName( $block['blockName'] );
 
 					// Store old content BEFORE updating attributes
 					$oldContentMap = [];
-					if (!empty($blockData['contents']) && !in_array($block_name, $this->htmlSources)) {
+					if (!empty($blockData['contents']) && !in_array($block_name, $htmlSources)) {
 						foreach ($blockData['contents'] as $content) {
 							$attribute = $content['attribute'];
-							$oldContent = $this->getNestedGutenbergAttribute($block['attrs'], $attribute);
+							$oldContent = self::getNestedGutenbergAttribute($block['attrs'], $attribute);
 							if ($oldContent !== null) {
 								$oldContentMap[$attribute] = $oldContent;
 							}
@@ -326,28 +312,28 @@ trait AIContentHelper {
 					}
 
 					// Replace content in attributes
-					if (!empty($blockData['contents']) && !in_array($block_name, $this->htmlSources)) {
+					if (!empty($blockData['contents']) && !in_array($block_name, $htmlSources)) {
 						foreach ($blockData['contents'] as $content) {
 							$attribute = $content['attribute'];
 							$newContent = $content['content'];
-							$this->setNestedGutenbergAttribute($block['attrs'], $attribute, $newContent);
+							self::setNestedGutenbergAttribute($block['attrs'], $attribute, $newContent);
 						}
 					}
 
 					// Replace content in innerHTML and innerContent using old content
 					if (!empty($block['innerHTML']) || !empty($block['innerContent'])) {
-						$this->replaceInGutenbergHtmlContent($block, $blockData, $oldContentMap);
+						self::replaceInGutenbergHtmlContent($block, $blockData, $oldContentMap);
 					}
 
-					if(in_array($block_name, $this->htmlSources)){
+					if(in_array($block_name, $htmlSources)){
 						if (!empty($blockData['contents'])) {
 							if (!empty($block['innerHTML'])) {
-								$block['innerHTML'] = $this->replaceContentByClassName($block['innerHTML'], $blockData['contents']);
+								$block['innerHTML'] = self::replaceContentByClassName($block['innerHTML'], $blockData['contents']);
 							}
 							if (!empty($block['innerContent']) && is_array($block['innerContent'])) {
 								foreach ($block['innerContent'] as &$content) {
 									if (is_string($content)) {
-										$content = $this->replaceContentByClassName($content, $blockData['contents']);
+										$content = self::replaceContentByClassName($content, $blockData['contents']);
 									}
 								}
 							}
@@ -360,7 +346,7 @@ trait AIContentHelper {
 						$_generated = array_fill_keys($block_inner_block_ids, ['contents' => $blockData['contents']]);
 
 						if(isset($block["innerBlocks"][0]["attrs"]["accordionLists"]) && count($block["innerBlocks"][0]["attrs"]["accordionLists"]) > 1){
-							$block["innerBlocks"] = $this->replaceGutenbergContentRecursively($_generated, $block_inner_block_ids, $block['innerBlocks']);
+							$block["innerBlocks"] = self::replaceGutenbergContentRecursively($_generated, $block_inner_block_ids, $block['innerBlocks']);
 						}
 						else {
 							// $block["attrs"]["accordionLists"][0]["id"]
@@ -382,7 +368,7 @@ trait AIContentHelper {
 
 				// Process nested blocks recursively
 				if (!empty($block['innerBlocks'])) {
-					$block['innerBlocks'] = $this->replaceGutenbergContentRecursively($generated, $keys, $block['innerBlocks']);
+					$block['innerBlocks'] = self::replaceGutenbergContentRecursively($generated, $keys, $block['innerBlocks']);
 				}
 			}
 		}
@@ -392,7 +378,7 @@ trait AIContentHelper {
 	/**
 	 * Set nested attribute value using dot notation (ported from GutenbergContentReplacer)
 	 */
-	protected function setNestedGutenbergAttribute(&$attrs, $path, $value) {
+	public static function setNestedGutenbergAttribute(&$attrs, $path, $value) {
 		$keys = explode('.', $path);
 		$current = &$attrs;
 		for ($i = 0; $i < count($keys) - 1; $i++) {
@@ -409,7 +395,7 @@ trait AIContentHelper {
 	/**
 	 * Get nested attribute value using dot notation (ported from GutenbergContentReplacer)
 	 */
-	protected function getNestedGutenbergAttribute($attrs, $path) {
+	public static function getNestedGutenbergAttribute($attrs, $path) {
 		$keys = explode('.', $path);
 		$current = $attrs;
 		foreach ($keys as $key) {
@@ -424,7 +410,7 @@ trait AIContentHelper {
 	/**
 	 * Replace content in innerHTML and innerContent while preserving HTML structure (ported from GutenbergContentReplacer)
 	 */
-	protected function replaceInGutenbergHtmlContent(&$block, $blockData, $oldContentMap) {
+	public static function replaceInGutenbergHtmlContent(&$block, $blockData, $oldContentMap) {
 		if (empty($blockData['contents']) || empty($oldContentMap)) return;
 		$replacements = [];
 		foreach ($blockData['contents'] as $content) {
@@ -433,8 +419,8 @@ trait AIContentHelper {
 			if (isset($oldContentMap[$attribute])) {
 				$oldAttributeContent = $oldContentMap[$attribute];
 				$decodedUnicodeContent = json_decode('"' . $oldAttributeContent . '"');
-				$normalizedAttributeContent = $this->normalizeGutenbergUnicodeContent($oldAttributeContent);
-				$normalizedNewContent = $this->normalizeGutenbergUnicodeContent($newContent);
+				$normalizedAttributeContent = self::normalizeGutenbergUnicodeContent($oldAttributeContent);
+				$normalizedNewContent = self::normalizeGutenbergUnicodeContent($newContent);
 				if ($normalizedAttributeContent !== $normalizedNewContent) {
 					$replacements[] = [
 						'originalFormat' => $oldAttributeContent,
@@ -447,12 +433,12 @@ trait AIContentHelper {
 			}
 		}
 		if (!empty($block['innerHTML']) && !empty($replacements)) {
-			$block['innerHTML'] = $this->replaceGutenbergContentInHtml($block['innerHTML'], $replacements);
+			$block['innerHTML'] = self::replaceGutenbergContentInHtml($block['innerHTML'], $replacements);
 		}
 		if (!empty($block['innerContent']) && is_array($block['innerContent'])) {
 			foreach ($block['innerContent'] as &$content) {
 				if (is_string($content)) {
-					$content = $this->replaceGutenbergContentInHtml($content, $replacements);
+					$content = self::replaceGutenbergContentInHtml($content, $replacements);
 				}
 			}
 		}
@@ -461,7 +447,7 @@ trait AIContentHelper {
 	/**
 	 * Replace content in HTML while preserving structure and handling Unicode (ported from GutenbergContentReplacer)
 	 */
-	protected function replaceGutenbergContentInHtml($html, $replacements) {
+	public static function replaceGutenbergContentInHtml($html, $replacements) {
 		foreach ($replacements as $replacement) {
 			$originalFormat = $replacement['originalFormat'];
 			$decodedFormat = $replacement['decodedFormat'];
@@ -483,7 +469,7 @@ trait AIContentHelper {
 	/**
 	 * Normalize Unicode content to handle different apostrophe types and other Unicode variations (ported from GutenbergContentReplacer)
 	 */
-	protected function normalizeGutenbergUnicodeContent($content) {
+	public static function normalizeGutenbergUnicodeContent($content) {
 		$decoded = json_decode('"' . $content . '"');
 		if ($decoded !== null) {
 			$content = $decoded;
@@ -510,7 +496,7 @@ trait AIContentHelper {
 	/**
 	 * Convert content to HTML format (handle line breaks and inline tags) (ported from GutenbergContentReplacer)
 	 */
-	protected function convertGutenbergToHtmlFormat($content) {
+	public static function convertGutenbergToHtmlFormat($content) {
 		$content = str_replace("\n", '<br>', $content);
 		$content = str_replace("\r\n", '<br>', $content);
 		return $content;
@@ -523,7 +509,7 @@ trait AIContentHelper {
 	 * @param array $flat Reference to the flattened array
 	 * @return array The flattened array
 	 */
-	protected function flattenGutenbergById($array, &$flat = []) {
+	public static function flattenGutenbergById($array, &$flat = []) {
 		foreach ($array as $key => $value) {
 			if (is_array($value)) {
 				// If this is a block with 'blockName' and 'contents', use its parent key as ID
@@ -531,7 +517,7 @@ trait AIContentHelper {
 					$flat[$key] = $value;
 				}
 				// Recurse into children
-				$this->flattenGutenbergById($value, $flat);
+				self::flattenGutenbergById($value, $flat);
 			}
 		}
 		return $flat;
@@ -558,12 +544,12 @@ trait AIContentHelper {
 	 * @param array $contents Array of ['attribute' => className, 'content' => newContent]
 	 * @return string The updated HTML.
 	 */
-	protected function replaceContentByClassName($html, $contents) {
+	public static function replaceContentByClassName($html, $contents) {
 		$classExists = false;
 		foreach ($contents as $item) {
 			$className = $item['attribute'];
 			// Extract base class name (remove index if present)
-			$baseClassName = $this->extractBaseClassName($className);
+			$baseClassName = self::extractBaseClassName($className);
 			if (preg_match('/class=["\'][^"\']*\b' . preg_quote($baseClassName, '/') . '\b[^"\']*["\']/', $html)) {
 				$classExists = true;
 				break;
@@ -574,9 +560,9 @@ trait AIContentHelper {
 		}
 
 		if (class_exists('DOMDocument') && class_exists('DOMXPath')) {
-			return $this->replaceContentByClassNameDom($html, $contents);
+			return self::replaceContentByClassNameDom($html, $contents);
 		} else {
-			return $this->replaceContentByClassNameRegex($html, $contents);
+			return self::replaceContentByClassNameRegex($html, $contents);
 		}
 	}
 
@@ -586,7 +572,7 @@ trait AIContentHelper {
 	 * @param string $className The class name (e.g., "eb-feature-list-title.0")
 	 * @return string The base class name (e.g., "eb-feature-list-title")
 	 */
-	protected function extractBaseClassName($className) {
+	public static function extractBaseClassName($className) {
 		// Check if class name has numeric index at the end
 		if (preg_match('/^(.+)\.(\d+)$/', $className, $matches)) {
 			return $matches[1]; // Return base class name
@@ -600,7 +586,7 @@ trait AIContentHelper {
 	 * @param string $className The class name (e.g., "eb-feature-list-title.0")
 	 * @return int|null The index (e.g., 0) or null if no index found
 	 */
-	protected function extractClassIndex($className) {
+	public static function extractClassIndex($className) {
 		// Check if class name has numeric index at the end
 		if (preg_match('/^(.+)\.(\d+)$/', $className, $matches)) {
 			return (int)$matches[2]; // Return index as integer
@@ -621,21 +607,21 @@ trait AIContentHelper {
 	 * @param array $contents Array of ['attribute' => className, 'content' => newContent]
 	 * @return string The updated HTML.
 	 */
-	protected function replaceContentByClassNameDom($html, $contents) {
+	public static function replaceContentByClassNameDom($html, $contents) {
 		$dom = new \DOMDocument();
 		// Suppress errors due to HTML5 tags or fragments
-		$html = $this->escapeInvalidEntities($html);
+		$html = self::escapeInvalidEntities($html);
 		@$dom->loadHTML('<?xml encoding="utf-8" ?>' . $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
 
 		$xpath = new \DOMXPath($dom);
 		foreach ($contents as $item) {
 			$className = $item['attribute'];
-			$newContent = $this->escapeInvalidEntities($item['content']);
+			$newContent = self::escapeInvalidEntities($item['content']);
 			// $newContent = $item['content'];
 
 			// Extract base class name and index
-			$baseClassName = $this->extractBaseClassName($className);
-			$targetIndex = $this->extractClassIndex($className);
+			$baseClassName = self::extractBaseClassName($className);
+			$targetIndex = self::extractClassIndex($className);
 
 			// Find elements by base class name using XPath
 			// XPath equivalent to CSS selector: .baseClassName
@@ -667,18 +653,18 @@ trait AIContentHelper {
 	 * @param array $contents Array of ['attribute' => className, 'content' => newContent]
 	 * @return string The updated HTML.
 	 */
-	protected function replaceContentByClassNameRegex($html, $contents) {
+	public static function replaceContentByClassNameRegex($html, $contents) {
 		foreach ($contents as $item) {
 			$className = $item['attribute'];
 			$newContent = $item['content'];
 
 			// Extract base class name and index
-			$baseClassName = $this->extractBaseClassName($className);
-			$targetIndex = $this->extractClassIndex($className);
+			$baseClassName = self::extractBaseClassName($className);
+			$targetIndex = self::extractClassIndex($className);
 
 			if ($targetIndex !== null) {
 				// Handle indexed replacement
-				$html = $this->replaceContentByClassNameRegexIndexed($html, $baseClassName, $newContent, $targetIndex);
+				$html = self::replaceContentByClassNameRegexIndexed($html, $baseClassName, $newContent, $targetIndex);
 			} else {
 				// Handle non-indexed replacement (original behavior)
 				$quotedClassName = preg_quote($className, '/');
@@ -699,7 +685,7 @@ trait AIContentHelper {
 	 * @param int $targetIndex The zero-based index of the element to replace.
 	 * @return string The updated HTML.
 	 */
-	protected function replaceContentByClassNameRegexIndexed($html, $baseClassName, $newContent, $targetIndex) {
+	public static function replaceContentByClassNameRegexIndexed($html, $baseClassName, $newContent, $targetIndex) {
 		$quotedClassName = preg_quote($baseClassName, '/');
 		/*
 		Regex explanation:
@@ -735,7 +721,7 @@ trait AIContentHelper {
 	 *
 	 * @return string Cleaned block name without prefix
 	 */
-	private function cleanBlockName( $block_name ) {
+	public static function cleanBlockName( $block_name ) {
 		// Remove namespace/plugin prefix (everything before the last slash)
 		$parts = explode( '/', $block_name );
 
@@ -748,8 +734,47 @@ trait AIContentHelper {
 	 * @param string $html The HTML string to escape.
 	 * @return string The escaped HTML string.
 	 */
-	protected function escapeInvalidEntities($html) {
+	public static function escapeInvalidEntities($html) {
 		// Replace & not followed by one of: #, a-z, A-Z, or 0-9, and then a semicolon
 		return preg_replace('/&(?!(#[0-9]+|[a-zA-Z0-9]+);)/', '&amp;', $html);
+	}
+
+	/**
+	 * Remove invalid blocks from array
+	 *
+	 * @param array $blocks Array of blocks to clean
+	 * @return array Cleaned array with only valid blocks
+	 */
+	public static function cleanInvalidBlocks(array $blocks) {
+		$cleanedBlocks = [];
+
+		foreach ($blocks as $block) {
+			// Skip if not array
+			if (!is_array($block)) {
+				continue;
+			}
+
+			// Skip if blockName is null or empty
+			if (empty($block['blockName'])) {
+				continue;
+			}
+
+			// Skip if missing required properties
+			if (!isset($block['attrs']) ||
+				!isset($block['innerBlocks']) ||
+				!isset($block['innerHTML']) ||
+				!isset($block['innerContent'])) {
+				continue;
+			}
+
+			// Clean nested blocks recursively
+			if (!empty($block['innerBlocks']) && is_array($block['innerBlocks'])) {
+				$block['innerBlocks'] = self::cleanInvalidBlocks($block['innerBlocks']);
+			}
+
+			$cleanedBlocks[] = $block;
+		}
+
+		return $cleanedBlocks;
 	}
 }

@@ -314,10 +314,9 @@ class Utils extends Base {
 		throw new Exception(__('Invalid Session ID.', 'templately'));
 	}
 
-	public static function update_session_data_by_id($data): array {
+	public static function update_session_data_by_id($data): bool {
 		if($session_id = self::get_session_id()){
-			$session_id = self::update_session_data($session_id, $data);
-			return $data[$session_id] ?? [];
+			return self::update_session_data($session_id, $data);
 		}
 		throw new Exception(__('Invalid Session ID.', 'templately'));
 	}

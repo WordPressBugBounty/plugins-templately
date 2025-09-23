@@ -3,6 +3,7 @@
 namespace Templately\Core\Importer\Utils;
 
 use Templately\Utils\Options;
+use Templately\Utils\Helper;
 
 /**
  * AI-related utility functions for Templately
@@ -20,9 +21,10 @@ class AIUtils {
 	 * @param array $ai_page_ids All AI pages that need processing
 	 * @param callable $sse_message_callback Callback function for sending SSE messages
 	 * @param array $additional_sse_data Additional data to include in SSE message
+	 * @param string|null $old_template_id Optional template ID for local site polling
 	 * @return bool True if should continue processing, false if should exit
 	 */
-	public static function handle_sse_wait_with_timeout($session_id, $progress_id, $updated_ids, $ai_page_ids, $sse_message_callback, $additional_sse_data = []) {
+	public static function handle_sse_wait_with_timeout($session_id, $progress_id, $updated_ids, $ai_page_ids, $sse_message_callback, $additional_sse_data = [], $old_template_id = null) {
 		$total_pages = count($ai_page_ids);
 		$updated_pages = count($updated_ids['pages'] ?? []);
 
@@ -38,6 +40,7 @@ class AIUtils {
 		$last_time = $progress_data['last_time'] ?? 0;
 		$current_time = time();
 		$progress_percentage = $total_pages > 0 ? round(($updated_pages / $total_pages) * 100) : 0;
+		$is_local_site = $session_data['isLocalSite'] ?? false;
 
 		// Skip timeout check if credit cost is available and time difference is > 10 seconds
 		if (isset($updated_ids['credit_cost']) && !empty($last_time) && ($current_time - $last_time) > 10) {
@@ -45,7 +48,39 @@ class AIUtils {
 		}
 
 		// Check if time difference is less than 5 minutes (timeout condition)
-		if (empty($last_time) || ($current_time - $last_time) < 5 * MINUTE_IN_SECONDS) {
+		if (empty($last_time) || ($current_time - $last_time) < 7 * MINUTE_IN_SECONDS) {
+			// For local sites with template ID, attempt polling before waiting
+			if ($is_local_site && !empty($old_template_id)) {
+				$process_id = $session_data['process_id'] ?? null;
+				if (!empty($process_id)) {
+					// Call generic polling function to process all available templates
+					$polling_result = self::poll_for_template($process_id, $session_id, $ai_page_ids);
+					if ($polling_result === true) {
+						// Check if the specific template file now exists after polling
+						$upload_dir = wp_upload_dir();
+						$tmp_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . $session_id . DIRECTORY_SEPARATOR;
+
+						// Find the correct directory for the template ID
+						$template_file_found = false;
+						foreach ($ai_page_ids as $key => $ids) {
+							if (in_array($old_template_id, $ids)) {
+								$page_dir = $tmp_dir . $key . DIRECTORY_SEPARATOR;
+								$file_path = $page_dir . $old_template_id . '.ai.json';
+								if (file_exists($file_path)) {
+									$template_file_found = true;
+									break;
+								}
+							}
+						}
+
+						if ($template_file_found) {
+							// Specific template found and downloaded, continue processing
+							return true;
+						}
+					}
+				}
+			}
+
 			// Only update time if progress has changed
 			if ($progress_percentage !== $last_progress) {
 				$updated_progress = $session_data['progress'] ?? [];
@@ -84,6 +119,83 @@ class AIUtils {
 
 		// Continue processing if timeout exceeded (current behavior)
 		return true;
+	}
+
+	/**
+	 * Poll for AI template generation status on local sites
+	 * Generic polling utility that processes all available templates
+	 *
+	 * @param string $process_id The AI process ID
+	 * @param string $session_id The session ID
+	 * @param array $ai_page_ids The AI page IDs structure
+	 * @return bool True if polling was successful, false otherwise
+	 */
+	public static function poll_for_template($process_id, $session_id, $ai_page_ids) {
+		// First check if polling is already complete
+		$processed_pages = get_option("templately_ai_processed_pages", []);
+		if (isset($processed_pages[$process_id]['is_last_part']) && $processed_pages[$process_id]['is_last_part']) {
+			return true;
+		}
+
+		// Make GET request to API endpoint
+		$response = Helper::make_api_get_request("v2/ai/{$process_id}/template", [], [], 30);
+
+		if (is_wp_error($response)) {
+			return false;
+		}
+
+		$response_code = wp_remote_retrieve_response_code($response);
+		if ($response_code !== 200) {
+			return false;
+		}
+
+		$body = wp_remote_retrieve_body($response);
+		$api_data = json_decode($body, true);
+
+		if (!isset($api_data['status']) || $api_data['status'] !== 'success') {
+			return false;
+		}
+
+		$response_data = $api_data['data'] ?? [];
+
+		// Extract required fields from API response
+		$is_last_part = $response_data['is_last_part'] ?? false;
+		$credit_cost = $response_data['credit_cost'] ?? 0;
+		$templates = $response_data['templates'] ?? [];
+
+		// Save credit_cost if available
+		if ($credit_cost > 0) {
+			$processed_pages = get_option("templately_ai_processed_pages", []);
+			$processed_pages[$process_id] = $processed_pages[$process_id] ?? [];
+			$processed_pages[$process_id]['credit_cost'] = $credit_cost;
+			update_option("templately_ai_processed_pages", $processed_pages, false);
+		}
+
+		// Save is_last_part if true
+		if ($is_last_part) {
+			$processed_pages = get_option("templately_ai_processed_pages", []);
+			$processed_pages[$process_id] = $processed_pages[$process_id] ?? [];
+			$processed_pages[$process_id]['is_last_part'] = $is_last_part;
+			update_option("templately_ai_processed_pages", $processed_pages, false);
+		}
+
+		// Process ALL templates if available (extracted from FullSiteImport::ai_poll_template)
+		if (!empty($templates) && is_array($templates)) {
+			foreach ($templates as $content_id => $template_data) {
+				// Save template to file using the common helper function
+				$result = self::save_template_to_file(
+					$process_id,
+					$session_id,
+					$content_id,
+					$template_data,
+					$ai_page_ids,
+					false // Not skipped
+				);
+				// Continue processing other templates even if one fails
+			}
+		}
+
+		return true; // Return true if polling was successful, regardless of specific templates
 	}
 
 	/**
@@ -130,7 +242,7 @@ class AIUtils {
 	 *
 	 * @return array|null The latest AI process data or null if not found
 	 */
-	public static function get_latest_ai_process_by_api_key() {
+	public static function get_latest_ai_process_by_api_key($id) {
 		$api_key = Options::get_instance()->get('api_key');
 		if (empty($api_key)) {
 			return null;
@@ -154,8 +266,14 @@ class AIUtils {
 			return null;
 		}
 
+		$latest_data = end($api_key_processes);
+
+		if($id != $latest_data['pack_id'] && isset($latest_data['imageReplace'])){
+			unset($latest_data['imageReplace']);
+		}
+
 		// Return the last (most recent) process
-		return end($api_key_processes);
+		return $latest_data;
 	}
 
 
@@ -268,4 +386,379 @@ class AIUtils {
 
 		return $removed_process_ids;
 	}
+
+	/**
+	 * Save template data to file
+	 *
+	 * Common function for saving templates to files, used by AI content operations
+	 *
+	 * @param string $process_id The process ID
+	 * @param string $session_id The session ID
+	 * @param string $content_id The content ID
+	 * @param string $template The template data (base64 encoded or raw)
+	 * @param array $ai_page_ids Array of AI page IDs
+	 * @param bool $is_skipped Whether the template was skipped
+	 * @return array|WP_Error Result array with status and data
+	 */
+	public static function save_template_to_file($process_id, $session_id, $content_id, $template, $ai_page_ids, $is_skipped = false) {
+		$upload_dir = wp_upload_dir();
+
+		// Always save to tmp directory for AI content workflow
+		$tmp_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . $session_id . DIRECTORY_SEPARATOR;
+
+		// Decode template if it's base64 encoded
+		if (! empty($template) && base64_decode($template, true) !== false) {
+			$template = base64_decode($template);
+		}
+
+		// Handle empty template (skipped)
+		if (empty($template)) {
+			$template = json_encode([
+				"isSkipped" => true,
+			]);
+		}
+
+		// Find the correct directory for the content ID
+		$found_key = null;
+		foreach ($ai_page_ids as $key => $ids) {
+			if (in_array($content_id, $ids)) {
+				$found_key = $key;
+				break;
+			}
+		}
+
+		if ($found_key === null) {
+			return Helper::error('invalid_content_id', __('Content ID not found in AI page IDs.', 'templately'), 'save_template_to_file', 400);
+		}
+
+		// Create directory and file path
+		$page_dir = $tmp_dir . $found_key . DIRECTORY_SEPARATOR;
+		$file_path = $page_dir . $content_id . '.ai.json';
+		wp_mkdir_p($page_dir);
+
+		// Save the file
+		$is_success = file_put_contents($file_path, $template);
+
+		if ($is_success) {
+			// Update processed pages option
+			$processed_pages = get_option("templately_ai_processed_pages", []);
+			$processed_pages[$process_id] = $processed_pages[$process_id] ?? [];
+			$processed_pages[$process_id]['pages'][$content_id] = $is_skipped;
+			update_option("templately_ai_processed_pages", $processed_pages, false);
+
+			return [
+				'status' => 'success',
+				'data'   => [
+					'process_id'      => $process_id,
+					// 'file_path'       => $file_path,
+					'content_id'      => $content_id,
+				],
+			];
+		}
+
+		return Helper::error('file_save_failed', __('Failed to save template file.', 'templately'), 'save_template_to_file', 500);
+	}
+
+	/**
+	 * Get matched session data by process ID
+	 *
+	 * Helper function to retrieve session data for a given process ID
+	 *
+	 * @param string $process_id The process ID to match
+	 * @return array|false Returns matched data array or false if not found
+	 */
+	public static function get_matched_session_data($process_id) {
+		if (empty($process_id)) {
+			return false;
+		}
+
+		$all_data = Utils::get_all_session_data();
+
+		if (empty($all_data) || ! is_array($all_data)) {
+			return false;
+		}
+
+		// INSERT_YOUR_CODE
+		if (is_array($all_data)) {
+			$all_data = array_reverse($all_data);
+		}
+		foreach ($all_data as $data) {
+			if (isset($data['process_id']) && ($data['process_id'] === $process_id)) {
+				return $data;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Generate AI file paths for content processing
+	 *
+	 * @param string $session_id The session ID
+	 * @param string $type The content type (templates, content, etc.)
+	 * @param string $sub_type The content sub-type (page, post, etc.)
+	 * @param string $template_id The template ID
+	 * @param string $dir_path The base directory path for original files
+	 * @return array Array containing paths for original and AI files
+	 */
+	public static function generate_ai_file_paths($session_id, $type, $sub_type, $template_id, $dir_path) {
+		// Original file path
+		$original_path = $dir_path . $type . DIRECTORY_SEPARATOR;
+		if (!empty($sub_type)) {
+			$original_path .= $sub_type . DIRECTORY_SEPARATOR;
+		}
+		$original_file = $original_path . "{$template_id}.json";
+
+		// AI file path in tmp directory
+		$upload_dir = wp_upload_dir();
+		$tmp_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . $session_id . DIRECTORY_SEPARATOR;
+		$ai_path = $tmp_dir . $type . DIRECTORY_SEPARATOR;
+		if (!empty($sub_type)) {
+			$ai_path .= $sub_type . DIRECTORY_SEPARATOR;
+		}
+		$ai_file = $ai_path . "{$template_id}.ai.json";
+
+		return [
+			'original_file' => $original_file,
+			'ai_file_path'  => $ai_file,
+			'ai_directory'  => $ai_path,
+			'tmp_directory' => $tmp_dir,
+		];
+	}
+
+	/**
+	 * Get AI tmp directory path for a session
+	 *
+	 * @param string $session_id The session ID
+	 * @return string The tmp directory path
+	 */
+	public static function get_ai_tmp_directory($session_id) {
+		$upload_dir = wp_upload_dir();
+		return trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . $session_id . DIRECTORY_SEPARATOR;
+	}
+
+	/**
+	 * Get AI file path for specific content
+	 *
+	 * @param string $session_id The session ID
+	 * @param string $type The content type
+	 * @param string $sub_type The content sub-type (optional)
+	 * @param string $content_id The content ID
+	 * @return string The AI file path
+	 */
+	public static function get_ai_file_path($session_id, $type, $sub_type, $content_id) {
+		$tmp_dir = self::get_ai_tmp_directory($session_id);
+		$file_path = $tmp_dir . $type . DIRECTORY_SEPARATOR;
+		if (!empty($sub_type)) {
+			$file_path .= $sub_type . DIRECTORY_SEPARATOR;
+		}
+		return $file_path . "{$content_id}.ai.json";
+	}
+
+	/**
+	 * Check if AI file exists and is valid
+	 *
+	 * @param string $ai_file_path The AI file path
+	 * @return bool True if AI file exists and is valid
+	 */
+	public static function has_ai_file($ai_file_path) {
+		if (!file_exists($ai_file_path)) {
+			return false;
+		}
+
+		$file_content = file_get_contents($ai_file_path);
+		if (empty($file_content)) {
+			return false;
+		}
+
+		$decoded = json_decode($file_content, true);
+		return json_last_error() === JSON_ERROR_NONE && !empty($decoded);
+	}
+
+	/**
+	 * Check if AI file is marked as skipped
+	 *
+	 * @param string $ai_file_path The AI file path
+	 * @return bool True if AI file exists and is marked as skipped
+	 */
+	public static function is_ai_file_skipped($ai_file_path) {
+		if (!file_exists($ai_file_path)) {
+			return false;
+		}
+
+		$ai_content = Utils::read_json_file($ai_file_path);
+		return isset($ai_content['isSkipped']) && $ai_content['isSkipped'];
+	}
+
+	/**
+	 * Check if content ID is in AI page IDs
+	 *
+	 * @param string $content_id The content ID to check
+	 * @param array $ai_page_ids The AI page IDs structure
+	 * @return bool True if content ID is found in AI page IDs
+	 */
+	public static function is_ai_content($content_id, $ai_page_ids) {
+		if (empty($ai_page_ids) || !is_array($ai_page_ids)) {
+			return false;
+		}
+
+		foreach ($ai_page_ids as $ids) {
+			if (is_array($ids) && in_array($content_id, $ids)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check if content should be processed as AI content
+	 *
+	 * @param string $session_id The session ID
+	 * @param string $type The content type
+	 * @param string $sub_type The content sub-type
+	 * @param string $content_id The content ID
+	 * @param array $ai_page_ids The AI page IDs structure
+	 * @param string $dir_path The base directory path
+	 * @return bool True if this is AI content
+	 */
+	public static function should_process_as_ai_content($session_id, $type, $sub_type, $content_id, $ai_page_ids, $dir_path) {
+		// Check if content ID is in AI page IDs list
+		$is_ai_template = self::is_ai_content($content_id, $ai_page_ids);
+
+		// Check if AI file exists
+		$paths = self::generate_ai_file_paths($session_id, $type, $sub_type, $content_id, $dir_path);
+		$has_ai_file = self::has_ai_file($paths['ai_file_path']);
+
+		return $is_ai_template || $has_ai_file;
+	}
+
+	/**
+	 * Validate and extract AI process data for a given process ID
+	 *
+	 * @param string $process_id The process ID
+	 * @return array|WP_Error Returns process data array or WP_Error on failure
+	 */
+	public static function validate_and_get_process_data($process_id) {
+		if (empty($process_id)) {
+			return Helper::error('invalid_process_id', __('Process ID is required.', 'templately'), 'validate_process_data', 400);
+		}
+
+		$ai_process_data = self::get_ai_process_data();
+		if (empty($ai_process_data[$process_id])) {
+			return Helper::error('process_not_found', __('Process ID not found.', 'templately'), 'validate_process_data', 404);
+		}
+
+		$process_data = $ai_process_data[$process_id];
+
+		// Validate required fields
+		if (empty($process_data['session_id'])) {
+			return Helper::error('missing_session_id', __('Session ID missing from process data.', 'templately'), 'validate_process_data', 400);
+		}
+
+		if (empty($process_data['ai_page_ids'])) {
+			return Helper::error('missing_ai_page_ids', __('AI page IDs missing from process data.', 'templately'), 'validate_process_data', 400);
+		}
+
+		return $process_data;
+	}
+
+	/**
+	 * Get processed pages data for a process ID
+	 *
+	 * @param string $process_id The process ID
+	 * @return array The processed pages data
+	 */
+	public static function get_processed_pages_data($process_id) {
+		$processed_pages = get_option("templately_ai_processed_pages", []);
+		return $processed_pages[$process_id] ?? [];
+	}
+
+	/**
+	 * Update processed pages data for a process ID
+	 *
+	 * @param string $process_id The process ID
+	 * @param array $data The data to update
+	 * @return bool True on success, false on failure
+	 */
+	public static function update_processed_pages_data($process_id, $data) {
+		$processed_pages = get_option("templately_ai_processed_pages", []);
+		$processed_pages[$process_id] = array_merge($processed_pages[$process_id] ?? [], $data);
+		return update_option("templately_ai_processed_pages", $processed_pages, false);
+	}
+
+	/**
+	 * Find content type and sub-type for a given content ID in AI page IDs
+	 *
+	 * @param string $content_id The content ID to find
+	 * @param array $ai_page_ids The AI page IDs structure
+	 * @return array|null Array with 'type' and 'sub_type' keys, or null if not found
+	 */
+	public static function find_content_type_info($content_id, $ai_page_ids) {
+		if (empty($ai_page_ids) || !is_array($ai_page_ids)) {
+			return null;
+		}
+
+		foreach ($ai_page_ids as $key => $ids) {
+			if (is_array($ids) && in_array($content_id, $ids)) {
+				$type_parts = explode('/', $key);
+				return [
+					'type' => $type_parts[0],
+					'sub_type' => isset($type_parts[1]) ? $type_parts[1] : '',
+					'key' => $key
+				];
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Read AI template data directly from files
+	 * Common function for reading template data, used by AI content operations
+	 *
+	 * @param string $session_id The session ID
+	 * @param array $ai_page_ids The AI page IDs structure
+	 * @param string $dir_path The base directory path
+	 * @return array Array of template data indexed by content ID
+	 */
+	public static function read_ai_template_data($session_id, $ai_page_ids, $dir_path) {
+		$result = [];
+
+		if (empty($ai_page_ids) || !is_array($ai_page_ids)) {
+			return $result;
+		}
+
+		foreach ($ai_page_ids as $key => $ids) {
+			if (!is_array($ids)) {
+				continue;
+			}
+
+			foreach ($ids as $id) {
+				$type_arr = explode('/', $key);
+				$type = $type_arr[0];
+				$sub_type = isset($type_arr[1]) ? $type_arr[1] : '';
+
+				// Check if this is AI content before processing
+				if (self::should_process_as_ai_content($session_id, $type, $sub_type, $id, $ai_page_ids, $dir_path)) {
+					// Generate AI file paths
+					$ai_paths = self::generate_ai_file_paths($session_id, $type, $sub_type, $id, $dir_path);
+					$ai_file_path = $ai_paths['ai_file_path'];
+
+					if (file_exists($ai_file_path)) {
+						$ai_content = Utils::read_json_file($ai_file_path);
+						if (isset($ai_content['isSkipped']) && $ai_content['isSkipped']) {
+							// Return empty array for skipped content (for JS compatibility)
+							$result[$id] = [];
+						} else {
+							$result[$id] = $ai_content; // Raw AI content
+						}
+					}
+				}
+			}
+		}
+
+		return $result;
+	}
+
 }
