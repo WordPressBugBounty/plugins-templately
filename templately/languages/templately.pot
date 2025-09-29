@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Templately plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Templately 3.4.0\n"
+"Project-Id-Version: Templately 3.4.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/templately\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-09-23T08:00:03+00:00\n"
+"POT-Creation-Date: 2025-09-29T07:22:54+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: templately\n"
@@ -24,6 +24,9 @@ msgstr ""
 #: react-src/elementor/AddSectionBehavior.js:30
 #: react-src/elementor/AddSectionBehavior.js:31
 #: react-src/elementor/AddSectionBehavior.js:32
+#: assets/js/elementor.js:151
+#: assets/js/elementor.js:152
+#: assets/js/elementor.js:153
 msgid "Templately"
 msgstr ""
 
@@ -150,7 +153,7 @@ msgstr ""
 #: includes/Core/Admin.php:501
 #: includes/Core/Importer/Runners/ElementorContent.php:16
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/Breadcrumb.js:21
+#: react-src/app/components/core/itemDetails/Breadcrumb.js:22
 #: react-src/app/components/core/itemDetails/NewSidebar.js:284
 #: react-src/app/components/core/itemDetails/NewSidebar.js:297
 #: react-src/app/header/actionParts/Switcher.js:38
@@ -171,8 +174,10 @@ msgid "Failed to update developer settings."
 msgstr ""
 
 #: includes/API/DeveloperSettings.php:80
+#: assets/js/developer.js:35360
 #: assets/js/templately.js:1
 #: react-src/app/settings/tabs/Developer.js:72
+#: assets/js/developer.js:34179
 msgid "Developer settings saved successfully."
 msgstr ""
 
@@ -538,8 +543,8 @@ msgstr ""
 
 #: includes/Builder/Types/Page.php:18
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/NewItemList.js:56
-#: react-src/app/components/core/itemDetails/NewLayoutsInPack.js:68
+#: react-src/app/components/core/itemDetails/NewItemList.js:57
+#: react-src/app/components/core/itemDetails/NewLayoutsInPack.js:69
 #: react-src/app/components/core/itemDetails/Packs/PacksHeader.js:106
 #: react-src/app/components/profile/FavouritesFilter.js:40
 #: react-src/app/routesTemplate.js:29
@@ -880,6 +885,7 @@ msgstr ""
 #: includes/Core/Admin.php:320
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Review.js:50
+#: assets/js/dashboard.js:689
 msgid "I already did"
 msgstr ""
 
@@ -1249,6 +1255,7 @@ msgstr ""
 #: views/builder/conditions.php:3
 #: assets/js/elementor.js:1
 #: react-src/elementor/FooterMenuModule.js:30
+#: assets/js/elementor.js:389
 msgid "Condition (by Templately)"
 msgstr ""
 
@@ -1258,11 +1265,13 @@ msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Feedback.js:35
+#: assets/js/dashboard.js:477
 msgid "Thank you for sharing your experience."
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Feedback.js:36
+#: assets/js/dashboard.js:478
 msgid "We truly value your feedback. Please let us know how we can improve and enhance your experience."
 msgstr ""
 
@@ -1270,94 +1279,368 @@ msgstr ""
 #: assets/js/templately.js:1
 #: react-src/app/components/profile/Profile.js:48
 #: react-src/dashboard/Feedback/Feedback.js:44
+#: assets/js/dashboard.js:486
 msgid "Email"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/ItemsDetailsInfo.js:42
+#: react-src/app/components/core/itemDetails/ItemsDetailsInfo.js:43
 #: react-src/dashboard/Feedback/Feedback.js:50
+#: assets/js/dashboard.js:492
 msgid "Description"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Feedback.js:63
+#: assets/js/dashboard.js:505
 msgid "Send"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/FeedbackComplete.js:23
+#: assets/js/dashboard.js:538
 msgid "Thanks a lot for your Feedback!"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/FeedbackComplete.js:27
+#: assets/js/dashboard.js:542
 msgid "We really appreciate you taking the time to share your thoughts with us. Your feedback helps us improve and create a better experience for everyone."
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Rating.js:23
+#: assets/js/dashboard.js:603
 msgid "I see that you've already started using Templately. How has your experience been so far, and how would you rate us?"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Rating.js:28
+#: assets/js/dashboard.js:608
 msgid "1 Star"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Rating.js:32
+#: assets/js/dashboard.js:612
 msgid "2 Stars"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Rating.js:36
+#: assets/js/dashboard.js:616
 msgid "3 Stars"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Rating.js:40
+#: assets/js/dashboard.js:620
 msgid "4 Stars"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Rating.js:44
+#: assets/js/dashboard.js:624
 msgid "5 Stars"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Rating.js:48
+#: assets/js/dashboard.js:628
 msgid "Not Satisfied"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Rating.js:49
+#: assets/js/dashboard.js:629
 msgid "Very Satisfied"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Review.js:38
+#: assets/js/dashboard.js:677
 msgid "We're glad that you liked us! 😍"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Review.js:41
+#: assets/js/dashboard.js:680
 msgid "If you don't mind, could you take 30 seconds to review us on WordPress? Your feedback will help us improve and grow. Thank you in advance! 🙏"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Review.js:46
+#: assets/js/dashboard.js:685
 msgid "Rate Templately"
+msgstr ""
+
+#: assets/js/developer.js:35222
+#: assets/js/developer.js:34083
+msgid "Settings"
+msgstr ""
+
+#: assets/js/developer.js:35224
+#: assets/js/developer.js:34085
+msgid "Configure developer constants and options"
+msgstr ""
+
+#: assets/js/developer.js:35227
+#: assets/js/developer.js:34089
+msgid "Transients"
+msgstr ""
+
+#: assets/js/developer.js:35229
+#: assets/js/developer.js:34091
+msgid "Manage cached data and transients"
+msgstr ""
+
+#: assets/js/developer.js:35232
+#: assets/js/developer.js:34095
+msgid "API Testing"
+msgstr ""
+
+#: assets/js/developer.js:35234
+#: assets/js/developer.js:34097
+msgid "Test API endpoints and connections"
+msgstr ""
+
+#: assets/js/developer.js:35237
+#: assets/js/developer.js:34101
+msgid "System Info"
+msgstr ""
+
+#: assets/js/developer.js:35239
+#: assets/js/developer.js:34103
+msgid "View system information and diagnostics"
+msgstr ""
+
+#: assets/js/developer.js:35371
+#: assets/js/templately.js:1
+#: react-src/app/settings/tabs/Developer.js:92
+#: assets/js/developer.js:34187
+msgid "Failed to save developer settings"
+msgstr ""
+
+#: assets/js/developer.js:35393
+#: assets/js/developer.js:34198
+msgid "Delete All Templately Transients?"
+msgstr ""
+
+#: assets/js/developer.js:35393
+#: assets/js/developer.js:34199
+msgid "This will clear all cached data stored by Templately. Template data will be fetched fresh from the API on next request. This action cannot be undone."
+msgstr ""
+
+#: assets/js/developer.js:35414
+#: assets/js/developer.js:34217
+msgid "Transients deleted successfully."
+msgstr ""
+
+#: assets/js/developer.js:35414
+#: assets/js/developer.js:34217
+msgid "Deleted:"
+msgstr ""
+
+#: assets/js/developer.js:35414
+#: assets/js/developer.js:34217
+msgid "transients"
+msgstr ""
+
+#: assets/js/developer.js:35428
+#: assets/js/developer.js:34228
+msgid "Failed to delete transients"
+msgstr ""
+
+#: assets/js/developer.js:35475
+#: assets/js/developer.js:34268
+msgid "Developer Constants Configuration"
+msgstr ""
+
+#: assets/js/developer.js:35477
+#: assets/js/developer.js:34270
+msgid "Constants defined in wp-config.php will override these settings and appear disabled below."
+msgstr ""
+
+#: assets/js/developer.js:35529
+#: assets/js/developer.js:34324
+msgid "Currently controlled by wp-config.php constant:"
+msgstr ""
+
+#: assets/js/developer.js:35536
+#: assets/js/templately.js:1
+#: react-src/app/display-conditions/Footer.js:10
+#: react-src/app/settings/tabs/Developer.js:216
+#: assets/js/developer.js:34336
+msgid "Saving..."
+msgstr ""
+
+#: assets/js/developer.js:35536
+#: assets/js/developer.js:34336
+msgid "Save Settings"
+msgstr ""
+
+#: assets/js/developer.js:35538
+#: assets/js/templately.js:1
+#: react-src/app/settings/tabs/Developer.js:238
+#: assets/js/developer.js:34342
+msgid "wp-config.php Code Snippet"
+msgstr ""
+
+#: assets/js/developer.js:35540
+#: assets/js/developer.js:34344
+msgid "Copy this code to your wp-config.php file to define these constants:"
+msgstr ""
+
+#: assets/js/developer.js:35556
+#: assets/js/developer.js:34356
+msgid "Transient Management"
+msgstr ""
+
+#: assets/js/developer.js:35558
+#: assets/js/developer.js:34358
+msgid "Manage cached data and transients stored by Templately."
+msgstr ""
+
+#: assets/js/developer.js:35560
+#: assets/js/developer.js:34362
+msgid "Current Status"
+msgstr ""
+
+#: assets/js/developer.js:35560
+#: assets/js/developer.js:34365
+msgid "Templately transients found"
+msgstr ""
+
+#: assets/js/developer.js:35560
+#: assets/js/developer.js:34367
+msgid "Last cleanup:"
+msgstr ""
+
+#: assets/js/developer.js:35565
+#: assets/js/developer.js:34372
+msgid "No transients found to delete."
+msgstr ""
+
+#: assets/js/developer.js:35576
+#: assets/js/developer.js:34388
+msgid "Clearing..."
+msgstr ""
+
+#: assets/js/developer.js:35576
+#: assets/js/developer.js:34388
+msgid "Clear All Templately Transients"
+msgstr ""
+
+#: assets/js/developer.js:35582
+#: assets/js/developer.js:34393
+msgid "Warning:"
+msgstr ""
+
+#: assets/js/developer.js:35582
+#: assets/js/developer.js:34393
+msgid "This action cannot be undone. Cached data will be permanently deleted."
+msgstr ""
+
+#: assets/js/developer.js:35590
+#: assets/js/developer.js:34405
+msgid "API Testing Tools"
+msgstr ""
+
+#: assets/js/developer.js:35592
+#: assets/js/developer.js:34407
+msgid "Test API endpoints and connections."
+msgstr ""
+
+#: assets/js/developer.js:35594
+#: assets/js/developer.js:34411
+msgid "Current API Configuration"
+msgstr ""
+
+#: assets/js/developer.js:35598
+#: assets/js/developer.js:34415
+msgid "Development API"
+msgstr ""
+
+#: assets/js/developer.js:35605
+#: assets/js/developer.js:34424
+msgid "Debug Logging"
+msgstr ""
+
+#: assets/js/developer.js:35616
+#: assets/js/developer.js:34437
+msgid "API testing tools will be added in future updates."
+msgstr ""
+
+#: assets/js/developer.js:35624
+#: assets/js/developer.js:34448
+msgid "System Information"
+msgstr ""
+
+#: assets/js/developer.js:35626
+#: assets/js/developer.js:34450
+msgid "View system information and diagnostics."
+msgstr ""
+
+#: assets/js/developer.js:35628
+#: assets/js/templately.js:1
+#: react-src/app/settings/tabs/Developer.js:227
+#: assets/js/developer.js:34454
+msgid "Available Constants"
+msgstr ""
+
+#: assets/js/developer.js:35632
+#: assets/js/templately.js:1
+#: react-src/app/settings/tabs/Developer.js:222
+#: assets/js/developer.js:34463
+msgid "Network Admin Support"
+msgstr ""
+
+#: assets/js/developer.js:35632
+#: assets/js/templately.js:1
+#: react-src/app/settings/tabs/Developer.js:224
+#: assets/js/developer.js:34465
+msgid "When developer mode is enabled, Full Site Import functionality is available in WordPress Network Admin for multisite installations."
+msgstr ""
+
+#: assets/js/developer.js:35632
+#: assets/js/developer.js:34468
+msgid "Developer Bundle Information"
+msgstr ""
+
+#: assets/js/developer.js:35636
+#: assets/js/developer.js:34472
+msgid "Bundle Version"
+msgstr ""
+
+#: assets/js/developer.js:35638
+#: assets/js/developer.js:34476
+msgid "Initialization Status"
+msgstr ""
+
+#: assets/js/developer.js:35648
+#: assets/js/templately.js:1
+#: react-src/app/settings/tabs/Developer.js:139
+#: assets/js/developer.js:34629
+msgid "Developer Settings"
+msgstr ""
+
+#: assets/js/developer.js:35650
+#: assets/js/developer.js:34631
+msgid "These settings are only available when TEMPLATELY_DEVELOPER_MODE is enabled in wp-config.php."
 msgstr ""
 
 #: assets/js/elementor.js:1
 #: react-src/elementor/ElementorModule.js:37
 #: react-src/elementor/FooterMenuModule.js:49
+#: assets/js/elementor.js:293
+#: assets/js/elementor.js:408
 msgid "Save Page in Templately"
 msgstr ""
 
 #: assets/js/elementor.js:1
 #: react-src/elementor/ElementorModule.js:74
+#: assets/js/elementor.js:330
 msgid "Save Block in Templately"
 msgstr ""
 
@@ -2204,8 +2487,8 @@ msgid "Logout"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/NewItemList.js:65
-#: react-src/app/components/core/itemDetails/NewLayoutsInPack.js:77
+#: react-src/app/components/core/itemDetails/NewItemList.js:66
+#: react-src/app/components/core/itemDetails/NewLayoutsInPack.js:78
 #: react-src/app/components/core/itemDetails/Packs/PacksHeader.js:95
 #: react-src/app/components/profile/FavouritesFilter.js:37
 #: react-src/app/routesTemplate.js:21
@@ -3610,7 +3893,7 @@ msgid "Build with Templately AI"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/Breadcrumb.js:22
+#: react-src/app/components/core/itemDetails/Breadcrumb.js:23
 #: react-src/app/components/core/itemDetails/NewSidebar.js:303
 #: react-src/app/components/core/itemDetails/NewSidebar.js:316
 #: react-src/app/header/actionParts/Switcher.js:47
@@ -3631,33 +3914,33 @@ msgid "Insert This %s"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/NewLayoutsInPack.js:52
+#: react-src/app/components/core/itemDetails/NewLayoutsInPack.js:53
 msgid "Pack"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/NewLayoutsInPack.js:58
+#: react-src/app/components/core/itemDetails/NewLayoutsInPack.js:59
 msgid "View full Pack"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/MoreItems.js:103
+#: react-src/app/components/core/itemDetails/MoreItems.js:104
 msgid "Browse More"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/ItemsDetailsInfo.js:53
+#: react-src/app/components/core/itemDetails/ItemsDetailsInfo.js:54
 msgid "Features"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/ItemsDetailsInfo.js:64
+#: react-src/app/components/core/itemDetails/ItemsDetailsInfo.js:65
 #: react-src/app/components/core/itemDetails/Tags.js:8
 msgid "Tags"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/Breadcrumb.js:11
+#: react-src/app/components/core/itemDetails/Breadcrumb.js:12
 msgid "Home"
 msgstr ""
 
@@ -3738,16 +4021,6 @@ msgid "Error!"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/settings/tabs/Developer.js:92
-msgid "Failed to save developer settings"
-msgstr ""
-
-#: assets/js/templately.js:1
-#: react-src/app/settings/tabs/Developer.js:139
-msgid "Developer Settings"
-msgstr ""
-
-#: assets/js/templately.js:1
 #: react-src/app/settings/tabs/Developer.js:141
 msgid "These settings are only available when TEMPLATELY_DEVELOPER_MODE is enabled in wp-config.php. Constants defined in wp-config.php will override these settings and appear disabled below."
 msgstr ""
@@ -3758,39 +4031,13 @@ msgid "Controlled by constant:"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/display-conditions/Footer.js:10
-#: react-src/app/settings/tabs/Developer.js:216
-msgid "Saving..."
-msgstr ""
-
-#: assets/js/templately.js:1
 #: react-src/app/settings/tabs/Developer.js:216
 msgid "Save Developer Settings"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/settings/tabs/Developer.js:222
-msgid "Network Admin Support"
-msgstr ""
-
-#: assets/js/templately.js:1
-#: react-src/app/settings/tabs/Developer.js:224
-msgid "When developer mode is enabled, Full Site Import functionality is available in WordPress Network Admin for multisite installations."
-msgstr ""
-
-#: assets/js/templately.js:1
-#: react-src/app/settings/tabs/Developer.js:227
-msgid "Available Constants"
-msgstr ""
-
-#: assets/js/templately.js:1
 #: react-src/app/settings/tabs/Developer.js:229
 msgid "The following constants are automatically defined when TEMPLATELY_DEVELOPER_MODE is true:"
-msgstr ""
-
-#: assets/js/templately.js:1
-#: react-src/app/settings/tabs/Developer.js:238
-msgid "wp-config.php Code Snippet"
 msgstr ""
 
 #: assets/js/templately.js:1

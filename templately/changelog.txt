@@ -1,4 +1,9 @@
 == Changelog ==
+= 3.4.1 - 29-09-2025 =
+Fixed: Pages and blocks were not saving in MyCloud.
+Fixed: UI issues in Pack details page.
+Few minor bug fixes and improvements.
+
 = 3.4.0 - 23-09-2025 =
 Added: Image replacement support in Templately AI.
 Revamped: User interface for Pack Details page.

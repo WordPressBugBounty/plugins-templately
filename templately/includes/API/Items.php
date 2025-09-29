@@ -445,12 +445,12 @@ class Items extends API {
 	 * @return mixed
 	 */
 	public function featured_items(WP_REST_Request $request){
-		$defaults = Database::get_transient( 'featuredItems' );
+		$platform = $request->get_param( 'platform' );
+		$defaults = Database::get_transient( "featuredItems_{$platform}" );
 		if( $defaults ) {
 			return $defaults;
 		}
 
-		$platform = $request->get_param( 'platform' );
 		$funcArgs = [
 			// 'page'     => 1,
 			// 'per_page' => 10,
@@ -475,12 +475,12 @@ class Items extends API {
 	 * @return mixed
 	 */
 	public function trending_items(WP_REST_Request $request){
-		$defaults = Database::get_transient( 'trendingItems' );
+		$platform = $request->get_param( 'platform' );
+		$defaults = Database::get_transient( "trendingItems_{$platform}" );
 		if( $defaults ) {
 			return $defaults;
 		}
 
-		$platform = $request->get_param( 'platform' );
 		$funcArgs = [
 			// 'page'     => 1,
 			// 'per_page' => 10,
