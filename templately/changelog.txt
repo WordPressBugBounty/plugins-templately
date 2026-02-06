@@ -1,4 +1,52 @@
 == Changelog ==
+= 3.5.0 - 15-01-2026 =
+Added: Responsive mode controller in Live Demo page with a top bar.
+Improved: Template pack details page UI.
+Few minor bug fixes and improvements.
+
+= 3.4.9 - 23-12-2025 =
+Fixed: Template import issue from the template details page.
+Fixed: Security enhancements (reported by Wordfence).
+Improved: Template details page UI for a better user experience.
+Few minor bug fixes & improvements.
+
+= 3.4.8 - 11-12-2025 =
+Fixed: Incorrect image URL mapping in template import
+Few minor bug fixes and improvements
+
+= 3.4.7 - 08-12-2025 =
+Fixed: Template import issue with older Elementor version.
+Few minor bug fixes and improvements
+
+= 3.4.6 - 04-12-2025 =
+Fixed: Header footer css loading issue.
+Fixed: Fatal error: conflict with Event ticket plugin.
+Few minor bug fixes and improvements.
+
+= 3.4.5 - 19-11-2025 =
+Fixed: Site logo preview wasn't working while importing a pack.
+Improved: Templately pack import workflow.
+Fixed: Templately Feedback feature wasn't working.
+Few minor bug fixes and improvements.
+
+= 3.4.4 - 09-11-2025 =
+Fixed: Template import issue on Multisite.
+Few minor bug fixes and improvements.
+
+= 3.4.3 - 06-11-2025 =
+Added: Filter image replacement in Templately AI.
+Added: Automated email verification in the plugin.
+Fixed: Elementor “Class not found” error.
+Fixed: PHP import error in Templately Core Importer.
+Fixed: LearnDash Archive page CSS loading issue.
+Improved: Pack Details page UI.
+Few minor bug fixes and improvements.
+
+= 3.4.2 - 23-10-2025 =
+Added: FluentCart Template import support.
+Fixed: Design broken issue for single Doc page while importing.
+Few minor bug fixes & improvements.
+
 = 3.4.1 - 29-09-2025 =
 Fixed: Pages and blocks were not saving in MyCloud.
 Fixed: UI issues in Pack details page.

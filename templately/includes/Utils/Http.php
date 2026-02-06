@@ -32,7 +32,7 @@ class Http extends Base {
      * Setting the development mode.
      */
     public function __construct() {
-        $this->dev_mode = defined( 'TEMPLATELY_DEV' ) && TEMPLATELY_DEV;
+        $this->dev_mode = Helper::is_dev_api();
     }
 
     /**
@@ -44,6 +44,15 @@ class Http extends Base {
         if ( !$is_live_api && Helper::is_dev_api() ) {
             $this->url = 'https://app.templately.dev/api/plugin';
         }
+
+        /**
+         * Filter the API endpoint URL
+         *
+         * @since 3.5.0
+         * @param string $url The endpoint URL
+         */
+        $this->url = apply_filters('templately_dev_api_endpoint_url', $this->url);
+
         return $this->url;
     }
 
@@ -179,16 +188,16 @@ class Http extends Base {
 
         if ( defined( 'TEMPLATELY_DEBUG_LOG' ) && TEMPLATELY_DEBUG_LOG ) {
             Helper::log( 'Retry Count: ' . $retryCount );
-            Helper::log( 'RAW RESPONSE: ' );
-            Helper::log( $response );
-            Helper::log( 'END RAW RESPONSE' );
+            // Helper::log( 'RAW RESPONSE: ' );
+            // Helper::log( $response );
+            // Helper::log( 'END RAW RESPONSE' );
         }
 
         return $this->maybeErrors( $response, $args );
     }
 
     /**
-     * Formating the self::post() response
+     * Formatting the self::post() response
      *
      * @param mixed $response
      * @param array $args
@@ -199,11 +208,14 @@ class Http extends Base {
             return $response; // Return WP_Error, if it is an error.
         }
 
+        // Check for verification header before processing response body
+        Helper::check_verification_header( $response );
+
         $response_code    = wp_remote_retrieve_response_code( $response );
         $response_message = wp_remote_retrieve_response_message( $response );
 
         /**
-         * Retrive Data from Response Body.
+         * Retrieve Data from Response Body.
          */
         $response = json_decode( wp_remote_retrieve_body( $response ), true );
         /**
@@ -228,10 +240,14 @@ class Http extends Base {
                                 }
                             } );
                         } else {
+                            $error_data = [];
+                            if(!empty($error["extensions"]["statusText"])) {
+                                $error_data["statusText"] = $error["extensions"]["statusText"];
+                            }
                             if ( isset( $error['debugMessage'] ) ) {
                                 $wp_error->add( 'templately_graphql_error', $error['debugMessage'] );
                             } else {
-                                $wp_error->add( 'templately_graphql_error', $error['message'] );
+                                $wp_error->add( 'templately_graphql_error', $error['message'], $error_data );
                             }
                         }
                     }

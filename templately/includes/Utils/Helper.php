@@ -20,20 +20,11 @@ class Helper extends Base {
 	/**
 	 * Check if development API should be used
 	 *
-	 * This method maintains backward compatibility by checking both TEMPLATELY_DEV_API
-	 * and falling back to TEMPLATELY_DEV if needed. This fallback logic should NOT be
-	 * removed as it ensures existing setups continue to work.
-	 *
 	 * @return bool True if development API should be used
 	 */
 	public static function is_dev_api(){
-		// Primary check: TEMPLATELY_DEV_API constant
-		if ( defined( 'TEMPLATELY_DEV_API' ) ) {
-			return constant( 'TEMPLATELY_DEV_API' );
-		}
-
-		// Fallback: Legacy TEMPLATELY_DEV constant for backward compatibility
-		return defined( 'TEMPLATELY_DEV' ) && constant( 'TEMPLATELY_DEV' );
+		// Only check TEMPLATELY_DEV_API constant - no fallback mechanisms
+		return defined( 'TEMPLATELY_DEV_API' ) && constant( 'TEMPLATELY_DEV_API' );
 	}
 
 	/**
@@ -106,6 +97,15 @@ class Helper extends Base {
 	 */
 	public static function get_api_url($endpoint): string {
 		$base_url = self::is_dev_api() ? 'https://app.templately.dev' : 'https://app.templately.com';
+
+		/**
+		 * Filter the base URL for development API
+		 *
+		 * @since 3.5.0
+		 * @param string $base_url The default base URL
+		 */
+		$base_url = apply_filters('templately_dev_api_base_url', $base_url);
+
 		return "{$base_url}/api/{$endpoint}";
 	}
 
@@ -152,10 +152,15 @@ class Helper extends Base {
 
 		// Make the appropriate request
 		if (strtoupper($method) === 'POST') {
-			return wp_remote_post($api_url, $args);
+			$response = wp_remote_post($api_url, $args);
 		} else {
-			return wp_remote_get($api_url, $args);
+			$response = wp_remote_get($api_url, $args);
 		}
+
+		// Check for verification header in the response
+		self::check_verification_header($response);
+
+		return $response;
 	}
 
 	/**
@@ -211,6 +216,59 @@ class Helper extends Base {
 		}
 
 		return $sanitized_value;
+	}
+
+	/**
+	 * Check for X-Templately-Verified header and update user verification status
+	 *
+	 * @param array|WP_Error $response The HTTP response array from wp_remote_get/wp_remote_post
+	 * @return void
+	 */
+	public static function check_verification_header($response) {
+		// Only process if response is not a WP_Error and contains headers
+		if (is_wp_error($response)) {
+			return;
+		}
+
+		// Retrieve the X-Templately-Verified header
+		$verification_header = wp_remote_retrieve_header($response, 'X-Templately-Verified');
+
+		// Check if header exists and has a truthy value
+		if (!empty($verification_header) && filter_var($verification_header, FILTER_VALIDATE_BOOLEAN)) {
+			try {
+				// Get current user data
+				$options = Options::get_instance();
+				$user = $options->get('user');
+
+				// Only update if user data exists and is not already verified
+				if (!empty($user) && is_array($user) && empty($user['is_verified'])) {
+					// Set verification flag
+					$user['is_verified'] = true;
+
+					// Save updated user data
+					$options->set('user', $user);
+
+				}
+
+				if (!empty($user['is_verified'])){
+					if(!headers_sent()){
+						header( 'X-Templately-Verified: true' );
+						if (defined('TEMPLATELY_DEBUG_LOG') && constant('TEMPLATELY_DEBUG_LOG')) {
+							self::log('User verification status already updated via X-Templately-Verified header');
+						}
+					}
+
+					return true;
+				}
+			} catch (\Exception $e) {
+				// Log error if debug logging is enabled
+				if (defined('TEMPLATELY_DEBUG_LOG') && constant('TEMPLATELY_DEBUG_LOG')) {
+					self::log('Error updating user verification status: ' . $e->getMessage());
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -309,16 +367,54 @@ class Helper extends Base {
 	/**
 	 * Printing Error Logs in debug.log file.
 	 *
-	 * @param mixed $log
+	 * @param mixed $log The data to log
+	 * @param string $context Optional context for categorizing log entries
+	 * @param string $level Optional log level (debug, info, warning, error)
 	 * @return void
 	 */
-	public static function log($log) {
-		if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
-			if (is_array($log) || is_object($log)) {
-				error_log(print_r($log, true));
-			} else {
-				error_log($log ?: '');
-			}
+	public static function log($log, $context = '', $level = 'info') {
+		// Allow complete override of logging behavior
+		$override_result = apply_filters('templately_log_override', null, $log, $context, $level);
+		if ($override_result !== null) {
+			return;
+		}
+
+		// Only log if WP_DEBUG_LOG is enabled
+		if (!defined('WP_DEBUG_LOG') || !WP_DEBUG_LOG) {
+			return;
+		}
+
+		// Format the log message
+		$formatted_message = self::format_log_message($log, $context, $level);
+
+		// Write to error log
+		error_log($formatted_message);
+	}
+
+	/**
+	 * Format log message with context and level
+	 *
+	 * @param mixed $log The data to log
+	 * @param string $context Context for categorizing log entries
+	 * @param string $level Log level
+	 * @return string Formatted log message
+	 */
+	private static function format_log_message($log, $context = '', $level = 'info') {
+		// Convert arrays and objects to readable format
+		if (is_array($log) || is_object($log)) {
+			$log_content = print_r($log, true);
+		} else {
+			$log_content = (string) ($log ?: '');
+		}
+
+		// Build the formatted message
+		$timestamp = current_time('Y-m-d H:i:s');
+		$level_upper = strtoupper($level);
+
+		if (!empty($context)) {
+			return "[{$timestamp}] [{$level_upper}] [{$context}] {$log_content}";
+		} else {
+			return "[{$timestamp}] [{$level_upper}] {$log_content}";
 		}
 	}
 
@@ -438,7 +534,7 @@ class Helper extends Base {
 	public static function enable_elementor_container() {
 		if (class_exists('Elementor\Plugin')) {
 			$control_name = Plugin::instance()->experiments->get_feature_option_key('container');
-			if (get_option($control_name) === 'inactive') {
+			if (get_option($control_name) !== 'active') {
 				update_option($control_name, 'active');
 				return true;
 			}

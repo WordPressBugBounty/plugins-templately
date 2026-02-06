@@ -16,12 +16,16 @@ class Archive extends ThemeTemplate {
 		return __( 'Archives', 'templately' );
 	}
 
-	public static function get_properties(): array {
+	public static function get_properties($import_settings = []): array {
 		$properties = parent::get_properties();
 
 		$properties['location']                  = 'archive';
 		$properties['condition']                 = 'include/archive/post_archive';
 		$properties['support_wp_page_templates'] = true;
+
+		if(!empty($import_settings["sub_type"])){
+			$properties['condition'] = 'include/archive/' . $import_settings["sub_type"];
+		}
 
 		return $properties;
 	}

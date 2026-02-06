@@ -277,6 +277,10 @@ class WXR_Parser_Regex {
 			$postdata['attachment_url'] = $attachment_url;
 		}
 
+		// Extract attachment_type field
+		$attachment_type = $this->get_tag( $post, 'wp:attachment_type' );
+		$postdata['attachment_type'] = $attachment_type ? $attachment_type : null;
+
 		preg_match_all( '|<category domain="([^"]+?)" nicename="([^"]+?)">(.+?)</category>|is', $post, $terms, PREG_SET_ORDER );
 		foreach ( $terms as $t ) {
 			$post_terms[] = [

@@ -12,6 +12,111 @@ use Templately\Utils\Helper;
 class AIUtils {
 
 	/**
+	 * Sanitize path component for security - prevents path traversal attacks
+	 *
+	 * @param mixed $value The value to sanitize (string or numeric)
+	 * @param string $type Type for error message ('session_id', 'content_id', 'path_key')
+	 * @return string|WP_Error Sanitized value or error if invalid
+	 */
+	public static function sanitize_path_component($value, $type = 'path_component') {
+		// Convert numeric values to string (content IDs like 136 are valid)
+		if (is_numeric($value)) {
+			$value = (string) $value;
+		}
+
+		// Check for empty or non-string values
+		if (empty($value) || !is_string($value)) {
+			return Helper::error(
+				'invalid_' . $type,
+				sprintf(__('Invalid %s: empty or not a valid value.', 'templately'), $type),
+				'sanitize_path_component',
+				400
+			);
+		}
+
+		// Check for path traversal attempts BEFORE sanitizing
+		if (strpos($value, '..') !== false ||
+			strpos($value, '/') !== false ||
+			strpos($value, '\\') !== false) {
+			return Helper::error(
+				'invalid_' . $type,
+				sprintf(__('Invalid %s: contains path separators.', 'templately'), $type),
+				'sanitize_path_component',
+				400
+			);
+		}
+
+		// Apply WordPress sanitize_file_name for additional safety
+		return sanitize_file_name($value);
+	}
+
+	/**
+	 * Validate that a file path is within WordPress upload directory
+	 * Prevents path traversal attacks
+	 *
+	 * @param string $file_path The file path to validate
+	 * @return bool|WP_Error True if valid, WP_Error otherwise
+	 */
+	public static function validate_file_path($file_path) {
+		// Get WordPress upload directory
+		$upload_dir = wp_upload_dir();
+		$real_upload_base = realpath($upload_dir['basedir']);
+
+		if ($real_upload_base === false) {
+			return Helper::error(
+				'invalid_upload_dir',
+				__('WordPress upload directory is not accessible.', 'templately'),
+				'validate_file_path',
+				500
+			);
+		}
+
+		// For file path, check the directory if file doesn't exist yet
+		$dir_to_check = dirname($file_path);
+
+		// Create directory if it doesn't exist (for pre-write validation)
+		if (!file_exists($dir_to_check)) {
+			wp_mkdir_p($dir_to_check);
+		}
+
+		$real_path = realpath($dir_to_check);
+		if ($real_path === false) {
+			return Helper::error(
+				'path_not_exists',
+				__('File path does not exist or is not accessible.', 'templately'),
+				'validate_file_path',
+				400
+			);
+		}
+
+		// Normalize paths with trailing directory separator
+		$normalized_upload_base = rtrim($real_upload_base, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+		$normalized_path = rtrim($real_path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+		// Check if path starts with upload directory (PHP 8+ style with polyfill)
+		// This prevents partial matches like /var/www/uploads-backup matching /var/www/uploads
+		$is_subdirectory = false;
+		if (function_exists('str_starts_with')) {
+			// PHP 8+
+			$is_subdirectory = str_starts_with($normalized_path, $normalized_upload_base);
+		} else {
+			// PHP 7.4 polyfill
+			$is_subdirectory = substr($normalized_path, 0, strlen($normalized_upload_base)) === $normalized_upload_base;
+		}
+
+		if (!$is_subdirectory) {
+			return Helper::error(
+				'path_outside_uploads',
+				__('Invalid file path: path is outside WordPress upload directory.', 'templately'),
+				'validate_file_path',
+				400
+			);
+		}
+
+		return true;
+	}
+
+	/**
 	 * Handle SSE message wait with timeout exit condition
 	 * Static utility function for reusable timeout handling across different import contexts
 	 *
@@ -24,7 +129,7 @@ class AIUtils {
 	 * @param string|null $old_template_id Optional template ID for local site polling
 	 * @return bool True if should continue processing, false if should exit
 	 */
-	public static function handle_sse_wait_with_timeout($session_id, $progress_id, $updated_ids, $ai_page_ids, $sse_message_callback, $additional_sse_data = [], $old_template_id = null) {
+	public static function handle_sse_wait_with_timeout($session_id, $progress_id, $updated_ids, $ai_page_ids, $sse_message_callback, $additional_sse_data = [], $old_template_id = null, $timeout_seconds = 420) {
 		$total_pages = count($ai_page_ids);
 		$updated_pages = count($updated_ids['pages'] ?? []);
 
@@ -47,8 +152,8 @@ class AIUtils {
 			return true;
 		}
 
-		// Check if time difference is less than 5 minutes (timeout condition)
-		if (empty($last_time) || ($current_time - $last_time) < 7 * MINUTE_IN_SECONDS) {
+		// Check if time difference is less than timeout(default 7 minutes) (timeout condition)
+		if (empty($last_time) || ($current_time - $last_time) < $timeout_seconds) {
 			// For local sites with template ID, attempt polling before waiting
 			if ($is_local_site && !empty($old_template_id)) {
 				$process_id = $session_data['process_id'] ?? null;
@@ -237,36 +342,47 @@ class AIUtils {
 	}
 
 	/**
-	 * Get the latest AI process data for the current API key
+	 * Get the latest AI process data for the current API key or user ID
 	 * Used in import_info() to return the most recent AI process
+	 * Priority: api_key first, then user_id as fallback
 	 *
 	 * @return array|null The latest AI process data or null if not found
 	 */
 	public static function get_latest_ai_process_by_api_key($id) {
 		$api_key = Options::get_instance()->get('api_key');
-		if (empty($api_key)) {
-			return null;
-		}
+		$user = Options::get_instance()->get('user');
+		$user_id = isset($user['id']) ? $user['id'] : null;
 
 		$all_ai_process_data = get_option('templately_ai_process_data', []);
 		if (!is_array($all_ai_process_data)) {
 			return null;
 		}
 
-		$api_key_processes = [];
+		$matching_processes = [];
 
-		// Collect processes for current API key
-		foreach ($all_ai_process_data as $process_id => $process_data) {
-			if (is_array($process_data) && isset($process_data['api_key']) && $process_data['api_key'] === $api_key) {
-				$api_key_processes[$process_id] = $process_data;
+		// Priority 1: Try to find processes by API key if available
+		if (!empty($api_key)) {
+			foreach ($all_ai_process_data as $process_id => $process_data) {
+				if (is_array($process_data) && isset($process_data['api_key']) && $process_data['api_key'] === $api_key) {
+					$matching_processes[$process_id] = $process_data;
+				}
 			}
 		}
 
-		if (empty($api_key_processes)) {
+		// Priority 2: If no API key matches found or API key is empty, fallback to user_id
+		if (empty($matching_processes) && !empty($user_id)) {
+			foreach ($all_ai_process_data as $process_id => $process_data) {
+				if (is_array($process_data) && isset($process_data['user_id']) && $process_data['user_id'] === $user_id) {
+					$matching_processes[$process_id] = $process_data;
+				}
+			}
+		}
+
+		if (empty($matching_processes)) {
 			return null;
 		}
 
-		$latest_data = end($api_key_processes);
+		$latest_data = end($matching_processes);
 
 		if($id != $latest_data['pack_id'] && isset($latest_data['imageReplace'])){
 			unset($latest_data['imageReplace']);
@@ -401,6 +517,18 @@ class AIUtils {
 	 * @return array|WP_Error Result array with status and data
 	 */
 	public static function save_template_to_file($process_id, $session_id, $content_id, $template, $ai_page_ids, $is_skipped = false) {
+		// Security: Sanitize session_id
+		$session_id = self::sanitize_path_component($session_id, 'session_id');
+		if (is_wp_error($session_id)) {
+			return $session_id;
+		}
+
+		// Security: Sanitize content_id
+		$content_id = self::sanitize_path_component($content_id, 'content_id');
+		if (is_wp_error($content_id)) {
+			return $content_id;
+		}
+
 		$upload_dir = wp_upload_dir();
 
 		// Always save to tmp directory for AI content workflow
@@ -431,9 +559,28 @@ class AIUtils {
 			return Helper::error('invalid_content_id', __('Content ID not found in AI page IDs.', 'templately'), 'save_template_to_file', 400);
 		}
 
+		// Security: Sanitize found_key parts (e.g., "templates/page" -> sanitize each part)
+		$key_parts = explode('/', $found_key);
+		$sanitized_parts = [];
+		foreach ($key_parts as $part) {
+			$sanitized = self::sanitize_path_component($part, 'path_key');
+			if (is_wp_error($sanitized)) {
+				return $sanitized;
+			}
+			$sanitized_parts[] = $sanitized;
+		}
+		$found_key = implode(DIRECTORY_SEPARATOR, $sanitized_parts);
+
 		// Create directory and file path
 		$page_dir = $tmp_dir . $found_key . DIRECTORY_SEPARATOR;
 		$file_path = $page_dir . $content_id . '.ai.json';
+
+		// Security: Validate path is within expected directory before writing
+		$validation = self::validate_file_path($file_path);
+		if (is_wp_error($validation)) {
+			return $validation;
+		}
+
 		wp_mkdir_p($page_dir);
 
 		// Save the file

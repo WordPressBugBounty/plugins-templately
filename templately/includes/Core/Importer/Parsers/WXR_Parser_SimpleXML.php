@@ -209,6 +209,13 @@ class WXR_Parser_SimpleXML {
 				$post['attachment_url'] = (string) $wp->attachment_url;
 			}
 
+			// Extract attachment_type field
+			if ( isset( $wp->attachment_type ) ) {
+				$post['attachment_type'] = (string) $wp->attachment_type;
+			} else {
+				$post['attachment_type'] = null;
+			}
+
 			foreach ( $item->category as $c ) {
 				$att = $c->attributes();
 				if ( isset( $att['nicename'] ) ) {

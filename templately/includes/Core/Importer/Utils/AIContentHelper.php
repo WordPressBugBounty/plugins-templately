@@ -78,6 +78,31 @@ trait AIContentHelper {
 	}
 
 	/**
+	 * Normalize escape characters in AI content
+	 *
+	 * Removes backslashes before closing tags (converts `<\/` and `<\\/` to `</`)
+	 * This normalization is applied to all content values in the AI template's contents arrays.
+	 *
+	 * @param array $flat Reference to the flattened AI content array
+	 * @return void Modifies the array in place
+	 */
+	public static function normalizeAiContentEscapeCharacters(&$flat) {
+		foreach ($flat as &$element) {
+			if (isset($element['contents']) && is_array($element['contents'])) {
+				foreach ($element['contents'] as $index => &$content_item) {
+					if (isset($content_item['content']) && is_string($content_item['content'])) {
+						// Normalize content: unescape closing tags (remove backslash before </)
+						$content_item['content'] = str_replace(['<\/', '<\\/'], '</', $content_item['content']);
+					}
+					else {
+						unset($element['contents'][$index]);
+					}
+				}
+			}
+		}
+	}
+
+	/**
 	 * Recursively flatten a nested array by extracting elements with 'contents' and using their ID as key
 	 *
 	 * @param array $array The array to flatten
@@ -181,9 +206,13 @@ trait AIContentHelper {
 	public static function mergeAiContentWithOriginal($ai_template_json, $original_template_json) {
 		// 1. Flatten the AI template
 		$flat = self::flattenById($ai_template_json);
+
+		// 2. Normalize escape characters in AI content early in the pipeline
+		self::normalizeAiContentEscapeCharacters($flat);
+
 		$keys = array_keys($flat);
 
-		// 2. Loop through original content only once and update elements directly
+		// 3. Loop through original content only once and update elements directly
 		self::updateElementorContentRecursively($flat, $keys, $original_template_json['content']);
 
 		return $original_template_json;
@@ -210,7 +239,6 @@ trait AIContentHelper {
 				// Update settings based on contents
 				foreach ($element['contents'] as $item) {
 					if (isset($item['attribute'], $item['content'])) {
-						// Normalize content: unescape closing tags (remove backslash before </)
 						$content_value = is_string($item['content'])
 							? str_replace(['<\/', '<\\/'], '</', $item['content'])
 							: $item['content'];
@@ -257,22 +285,26 @@ trait AIContentHelper {
 		// 1. Flatten the AI template by block ID (for blocks with 'contents')
 		$flat = [];
 		self::flattenGutenbergById($ai_template_json, $flat);
+
+		// 2. Normalize escape characters in AI content early in the pipeline
+		self::normalizeAiContentEscapeCharacters($flat);
+
 		$generated = $flat;
 		$keys = array_keys($generated);
 
-		// 2. Parse the original Gutenberg content
+		// 3. Parse the original Gutenberg content
 		$blocks = parse_blocks($original_template_json['content']);
 
-		// 3. Clean invalid blocks from parsed content
+		// 4. Clean invalid blocks from parsed content
 		$blocks = self::cleanInvalidBlocks($blocks);
 
-		// 4. Replace content recursively using advanced replacer logic
+		// 5. Replace content recursively using advanced replacer logic
 		$blocks = self::replaceGutenbergContentRecursively($generated, $keys, $blocks);
 
-		// 4. Clean invalid blocks before serialization
+		// 6. Clean invalid blocks before serialization
 		$blocks = self::cleanInvalidBlocks($blocks);
 
-		// 5. Serialize the updated blocks back to content
+		// 7. Serialize the updated blocks back to content
 		$original_template_json['content'] = serialize_blocks($blocks);
 
 		return $original_template_json;
@@ -432,6 +464,10 @@ trait AIContentHelper {
 				}
 			}
 		}
+		// sort $replacements by length of 'originalFormat' in descending order
+		usort($replacements, function($a, $b) {
+			return strlen($b['originalFormat']) - strlen($a['originalFormat']);
+		});
 		if (!empty($block['innerHTML']) && !empty($replacements)) {
 			$block['innerHTML'] = self::replaceGutenbergContentInHtml($block['innerHTML'], $replacements);
 		}
@@ -446,6 +482,9 @@ trait AIContentHelper {
 
 	/**
 	 * Replace content in HTML while preserving structure and handling Unicode (ported from GutenbergContentReplacer)
+	 *
+	 * Uses targeted replacement that avoids replacing text inside HTML attributes (href, src, data-*, etc.)
+	 * to prevent breaking URLs and other attribute values.
 	 */
 	public static function replaceGutenbergContentInHtml($html, $replacements) {
 		foreach ($replacements as $replacement) {
@@ -455,15 +494,104 @@ trait AIContentHelper {
 			$newContent = $replacement['newContent'];
 			if (empty($originalFormat)) continue;
 			$htmlNewContent = $newContent;
-			$html = str_replace($originalFormat, $htmlNewContent, $html);
+
+			// Use targeted replacement that avoids HTML attributes
+			$html = self::replaceTextOutsideAttributes($html, $originalFormat, $htmlNewContent);
+
 			if ($decodedFormat !== null && $decodedFormat !== $originalFormat) {
-				$html = str_replace($decodedFormat, $htmlNewContent, $html);
+				$html = self::replaceTextOutsideAttributes($html, $decodedFormat, $htmlNewContent);
 			}
 			if ($normalizedFormat !== $decodedFormat && $normalizedFormat !== $originalFormat) {
-				$html = str_replace($normalizedFormat, $htmlNewContent, $html);
+				$html = self::replaceTextOutsideAttributes($html, $normalizedFormat, $htmlNewContent);
 			}
 		}
 		return $html;
+	}
+
+	/**
+	 * Replace text in HTML only outside of HTML tags and attributes
+	 *
+	 * This function replaces occurrences of $oldText with $newText, but only when the text
+	 * appears outside of HTML tags and attributes. This prevents unintended replacements
+	 * inside URLs, src attributes, href attributes, and other HTML attributes.
+	 *
+	 * @param string $html The HTML content to process
+	 * @param string $oldText The text to find and replace
+	 * @param string $newText The replacement text
+	 * @return string The HTML with replacements applied only outside of tags/attributes
+	 */
+	private static function replaceTextOutsideAttributes($html, $oldText, $newText) {
+		if (empty($oldText) || $oldText === $newText) {
+			return $html;
+		}
+
+		$result = '';
+		$lastPos = 0;
+
+		// Find all occurrences of the text
+		while (($pos = strpos($html, $oldText, $lastPos)) !== false) {
+			// Check if this occurrence is inside an HTML tag or attribute
+			if (!self::isPositionInsideTag($html, $pos)) {
+				// Not inside a tag, safe to replace
+				$result .= substr($html, $lastPos, $pos - $lastPos) . $newText;
+				$lastPos = $pos + strlen($oldText);
+			} else {
+				// Inside a tag, skip this occurrence
+				$result .= substr($html, $lastPos, $pos - $lastPos + strlen($oldText));
+				$lastPos = $pos + strlen($oldText);
+			}
+		}
+
+		// Append remaining HTML
+		$result .= substr($html, $lastPos);
+		return $result;
+	}
+
+	/**
+	 * Check if a position in HTML is inside an HTML attribute value
+	 *
+	 * This checks if the position is between quotes within an HTML tag.
+	 * Returns true only if the position is inside an attribute value (between quotes),
+	 * not just anywhere inside a tag.
+	 *
+	 * @param string $html The HTML content
+	 * @param int $position The position to check
+	 * @return bool True if the position is inside an attribute value, false otherwise
+	 */
+	private static function isPositionInsideTag($html, $position) {
+		// Get the text before the position
+		$beforeText = substr($html, 0, $position);
+
+		// Find the last < and > before the position
+		$lastOpenTag = strrpos($beforeText, '<');
+		$lastCloseTag = strrpos($beforeText, '>');
+
+		// If there's no unclosed tag, we're not inside a tag
+		if ($lastOpenTag === false || ($lastCloseTag !== false && $lastOpenTag < $lastCloseTag)) {
+			return false;
+		}
+
+		// We're inside a tag. Now check if we're inside an attribute value (between quotes)
+		// Get the tag content from the last < to the position
+		$tagContent = substr($html, $lastOpenTag, $position - $lastOpenTag);
+
+		// Track whether we're inside double or single quotes by iterating through the tag content
+		$inDoubleQuotes = false;
+		$inSingleQuotes = false;
+
+		for ($i = 0; $i < strlen($tagContent); $i++) {
+			$char = $tagContent[$i];
+
+			// Toggle quote state when we encounter a quote
+			if ($char === '"' && !$inSingleQuotes) {
+				$inDoubleQuotes = !$inDoubleQuotes;
+			} elseif ($char === "'" && !$inDoubleQuotes) {
+				$inSingleQuotes = !$inSingleQuotes;
+			}
+		}
+
+		// We're inside an attribute value if we're inside either type of quotes
+		return $inDoubleQuotes || $inSingleQuotes;
 	}
 
 	/**

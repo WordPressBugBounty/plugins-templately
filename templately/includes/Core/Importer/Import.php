@@ -3,6 +3,7 @@
 namespace Templately\Core\Importer;
 
 use Exception;
+use Templately\Core\Importer\Exception\NonRetirableErrorException;
 use Templately\Core\Importer\Runners\AIContent;
 use Templately\Core\Importer\Runners\Attachments;
 use Templately\Core\Importer\Runners\BaseRunner;
@@ -93,6 +94,11 @@ class Import {
 				}
 			}catch (Exception $e){
 				error_log($e->getMessage());
+
+				// Re-throw NonRetirableErrorException to stop the import process
+				if ($e instanceof NonRetirableErrorException) {
+					throw $e;
+				}
 			}
 
 			return $imported_data;

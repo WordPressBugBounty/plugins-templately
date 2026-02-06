@@ -16,7 +16,7 @@ namespace Templately\Core\Importer;
 use Elementor\Plugin;
 use Error;
 use Exception;
-use Templately\Core\Importer\Exception\NonRetryableErrorException;
+use Templately\Core\Importer\Exception\NonRetirableErrorException;
 use Templately\Core\Importer\Exception\RetryableErrorException;
 use Templately\Core\Importer\Exception\UnknownErrorException;
 use Templately\Core\Importer\Runners\Finalizer;
@@ -125,6 +125,12 @@ class FullSiteImport extends Base {
 
 		if(!empty($data['session_id'])){
 			$session_id = $data['session_id'];
+			// Security: Sanitize session_id from user input
+			$session_id = AIUtils::sanitize_path_component($data['session_id'], 'session_id');
+			if (is_wp_error($session_id)) {
+				wp_send_json_error(['message' => $session_id->get_error_message()]);
+				return;
+			}
 			$session_data = Utils::get_session_data($session_id);
 			$data = array_merge($session_data, $data);
 		}
@@ -173,8 +179,12 @@ class FullSiteImport extends Base {
 
 		$upload_dir  = wp_upload_dir();
 
-		// passed in post
-		$session_id  = $data['session_id'];
+		// Security: Sanitize session_id from user input
+		$session_id = AIUtils::sanitize_path_component($data['session_id'], 'session_id');
+		if (is_wp_error($session_id)) {
+			wp_send_json_error(['message' => $session_id->get_error_message()]);
+			return;
+		}
 
 		$tmp_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR;
 		$prv_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'preview' . DIRECTORY_SEPARATOR;
@@ -337,8 +347,9 @@ class FullSiteImport extends Base {
 			wp_send_json_error($response->get_error_message());
 		}
 
-		if (wp_remote_retrieve_response_code($response) != 200 && wp_remote_retrieve_response_code($response) != 201) {
-			wp_send_json_error('API request failed with response code ' . wp_remote_retrieve_response_code($response), wp_remote_retrieve_response_code($response));
+		if (wp_remote_retrieve_response_code($response) != 200) {
+			$error_message = $this->extract_error_from_response($response);
+			wp_send_json_error($error_message, wp_remote_retrieve_response_code($response));
 		}
 
 		$body = wp_remote_retrieve_body($response);
@@ -358,12 +369,12 @@ class FullSiteImport extends Base {
 	}
 
     // Modified get_session_data to use the static version
-    protected function get_session_data() {
+    public function get_session_data() {
         return Utils::get_session_data_by_id();
     }
 
     // Modified update_session_data to use the static version
-    protected function update_session_data($data) {
+    public function update_session_data($data) {
         return Utils::update_session_data_by_id($data);
     }
 
@@ -386,7 +397,7 @@ class FullSiteImport extends Base {
 		}
 	}
 
-	private function clear_session_data(): bool {
+	public function clear_session_data(): bool {
 		return delete_site_option(self::SESSION_OPTION_KEY);
 	}
 
@@ -464,7 +475,12 @@ class FullSiteImport extends Base {
 		try {
 			// TODO: Need to check if user is connected or not
 			if(!empty($_GET['session_id'])){
-				$this->session_id = sanitize_text_field($_GET['session_id']);
+				// Security: Sanitize session_id from user input
+				$session_id = AIUtils::sanitize_path_component(sanitize_text_field($_GET['session_id']), 'session_id');
+				if (is_wp_error($session_id)) {
+					$this->throw($session_id->get_error_message());
+				}
+				$this->session_id = $session_id;
 			}
 			else {
 				$this->throw(__('Invalid Session ID.', 'templately'));
@@ -646,7 +662,7 @@ class FullSiteImport extends Base {
 		if ($this->dev_mode) {
 			error_log(print_r($message, 1));
 		}
-		throw new NonRetryableErrorException($message);
+		throw new NonRetirableErrorException($message);
 	}
 	/**
 	 * @throws Exception
@@ -692,8 +708,9 @@ class FullSiteImport extends Base {
 	private function download_zip( $id, $is_ai = false ) {
 		$this->sse_log( 'download', __( 'Downloading Template Pack', 'templately' ), 1 );
 		$extra_headers = [
-			'x-templately-is-ai'      => $is_ai,
-			'x-templately-session-id' => $this->session_id,
+			'x-templately-is-ai'              => $is_ai,
+			'x-templately-session-id'         => $this->session_id,
+			'x-templately-requested-platform' => $this->request_params["requested_platform"] ?? 'templately',
 		];
 		$response = Helper::make_api_get_request("v2/import/pack/$id", [], $extra_headers, 90);
 
@@ -725,6 +742,14 @@ class FullSiteImport extends Base {
 		$this->update_session_data([
 			'download_key' => $this->download_key,
 		]);
+
+		// Security: Validate file path is within WordPress upload directory before writing
+		$validation = AIUtils::validate_file_path($this->filePath);
+		if (is_wp_error($validation)) {
+			$this->throw($validation->get_error_message());
+		}
+
+		wp_mkdir_p(dirname($this->filePath));
 
 		if (file_put_contents($this->filePath, $response['body'])) { // phpcs:ignore
 			$this->sse_log('download', __('Downloading Template Pack', 'templately'), 100);
@@ -942,7 +967,8 @@ class FullSiteImport extends Base {
 					'name' => 'ai-content',
 					'message' => __('Missing Credit Cost', 'templately'),
 				],
-				null // No specific template ID for this context
+				null, // No specific template ID for this context
+				30
 			);
 		}
 
@@ -960,6 +986,7 @@ class FullSiteImport extends Base {
 			update_user_meta(get_current_user_id(), 'templately_fsi_complete', true);
 		}
 
+		do_action('templately_fsi_import_complete', $normalized_data);
 		// $this->clear_data_file($request_params);
 	}
 
@@ -1362,7 +1389,8 @@ class FullSiteImport extends Base {
 		}
 		// If the response code is not 200, return the error message
 		if (wp_remote_retrieve_response_code($response) != 200) {
-			wp_send_json_error(json_decode(wp_remote_retrieve_body($response)), wp_remote_retrieve_response_code($response));
+			$error_message = $this->extract_error_from_response($response);
+			wp_send_json_error($error_message, wp_remote_retrieve_response_code($response));
 			return;
 		}
 		// If the response body is JSON and it contains an error, return the error message
@@ -1392,7 +1420,7 @@ class FullSiteImport extends Base {
 				$data['data']['ai_process'] = $last_ai_process;
 			}
 
-			if($id == $last_ai_process['pack_id']){
+			if($last_ai_process && $id == $last_ai_process['pack_id']){
 				// Read AI preview content directly from files using the common function
 				$session_id = $last_ai_process['session_id'] ?? null;
 				$ai_page_ids = $last_ai_process['ai_page_ids'] ?? [];
@@ -1564,6 +1592,32 @@ class FullSiteImport extends Base {
 		wp_send_json_error([ 'options' => $options_deleted, 'imported_list' => $imported_list_deleted, 'site_url' => home_url() ]);
 	}
 
+	/**
+	 * Extract error response from JSON response body
+	 * Returns the entire decoded JSON response if Content-Type is JSON,
+	 * otherwise returns a generic HTTP error message
+	 *
+	 * @param array $response The response from wp_remote_get or similar
+	 * @return mixed Decoded JSON response or generic HTTP error string
+	 */
+	private function extract_error_from_response($response) {
+		try {
+			$content_type = wp_remote_retrieve_header($response, 'content-type');
+			if (!empty($content_type) && strpos($content_type, 'application/json') !== false) {
+				$body = wp_remote_retrieve_body($response);
+				$error_data = json_decode($body, true);
+				if ($error_data !== null) {
+					return $error_data;
+				}
+			}
+		} catch (Exception $e) {
+			// If JSON parsing fails, fall through to generic error
+		}
+
+		// Fallback to generic HTTP error message
+		return __('API request failed with response code ', 'templately') . wp_remote_retrieve_response_code($response);
+	}
+
 	public function google_font() {
 		$result = get_transient('templately-google-fonts');
 
@@ -1575,7 +1629,8 @@ class FullSiteImport extends Base {
 			}
 
 			if (wp_remote_retrieve_response_code($response) != 200) {
-				wp_send_json_error('API request failed with response code ' . wp_remote_retrieve_response_code($response), wp_remote_retrieve_response_code($response));
+				$error_message = $this->extract_error_from_response($response);
+				wp_send_json_error($error_message, wp_remote_retrieve_response_code($response));
 			}
 
 			$body = wp_remote_retrieve_body($response);

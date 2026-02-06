@@ -231,6 +231,22 @@ abstract class API extends Base {
 	public function success( $data ) {
 		return new WP_REST_Response( $data, 200 );
 	}
+
+	/**
+	 * Enhanced success response wrapper that automatically adds success flag and wraps data
+	 *
+	 * @param $data mixed The data to be wrapped in the response
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function successWithData( $data ) {
+		$enhanced_response = [
+			'success' => true,
+			'data' => $data
+		];
+
+		return $this->success( $enhanced_response );
+	}
 	/**
 	 * @param $error_code string
 	 * @param $error_message string|array

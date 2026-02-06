@@ -173,6 +173,13 @@ class LocationManager {
 				if ( $document_page_template ) {
 					$page_template = $document_page_template;
 				}
+
+				if(!empty($template_id) && !empty($template) && $template->get_type() == "course_archive"){
+					// $__post = $GLOBALS['post'];
+					// learndash_course_grid_load_resources();
+					// $GLOBALS['post'] = $__post;
+					$GLOBALS['post'] = get_post($template_id);
+				}
 			}
 		}
 		$is_header_footer = 'header' === $location || 'footer' === $location;

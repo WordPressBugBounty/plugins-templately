@@ -1,15 +1,15 @@
-=== Templately – Elementor & Gutenberg Template Library: 5500+ Free & Pro Ready Templates And Cloud! ===
+=== Templately – Elementor & Gutenberg Template Library: 6500+ Free & Pro Ready Templates And Cloud! ===
 Contributors: templately, wpdevteam, re_enter_rupok, Asif2BD, priyomukul, rahat89, alimuzzamanalim, sapanmozammel
 Donate link: https://templately.com
 Tags: templates, elementor template, Gutenberg template, landing page, WoCommerce Templates
 Requires at least: 5.0
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 7.2
-Stable tag: 3.4.1
+Stable tag: 3.5.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Ultimate Free Templates Cloud for WordPress 5000+ Free & Premium Designs for Elementor templates & Gutenberg block templates
+Ultimate Free Templates Cloud for WordPress 6500+ Free & Premium Designs for Elementor templates & Gutenberg block templates
 
 == Description ==
 
@@ -17,7 +17,7 @@ Ultimate Free Templates Cloud for WordPress 5000+ Free & Premium Designs for Ele
 
 Take your favorite Page Builders to a whole new level & manage all your designs in one place with [Templately](https://templately.com)
 
-https://www.youtube.com/watch?v=coLxfjnrm3I
+https://www.youtube.com/watch?v=ZhzHWqMD1Zk
 
 ## 🔥 THE FUTURE OF PAGE BUILDING WITH CLOUD  ##
 
@@ -43,13 +43,13 @@ Invite your team to work together while building a website and get your work don
 
 Create landing pages with Elementor, Gutenberg and boost up your page building experience to the next level.
 
-### 🔥 OVER 2800 ELEMENTOR TEMPLATES AVAILABLE ALREADY ###
+### 🔥 OVER 3200 ELEMENTOR TEMPLATES AVAILABLE ALREADY ###
 
-Elementor Templates are the easiest way to build websites fast with the most popular website builder, we have 2800+ templates available already.
+Elementor Templates are the easiest way to build websites fast with the most popular website builder, we have 3200+ templates available already.
 
-### 🔥 READY TO USE 2800+ GUTENBERG TEMPLATES ###
+### 🔥 READY TO USE 3300+ GUTENBERG TEMPLATES ###
 
-Unlock the true possibilities of the Gutenberg block editor with ready-to-use templates from Templately. More than 2800 templates are ready to build your website in one click.
+Unlock the true possibilities of the Gutenberg block editor with ready-to-use templates from Templately. More than 3300 templates are ready to build your website in one click.
 
 ### 👨‍💻 SUPER FRIENDLY SUPPORT ###
 
@@ -139,6 +139,54 @@ Every month we are adding new Elementor templates, along with Gutenberg template
 
 
 == Changelog ==
+= 3.5.0 - 15-01-2026 =
+Added: Responsive mode controller in Live Demo page with a top bar.
+Improved: Template pack details page UI.
+Few minor bug fixes and improvements.
+
+= 3.4.9 - 23-12-2025 =
+Fixed: Template import issue from the template details page.
+Fixed: Security enhancements (reported by Wordfence).
+Improved: Template details page UI for a better user experience.
+Few minor bug fixes & improvements.
+
+= 3.4.8 - 11-12-2025 =
+Fixed: Incorrect image URL mapping in template import
+Few minor bug fixes and improvements
+
+= 3.4.7 - 08-12-2025 =
+Fixed: Template import issue with older Elementor version.
+Few minor bug fixes and improvements
+
+= 3.4.6 - 04-12-2025 =
+Fixed: Header footer css loading issue.
+Fixed: Fatal error: conflict with Event ticket plugin.
+Few minor bug fixes and improvements.
+
+= 3.4.5 - 19-11-2025 =
+Fixed: Site logo preview wasn't working while importing a pack.
+Improved: Templately pack import workflow.
+Fixed: Templately Feedback feature wasn't working.
+Few minor bug fixes and improvements.
+
+= 3.4.4 - 09-11-2025 =
+Fixed: Template import issue on Multisite.
+Few minor bug fixes and improvements.
+
+= 3.4.3 - 06-11-2025 =
+Added: Filter image replacement in Templately AI.
+Added: Automated email verification in the plugin.
+Fixed: Elementor “Class not found” error.
+Fixed: PHP import error in Templately Core Importer.
+Fixed: LearnDash Archive page CSS loading issue.
+Improved: Pack Details page UI.
+Few minor bug fixes and improvements.
+
+= 3.4.2 - 23-10-2025 =
+Added: FluentCart Template import support.
+Fixed: Design broken issue for single Doc page while importing.
+Few minor bug fixes & improvements.
+
 = 3.4.1 - 29-09-2025 =
 Fixed: Pages and blocks were not saving in MyCloud.
 Fixed: UI issues in Pack details page.

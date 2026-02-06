@@ -45,7 +45,7 @@ class Enqueue extends Base {
 			$asset_config = require $asset_config_path;
 
 			if ( $is_js ) {
-				$dependencies = array_unique( array_merge( $asset_config['dependencies'], $dependencies ) );
+				$dependencies = array_unique( array_merge( $asset_config['dependencies'], $dependencies, ['regenerator-runtime'] ) );
 			}
 			$version = $asset_config['version'];
 		}

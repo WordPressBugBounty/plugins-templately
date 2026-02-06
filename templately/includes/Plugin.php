@@ -33,17 +33,15 @@ use Templately\API\MyClouds;
 use Templately\API\WorkSpaces;
 use Templately\API\Categories;
 use Templately\API\Dependencies;
-use Templately\API\DeveloperSettings;
 use Templately\API\TemplateTypes;
 use Templately\API\SavedTemplates;
 use Templately\Core\Maintenance;
 use Templately\Core\Migrator;
-use Templately\Core\Developer;
 use Templately\Core\Platform\Gutenberg;
 use Templately\Core\Platform\Elementor;
 
 final class Plugin extends Base {
-    public $version = '3.4.1';
+    public $version = '3.5.0';
 
 	public $admin;
 	public $settings;
@@ -79,7 +77,9 @@ final class Plugin extends Base {
 		$this->admin         = Admin::get_instance();
 		$this->settings      = Settings::get_instance();
 		$this->theme_builder = ThemeBuilder::get_instance();
-		$this->developer     = Developer::get_instance();
+
+		// Initialize developer functionality if available
+		$this->init_developer_functionality();
 
 		add_action( 'plugins_loaded', [ $this, 'plugins_loaded' ] );
 		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
@@ -128,6 +128,36 @@ final class Plugin extends Base {
 	}
 
 	/**
+	 * Initialize developer functionality if available
+	 *
+	 * This method safely loads developer functionality only if the developer
+	 * directory and class exist, preventing fatal errors in production builds.
+	 *
+	 * @return void
+	 */
+	private function init_developer_functionality() {
+		$developer_file = TEMPLATELY_PATH . 'includes/Core/Developer/Developer.php';
+
+		// Check if developer file exists before attempting to load
+		if ( file_exists( $developer_file ) ) {
+			// Include the developer class file
+			require_once $developer_file;
+
+			// Check if the class exists after including the file
+			if ( class_exists( '\\Templately\\Core\\Developer\\Developer' ) ) {
+				$this->developer = \Templately\Core\Developer\Developer::get_instance();
+			}
+		}
+
+		// If developer functionality is not available, set to null
+		if ( ! isset( $this->developer ) ) {
+			$this->developer = null;
+		}
+	}
+
+
+
+	/**
 	 * Initialize all platforms
 	 * @return void
 	 */
@@ -161,7 +191,7 @@ final class Plugin extends Base {
 		WorkSpaces::get_instance();
 
 		APISettings::get_instance();
-		DeveloperSettings::get_instance();
+		// Note: DeveloperSettings::get_instance() is called in Developer::init_modules() when developer functionality is available and enabled
 	}
 
 	/**

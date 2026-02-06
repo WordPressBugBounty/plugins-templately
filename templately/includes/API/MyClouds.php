@@ -73,7 +73,8 @@ class MyClouds extends API {
         if( is_wp_error( $response ) ) {
             return $this->error(
                 'invalid_response', $response->get_error_message(),
-                'clouds/usage', 404
+                'clouds/usage', 404,
+				$response->get_error_data()
             );
         }
 

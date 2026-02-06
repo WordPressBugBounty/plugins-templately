@@ -60,6 +60,9 @@ class Templates extends BaseRunner {
 						];
 					}
 				}
+				else if($template_settings['type'] === 'fluent_product_single'){
+					$this->create_page_template();
+				}
 
 			} else {
 				$results['templates']['failed'][ $id ] = $import;
@@ -177,6 +180,22 @@ class Templates extends BaseRunner {
 			if($type === 'product_archive'){
 				Utils::update_option( 'woocommerce_shop_page_id', $archive_page );
 			}
+
+			if($type === 'course_archive'){
+				// get page slug from $archive_page id and update learndash_settings_permalinks option to courses.
+				$post_name = get_post_field( 'post_name', $archive_page );
+
+				if(class_exists('\LearnDash_Settings_Section')){
+					$section   = \LearnDash_Settings_Section::get_section_instance( 'LearnDash_Settings_Section_Permalinks' );
+					if(!empty($section)){
+						$section->set_setting('courses', $post_name);
+						if(function_exists('learndash_setup_rewrite_flush')){
+							learndash_setup_rewrite_flush();
+						}
+					}
+				}
+			}
+
 			return $archive_page;
 		} catch ( \Exception $e ) {
 			return false;

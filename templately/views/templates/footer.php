@@ -14,8 +14,8 @@ templately()->theme_builder::$location_manager->do_location( 'footer' );
  */
 do_action( 'templately_builder_footer_before' );
 do_action( 'templately_builder_footer' );
-do_action( 'templately_builder_footer_after' );
 wp_footer();
+do_action( 'templately_builder_footer_after' );
 ?>
 </body>
 </html>

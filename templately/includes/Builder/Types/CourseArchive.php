@@ -15,7 +15,7 @@ class CourseArchive extends Archive {
 		return __( 'Course Archives', 'templately' );
 	}
 
-	public static function get_properties(): array {
+	public static function get_properties($import_settings = []): array {
 		$properties = parent::get_properties();
 
 		$properties['condition'] = 'include/archive/sfwd-courses_archive';

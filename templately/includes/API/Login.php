@@ -87,7 +87,7 @@ class Login extends API {
             return $this->error( 'login_error', $errors, 'login', 400 );
         }
 
-        $query = 'status, message, user{ id, name, first_name, last_name, display_name, email, profile_photo, joined, is_verified, api_key, plan, plan_expire_at, my_cloud{ limit, usages, last_pushed }, favourites{ id, type }, show_notice, reviews{ type, type_id, rating } }';
+        $query = 'status, message, user{ id, name, first_name, last_name, display_name, email, profile_photo, joined, is_verified, is_company_user, api_key, plan, plan_expire_at, my_cloud{ limit, usages, last_pushed }, favourites{ id, type }, show_notice, reviews{ type, type_id, rating }, subscription { id, name, sites } }';
 
         $response = $this->http()->mutation(
             $viaAPI ? 'connectWithApiKey' : 'connect',

@@ -15,7 +15,7 @@ class PageSingle extends Single {
 		return __( 'Page Single', 'templately' );
 	}
 
-	public static function get_properties(): array {
+	public static function get_properties($import_settings = []): array {
 		$properties = parent::get_properties();
 
 		$properties['condition'] = 'include/singular/page';

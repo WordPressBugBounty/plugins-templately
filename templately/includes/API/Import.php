@@ -39,6 +39,7 @@ class Import extends API {
             }
         }
 
+        @set_time_limit( 0 ); // Unlimited execution time for this request.
 
         switch ( $origin ) {
             case 'cloud':
@@ -172,6 +173,8 @@ class Import extends API {
             }
         }
 
+        @set_time_limit( 0 ); // Unlimited execution time for this request.
+
         return $this->platform( $platform )->import_in_library( $id, $this );
     }
 
@@ -192,6 +195,8 @@ class Import extends API {
                 );
             }
         }
+
+        @set_time_limit( 0 ); // Unlimited execution time for this request.
 
         return $this->platform( $platform )->create_page( $id, $title, $this );
     }

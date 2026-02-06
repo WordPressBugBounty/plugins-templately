@@ -163,7 +163,11 @@ class Utils extends Base {
 		}
 		if ( ! empty( $settings['page_settings'] ) ) {
 			foreach ( $settings['page_settings'] as $option_name => $val ) {
-				self::update_option( $option_name, $id );
+				$__val = $id;
+				if($option_name === 'fluent_cart_store_settings'){
+					$__val = $val;
+				}
+				self::update_option( $option_name, $__val );
 				if ( array_key_exists( $option_name, $extra_settings ) ) {
 					foreach ( $extra_settings[ $option_name ] as $name => $value ) {
 						self::update_option( $name, $value );
@@ -195,6 +199,162 @@ class Utils extends Base {
 			'id'  => (int) $attachment_id,
 			'url' => esc_url_raw(wp_get_attachment_url($attachment_id)),
 		];
+	}
+
+	/**
+	 * Upload base64 encoded image to media library
+	 *
+	 * @param string $base64 Base64 encoded image data (with or without data URI scheme)
+	 * @param string $session_id Session ID for tracking (reserved for future use)
+	 * @return array Array with 'id' and 'url' on success, or ['error' => message] on failure
+	 */
+	public static function upload_logo_base64($base64, $session_id = null) {
+		if(empty($base64)) {
+			return ['error' => __('Base64 is empty', 'templately')];
+		}
+
+		// Upload the base64 image
+		$attachment_id = self::upload_base64_image($base64);
+
+		if(is_wp_error($attachment_id)){
+			return ['error' => $attachment_id->get_error_message()];
+		}
+
+		return [
+			'id'  => (int) $attachment_id,
+			'url' => esc_url_raw(wp_get_attachment_url($attachment_id)),
+		];
+	}
+
+	/**
+	 * Upload base64 encoded image without dependency on prepare_post_data
+	 * Handles MIME type detection and proper file extension assignment
+	 *
+	 * @param string $base64 Base64 encoded image data (with or without data URI scheme)
+	 * @return int|WP_Error Attachment ID on success, WP_Error on failure
+	 */
+	public static function upload_base64_image($base64) {
+		// Decode base64 string
+		$decoded_image = base64_decode($base64, true);
+		if ($decoded_image === false) {
+			return new \WP_Error('invalid_base64', __('Invalid base64 data.', 'templately'));
+		}
+
+		// Detect MIME type from decoded image data
+		$mime_type = self::detect_mime_type_from_data($decoded_image);
+		if (empty($mime_type)) {
+			return new \WP_Error('unknown_mime_type', __('Unable to determine image MIME type.', 'templately'));
+		}
+
+		// Get file extension from MIME type
+		$extension = self::get_file_extension_by_mime_type($mime_type);
+		if (empty($extension)) {
+			return new \WP_Error('unsupported_mime_type', __('Unsupported image MIME type.', 'templately'));
+		}
+
+		// Generate unique filename
+		$filename = 'templately-logo-' . \wp_generate_uuid4() . '.' . $extension;
+
+		// Get upload directory
+		$upload_dir = \wp_upload_dir();
+		if (!$upload_dir['error']) {
+			$upload_path = $upload_dir['path'] . '/' . $filename;
+		} else {
+			return new \WP_Error('upload_dir_error', __('Unable to access upload directory.', 'templately'));
+		}
+
+		// Write decoded image to file
+		if (file_put_contents($upload_path, $decoded_image) === false) {
+			return new \WP_Error('upload_error', __('Error uploading image.', 'templately'));
+		}
+
+		// Create attachment post
+		$attachment_data = [
+			'post_mime_type' => $mime_type,
+			'post_title'     => \sanitize_file_name(pathinfo($filename, PATHINFO_FILENAME)),
+			'post_content'   => '',
+			'post_status'    => 'inherit',
+		];
+
+		$attachment_id = \wp_insert_attachment($attachment_data, $upload_path);
+		if (is_wp_error($attachment_id)) {
+			return $attachment_id;
+		}
+
+		// Ensure WordPress image functions are available
+		// These functions are defined in wp-admin/includes/image.php which is not always loaded
+		if (!function_exists('wp_generate_attachment_metadata')) {
+			require_once(ABSPATH . 'wp-admin/includes/image.php');
+		}
+
+		// Generate and update attachment metadata
+		$metadata = \wp_generate_attachment_metadata($attachment_id, $upload_path);
+		\wp_update_attachment_metadata($attachment_id, $metadata);
+
+		return $attachment_id;
+	}
+
+	/**
+	 * Detect MIME type from image data
+	 * Uses finfo_buffer if available, otherwise falls back to getimagesizefromstring
+	 *
+	 * @param string $image_data Raw image data
+	 * @return string|null MIME type or null if unable to detect
+	 */
+	private static function detect_mime_type_from_data($image_data) {
+		// Try using finfo_buffer first (most reliable)
+		if (function_exists('finfo_buffer')) {
+			$finfo = finfo_open(FILEINFO_MIME_TYPE);
+			if ($finfo) {
+				$mime_type = finfo_buffer($finfo, $image_data);
+				finfo_close($finfo);
+				if ($mime_type && strpos($mime_type, 'image/') === 0) {
+					return $mime_type;
+				}
+			}
+		}
+
+		// Fallback: use getimagesizefromstring
+		if (function_exists('getimagesizefromstring')) {
+			$image_info = @getimagesizefromstring($image_data);
+			if ($image_info && isset($image_info['mime'])) {
+				return $image_info['mime'];
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get file extension by MIME type
+	 * Uses WordPress built-in functions for MIME type to extension conversion
+	 *
+	 * @since 3.4.5
+	 * @param string $mime_type MIME type (e.g., 'image/png')
+	 * @return string|null File extension without dot, or null if not found
+	 */
+	private static function get_file_extension_by_mime_type($mime_type) {
+		// Use WordPress core function if available (WordPress 5.8.1+)
+		// wp_get_default_extension_for_mime_type() returns the default file extension for a given MIME type
+		if (function_exists('wp_get_default_extension_for_mime_type')) {
+			return \wp_get_default_extension_for_mime_type($mime_type);
+		}
+
+		// Fallback for WordPress < 5.8.1
+		// Use wp_get_mime_types() which returns array with extensions as keys and MIME types as values
+		// Example: ['jpg|jpeg|jpe' => 'image/jpeg', 'png' => 'image/png', ...]
+		$wp_mime_types = \wp_get_mime_types();
+
+		// Flip the array to get MIME type as key and extensions as value
+		$mime_map = array_flip($wp_mime_types);
+
+		if (isset($mime_map[$mime_type])) {
+			$extensions = $mime_map[$mime_type];
+			// Get first extension if multiple are available (e.g., 'jpg|jpeg|jpe' -> 'jpg')
+			return strtok($extensions, '|');
+		}
+
+		return null;
 	}
 
     /**

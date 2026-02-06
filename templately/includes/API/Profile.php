@@ -78,7 +78,7 @@ class Profile extends API {
 
 		$response = $this->http()->query( 'isVerifiedUser', '', $funcArgs )->post();
 
-		if ( $response ) {
+		if ( $response && !is_wp_error( $response ) ) {
 			$user = $this->utils( 'options' )->get( 'user' );
 
 			$user['is_verified'] = true;
@@ -99,7 +99,7 @@ class Profile extends API {
 			] )->post();
 
 		if ( is_wp_error( $response ) ) {
-			return $this->error( 'invalid_download_history_response', __( $response->get_error_message(), 'templately' ), 'profile/download-history', $response->get_error_code() );
+			return $this->error( 'invalid_download_history_response', __( $response->get_error_message(), 'templately' ), 'profile/download-history' );
 		}
 
 		if ( isset( $response['total'] ) ) {
@@ -130,7 +130,7 @@ class Profile extends API {
 		$response = $this->http()->mutation( 'myFavouriteItem', 'total_page, current_page, data { id, name, rating, type, slug, favourite_count, thumbnail, thumbnail2, thumbnail3, price, author{ display_name, name, joined }, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link } }', $funcArgs )->post();
 
 		if ( is_wp_error( $response ) ) {
-			return $this->error( 'invalid_my_favourites_response', __( $response->get_error_message(), 'templately' ), 'profile/my-favourites', $response->get_error_code() );
+			return $this->error( 'invalid_my_favourites_response', __( $response->get_error_message(), 'templately' ), 'profile/my-favourites' );
 		}
 
 		return $response;

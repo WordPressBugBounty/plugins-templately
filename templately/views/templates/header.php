@@ -25,9 +25,11 @@ do_action( 'wp_body_open' );
  */
 do_action( 'templately_builder_header_before' );
 do_action( 'templately_builder_header' );
-do_action( 'templately_builder_header_after' );
 
 /**
  * Print Headers if needed.
  */
 templately()->theme_builder::$location_manager->do_location( 'header' );
+
+
+do_action( 'templately_builder_header_after' );

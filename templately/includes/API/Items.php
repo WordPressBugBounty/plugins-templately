@@ -38,6 +38,17 @@ class Items extends API {
 			],
 		] );
 
+		// only number
+		$this->get( 'items/(?P<id>[0-9]+)', [ $this, 'get_item_by_id' ], [
+			'id' => [
+				'required' => true,
+			],
+			'type' => [
+				'default' => 'block'
+			]
+		] );
+
+		// with slug
 		$this->get( 'items/(?P<slug>[a-zA-Z0-9-]+)', [ $this, 'get_item' ], [
 			'slug' => [
 				'required' => true,
@@ -183,6 +194,56 @@ class Items extends API {
 				'invalid_response',
 				__('Item data not found', 'templately'),
 				'/items\/' . $slug,
+				'404'
+			);
+		}
+
+		return current( $response['data'] );
+	}
+
+	public function get_item_by_id() {
+		$id  = (int) $this->get_param( 'id' );
+		$_type = $this->get_param( 'type', 'blocks' );
+		$type  = $this->get_query_types( $_type );
+
+		if ( empty( $id ) ) {
+			return $this->error(
+				'invalid_item_slug',
+				__( 'Items id cannot be empty.', 'templately' ),
+				'items/:id',
+				'400'
+			);
+		}
+
+		if( $type === false ) {
+			return $this->error( 'invalid_type_call', __( 'Invalid Type Call', 'templately' ) );
+		}
+
+		$items_params = 'id, name, rating, type, description, slug, price, features, favourite_count, is_favourite, is_reviewed, thumbnail, downloads, categories{ id, name, slug }, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link }, tags{ name, id }, categories{ name, id }, screenshots{ url }, banner, published_at, updated_at, is_trending, badges, pack{ id, name, slug, items{ id, price, name, type, slug, thumbnail } }, live_url, template_type{ id, name, slug }';
+		$params       = 'data { ' . $items_params . ', variations { name, slug, type, platform } }';
+
+		if ( $type == 'packs' ) {
+			$params = 'data { id, fullsite_import, ai_compatible, has_settings, has_attachments, name, rating, type, slug, live_url, price, features, favourite_count, is_favourite, is_reviewed, thumbnail, description, tags{ name, id }, banner, published_at, updated_at, is_trending, badges, template_type{ id, name, slug } downloads, categories{ id, name, slug }, items { ' . $items_params . ' }, variations { name, slug, type, platform } }';
+		}
+
+		$args = [
+			'id' => $id,
+		];
+		if (!empty($this->api_key)) {
+			$args['api_key'] = $this->api_key;
+		}
+
+		$response = $this->http()->query( $type, $params, $args )->post();
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		if( empty( $response['data'] ) ) {
+			return $this->error(
+				'invalid_response',
+				__('Item data not found', 'templately'),
+				'/items\/' . $id,
 				'404'
 			);
 		}
@@ -458,7 +519,7 @@ class Items extends API {
 		];
 		$response = $this->http()->query(
 			'featuredItems',
-			'data{ id, name, slug, price, type, thumbnail }',
+			'data{ id, name, slug, price, type, thumbnail, badges }',
 			$funcArgs
 		)->post();
 
@@ -488,7 +549,7 @@ class Items extends API {
 		];
 		$response = $this->http()->query(
 			'trendingItems',
-			'data{ id, name, slug, price, type, thumbnail }',
+			'data{ id, name, slug, price, type, thumbnail, badges }',
 			$funcArgs
 		)->post();
 
@@ -529,12 +590,12 @@ class Items extends API {
 		$funcArgs = [
 			'id'       => $item_id,
 			'type'     => $type,
-			'limit'    => 3,           // Limit to 3 related items
+			'limit'    => 4,           // Limit to 3 related items
 		];
 
 		$response = $this->http()->query(
 			'relatedItems',
-			'id, name, slug, price, type, thumbnail',
+			'id, name, slug, price, type, thumbnail, badges',
 			$funcArgs
 		)->post();
 

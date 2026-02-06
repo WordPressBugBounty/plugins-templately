@@ -318,7 +318,8 @@ class WPImport extends WP_Importer {
 		wp_defer_term_counting( true );
 		wp_defer_comment_counting( true );
 
-		do_action( 'import_start', $this );
+		do_action( 'import_start' );
+		do_action( 'templately_import_start', $this );
 
 		return true;
 	}
@@ -1726,6 +1727,21 @@ class WPImport extends WP_Importer {
 	}
 
 	/**
+	 * Register Templately with Jetpack Sync's known importers.
+	 *
+	 * This filter callback adds Templately to Jetpack's list of known importers,
+	 * ensuring that 'templately' is sent to WordPress.com instead of the full class name.
+	 * This provides cleaner analytics data and better tracking.
+	 *
+	 * @param array $known_importers Array of known importers with class names as keys and friendly names as values.
+	 * @return array Modified array of known importers.
+	 */
+	public function register_jetpack_importer( $known_importers ) {
+		$known_importers[ __CLASS__ ] = 'templately';
+		return $known_importers;
+	}
+
+	/**
 	 * @param       $file
 	 * @param array $args
 	 */
@@ -1771,5 +1787,8 @@ class WPImport extends WP_Importer {
 		if ( ! empty( $this->args['terms_meta'] ) ) {
 			$this->terms_meta = $this->args['terms_meta'];
 		}
+
+		// Register with Jetpack Sync for better analytics tracking.
+		add_filter( 'jetpack_sync_known_importers', [ $this, 'register_jetpack_importer' ] );
 	}
 }

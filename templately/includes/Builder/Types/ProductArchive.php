@@ -15,7 +15,7 @@ class ProductArchive extends Archive {
 		return __( 'Product Archives', 'templately' );
 	}
 
-	public static function get_properties(): array {
+	public static function get_properties($import_settings = []): array {
 		$properties = parent::get_properties();
 
 		$properties['builder']   = post_type_exists( 'product' );

@@ -33,6 +33,7 @@ class WXR_Parser_XML {
 		'wp:comment_status',
 		'wp:ping_status',
 		'wp:attachment_url',
+		'wp:attachment_type',
 		'wp:status',
 		'wp:post_name',
 		'wp:post_parent',
@@ -296,6 +297,10 @@ class WXR_Parser_XML {
 				$this->sub_data = [];
 				break;
 			case 'item':
+				// Ensure attachment_type field is set, default to null if not present
+				if ( ! isset( $this->data['attachment_type'] ) ) {
+					$this->data['attachment_type'] = null;
+				}
 				$this->posts[] = $this->data;
 				$this->data = [];
 				break;

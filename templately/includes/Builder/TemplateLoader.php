@@ -25,6 +25,8 @@ class TemplateLoader {
 		add_action( 'elementor/document/wrapper_attributes', [ $this, 'wrapper_attributes' ], 10, 2 );
 		add_action( 'template_redirect', array( $this, 'set_global_product' ) );
 
+		add_action( 'templately_builder_header_after', [ $this, 'print_style_tags' ], 0 );
+		add_action( 'templately_builder_footer_before', [ $this, 'print_style_tags' ], 0 );
 		/**
 		 * Only for Development Mode.
 		 */
@@ -135,6 +137,28 @@ class TemplateLoader {
 			$product_id = get_the_ID();
 			if ( $product_id ) {
 				wc_setup_product_data( $product_id );
+			}
+		}
+	}
+
+	/**
+	 * Print remaining enqueued styles with error handling.
+	 */
+	public function print_style_tags() {
+		try {
+			$wp_styles = wp_styles();
+
+			if ( is_object( $wp_styles ) && is_array( $wp_styles->queue ?? null ) ) {
+				foreach ( $wp_styles->queue as $style ) {
+					if ( is_string( $style ) && ! $wp_styles->query( $style, 'done' ) ) {
+						$wp_styles->do_item( $style );
+						$wp_styles->done[] = $style;
+					}
+				}
+			}
+		} catch ( \Throwable $e ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'Templately: Error printing styles - ' . $e->getMessage() );
 			}
 		}
 	}

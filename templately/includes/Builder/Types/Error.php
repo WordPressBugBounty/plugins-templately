@@ -15,7 +15,7 @@ class Error extends Single {
 		return __( '404 Error Pages', 'templately' );
 	}
 
-	public static function get_properties(): array {
+	public static function get_properties($import_settings = []): array {
 		$properties = parent::get_properties();
 
 		$properties['location']                  = 'single';

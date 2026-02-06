@@ -2,6 +2,7 @@
 
 namespace Templately\Core\Importer\Runners;
 
+use Templately\Core\Importer\Utils\FluentImport;
 use Templately\Core\Importer\Utils\Utils;
 use Templately\Core\Importer\WPImport;
 use Templately\Utils\Helper;
@@ -121,6 +122,13 @@ class WPContent extends BaseRunner {
 			}
 		}
 
+		if($type == 'fluent-products'){
+			$file = $path . $type . '/' . 'products.json';
+			$fluent_import = new FluentImport( $file );
+			$result = $fluent_import->import();
+			return $result;
+		}
+
 		$file = $path . $type . '/' . $type . '.xml';
 
 		if ( ! file_exists( $file ) ) {
@@ -145,14 +153,14 @@ class WPContent extends BaseRunner {
 		if ( ! $remove ) {
 			add_action( 'templately_import.process_post', [ $this, 'post_log' ], 10, 2 );
 			add_action( 'templately_import.process_term', [ $this, 'post_log' ], 10, 2 );
-			add_action( 'import_start', [ $this, 'update_total' ], 10 );
+			add_action( 'templately_import_start', [ $this, 'update_total' ], 10 );
 
 			return;
 		}
 
 		remove_action( 'templately_import.process_post', [ $this, 'post_log' ] );
 		remove_action( 'templately_import.process_term', [ $this, 'post_log' ] );
-		remove_action( 'import_start', [ $this, 'update_total' ] );
+		remove_action( 'templately_import_start', [ $this, 'update_total' ] );
 	}
 
 	public function post_log( $post, $result ) {

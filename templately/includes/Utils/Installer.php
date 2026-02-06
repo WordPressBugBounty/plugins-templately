@@ -61,15 +61,20 @@ class Installer extends Base {
 				return $response;
 			}
 
-			/**
-			 * @var array|object $api
-			 */
-			$api = plugins_api( 'plugin_information', [
+			$plugins_api_args =  [
 				'slug'   => sanitize_key( wp_unslash( $plugin['slug'] ) ),
 				'fields' => [
 					'sections' => false,
 				],
-			] );
+			];
+			if(isset($plugin['has_license']) && $plugin['has_license']){
+				$plugins_api_args['has_license'] = $plugin['has_license'];
+			}
+			/**
+			 * @var array|object $api
+			 */
+			$api = plugins_api( 'plugin_information', $plugins_api_args);
+
 
 			if ( is_wp_error( $api ) ) {
 				$response['message'] = $api->get_error_message();

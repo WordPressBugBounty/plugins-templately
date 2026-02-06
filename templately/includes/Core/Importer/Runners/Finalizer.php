@@ -49,10 +49,12 @@ class Finalizer extends BaseRunner {
 		foreach ( $this->type_to_check as $type ) {
 			$contents = ! empty ( $this->manifest[ $type ] ) ? $this->manifest[ $type ] : [];
 			if ( $type == 'templates' ) {
-				$this->prepare( $data, $contents, $type );
+				// $imported_data["templates"]["__attachments"][691]
+				$this->prepare( $data, $contents, $type, null, $imported_data );
 			} else {
 				foreach ( $contents as $post_type => $templates ) {
-					$this->prepare( $data, $templates, $type, $post_type );
+					// $imported_data["content"]["__attachments"][$post_type][11]
+					$this->prepare( $data, $templates, $type, $post_type, $imported_data );
 				}
 			}
 		}
@@ -61,12 +63,25 @@ class Finalizer extends BaseRunner {
 		return ! empty( $data ) || $this->platform == 'gutenberg';
 	}
 
-	private function prepare( &$data, $templates, $type, $sub_type = null ) {
+	private function prepare( &$data, $templates, $type, $sub_type = null, $imported_data = [] ) {
 		if ( empty( $templates ) || ! is_array( $templates ) ) {
 			return;
 		}
 		foreach ( $templates as $id => $template ) {
-			if ( ! isset( $template['data'] ) && !isset( $template['__attachments']) && !isset($template['has_logo']) && !$this->is_ai_content($id) ) {
+			// Check for __attachments in both template and imported_data
+			$has_attachment = !empty($template['__attachments']);
+
+			if (!$has_attachment && !empty($imported_data)) {
+				if ($sub_type) {
+					// $imported_data["content"]["__attachments"]["page"][11]
+					$has_attachment = isset($imported_data[$type]['__attachments'][$sub_type][$id]);
+				} else {
+					// $imported_data["templates"]["__attachments"][691]
+					$has_attachment = isset($imported_data[$type]['__attachments'][$id]);
+				}
+			}
+
+			if ( ! isset( $template['data'] ) && !$has_attachment && !isset($template['has_logo']) && !$this->is_ai_content($id) && !isset($template["page_settings"]["fluent_cart_store_settings"]) ) {
 				continue;
 			}
 
@@ -96,6 +111,8 @@ class Finalizer extends BaseRunner {
 		}
 
 		add_action('templately_import.finalize_gutenberg_attachment', [$this, 'post_log'], 10, 2);
+
+		$this->update_settings();
 
 		$this->loop( $this->options, function($type, $contents ) {
 			$this->type = $type;
@@ -151,7 +168,7 @@ class Finalizer extends BaseRunner {
 				$processed_pages = get_option("templately_ai_processed_pages", []);
 				$updated_ids = $processed_pages[$this->process_id] ?? [];
 				$ai_paths = $this->generateAiFilePaths($old_template_id);
-				if(!empty($this->process_id) && is_numeric($this->process_id) && $this->is_ai_content($old_template_id) && !file_exists($ai_paths['ai_file_path'])){
+				if($this->is_ai_content($old_template_id) && !file_exists($ai_paths['ai_file_path'])){
 					// Use the static timeout-aware wait handler from AIUtils
 					AIUtils::handle_sse_wait_with_timeout(
 						$this->session_id,
@@ -200,6 +217,35 @@ class Finalizer extends BaseRunner {
 	public function post_log($id, $size_dimension = null){
 		$this->log(-1, "Imported attachment: $id" . ( $size_dimension ? " - $size_dimension" : ''), 'eventLog');
 	}
+
+	private function update_settings() {
+		$data = $this->data;
+		$map_post_ids = $this->json->map_post_ids;
+		$saved_options = get_option('fluent_cart_store_settings', []);
+		$mapped_keys = [
+			'checkout_page_id',
+			'custom_payment_page_id',
+			'registration_page_id',
+			'login_page_id',
+			'cart_page_id',
+			'receipt_page_id',
+			'shop_page_id',
+			'customer_profile_page_id',
+		];
+
+		foreach ($mapped_keys as $key) {
+			$old_id = $saved_options[$key] ?? null;
+			if (!empty($old_id) && isset($map_post_ids[$old_id])) {
+				$saved_options[$key] = $map_post_ids[$old_id];
+			}
+			else if(isset($saved_options[$key])){
+				unset($saved_options[$key]);
+			}
+		}
+
+		update_option('fluent_cart_store_settings', $saved_options);
+	}
+
 
 
 

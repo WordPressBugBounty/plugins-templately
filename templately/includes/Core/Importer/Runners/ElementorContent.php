@@ -3,6 +3,7 @@
 namespace Templately\Core\Importer\Runners;
 
 use Elementor\Plugin;
+use Elementor\TemplateLibrary\Source_Local;
 use Exception;
 use Templately\Core\Importer\Utils\Utils;
 use Templately\Utils\Helper;
@@ -33,6 +34,94 @@ class ElementorContent extends BaseRunner {
 	}
 
 	/**
+	 * Get kit by ID with backward compatibility.
+	 *
+	 * The get_kit() method was introduced in Elementor 3.13.0.
+	 * For older versions, we fall back to using documents->get() directly.
+	 *
+	 * @param \Elementor\Core\Kits\Manager $kits_manager The kits manager instance.
+	 * @param int $kit_id The kit ID to retrieve.
+	 * @return \Elementor\Core\Kits\Documents\Kit|null The kit document or null.
+	 */
+	private function get_kit_with_fallback( $kits_manager, $kit_id ) {
+		// Check if the get_kit method exists (Elementor 3.13.0+)
+		if ( method_exists( $kits_manager, 'get_kit' ) ) {
+			return $kits_manager->get_kit( $kit_id );
+		}
+
+		// Fallback for older Elementor versions (< 3.13.0)
+		// This replicates the old get_active_kit() behavior
+		return Plugin::$instance->documents->get( $kit_id );
+	}
+
+	/**
+	 * Create a new kit with backward compatibility.
+	 *
+	 * The create_new_kit() method was introduced in Elementor 3.13.0.
+	 * For older versions, we fall back to using documents->create() directly.
+	 *
+	 * @param \Elementor\Core\Kits\Manager $kits_manager The kits manager instance.
+	 * @param string $kit_name The name for the new kit.
+	 * @param array $settings The kit settings.
+	 * @param bool $active Whether to set this kit as active.
+	 * @return int The created kit ID.
+	 */
+	private function create_new_kit_with_fallback( $kits_manager, $kit_name = '', $settings = [], $active = true ) {
+		// Check if the create_new_kit method exists (Elementor 3.13.0+)
+		if ( method_exists( $kits_manager, 'create_new_kit' ) ) {
+			return $kits_manager->create_new_kit( $kit_name, $settings, $active );
+		}
+
+		// Fallback for older Elementor versions (< 3.13.0)
+		$kit_name = $kit_name ? $kit_name : esc_html__( 'Custom', 'templately' );
+
+		$kit = Plugin::$instance->documents->create( 'kit', [
+			'post_type' => Source_Local::CPT,
+			'post_title' => $kit_name,
+			'post_status' => 'publish',
+		] );
+
+		$kit_id = $kit->get_id();
+
+		// Apply settings if provided
+		if ( ! empty( $settings ) ) {
+			$kit->save( [ 'settings' => $settings ] );
+		}
+
+		// Set as active if requested
+		if ( $active ) {
+			update_option( $kits_manager::OPTION_ACTIVE, $kit_id );
+		}
+
+		return $kit_id;
+	}
+
+	/**
+	 * Create a default kit with backward compatibility.
+	 *
+	 * The create_default() method was made public in Elementor 3.12.0.
+	 * For older versions, we fall back to using documents->create() directly.
+	 *
+	 * @param \Elementor\Core\Kits\Manager $kits_manager The kits manager instance.
+	 * @return int The created kit ID.
+	 */
+	private function create_default_kit_with_fallback( $kits_manager ) {
+		// Check if create_default is publicly accessible (Elementor 3.12.0+)
+		if ( method_exists( $kits_manager, 'create_default' ) && is_callable( [ $kits_manager, 'create_default' ] ) ) {
+			return $kits_manager->create_default();
+		}
+
+		// Fallback for older Elementor versions (< 3.12.0)
+		$kit = Plugin::$instance->documents->create( 'kit', [
+			'post_type' => Source_Local::CPT,
+			'post_title' => esc_html__( 'Default Kit', 'templately' ),
+			'post_status' => 'publish',
+		] );
+
+		return $kit->get_id();
+	}
+
+	/**
 	 * @throws Exception
 	 */
 	public function import( $data, $imported_data ): array {
@@ -54,7 +143,7 @@ class ElementorContent extends BaseRunner {
 		$kits_manager = Plugin::$instance->kits_manager;
 
 		$active_kit = $kits_manager->get_active_id();
-		$kit        = $kits_manager->get_kit( $active_kit );
+		$kit        = $this->get_kit_with_fallback( $kits_manager, $active_kit );
 		$old_logo   = $kit->get_settings('site_logo');
 
 		if(isset($this->manifest['has_settings']) && $this->manifest['has_settings'] && !in_array("global_colors", $processed_templates)){
@@ -126,9 +215,9 @@ class ElementorContent extends BaseRunner {
 			}
 
 
-			$kit_id = $kits_manager->create_new_kit( $this->manifest['name'], $settings, true );
+			$kit_id = $this->create_new_kit_with_fallback( $kits_manager, $this->manifest['name'], $settings, true );
 
-			$kit    = $kits_manager->get_kit( $kit_id );
+			$kit    = $this->get_kit_with_fallback( $kits_manager, $kit_id );
 
 			// $kit->update_settings( ['site_logo' => $settings['site_logo']] );
 
@@ -145,11 +234,12 @@ class ElementorContent extends BaseRunner {
 		}
 
 		$active_kit = $kits_manager->get_active_id();
-		$kit        = $kits_manager->get_kit( $active_kit );
+		$kit        = $this->get_kit_with_fallback( $kits_manager, $active_kit );
 
 		if ( ! $kit->get_id() ) {
-			$kit = $kits_manager->create_default();
-			update_option( $kits_manager::OPTION_ACTIVE, $kit );
+			$kit_id = $this->create_default_kit_with_fallback( $kits_manager );
+			update_option( $kits_manager::OPTION_ACTIVE, $kit_id );
+			$kit = $this->get_kit_with_fallback( $kits_manager, $kit_id );
 		}
 
 		// $processed = 0;

@@ -288,7 +288,7 @@ class Attachments extends WPContent {
 	public function pre_http_request($preempt, $parsed_args, $url) {
 		// error_log(print_r([$preempt, $parsed_args, $url], true));
 
-		$this->sse_log('attachments', 'Before downloading attachment: ' . $url, 1, 'eventLog');
+		$this->sse_log('attachments', 'Before downloading attachment: ' . esc_url($url), 1, 'eventLog');
 
 		return $preempt;
 	}

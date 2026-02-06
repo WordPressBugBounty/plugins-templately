@@ -9,6 +9,7 @@ use Templately\Builder\Types\BaseTemplate;
 use Templately\Builder\Types\CourseArchive;
 use Templately\Builder\Types\CourseSingle;
 use Templately\Builder\Types\Error;
+use Templately\Builder\Types\FluentProductSingle;
 use Templately\Builder\Types\Footer;
 use Templately\Builder\Types\Header;
 use Templately\Builder\Types\Page;
@@ -39,6 +40,7 @@ class TemplateManager {
 
 			// WooCommerce Template Types
 			'product_single'  => ProductSingle::class,
+			'fluent_product_single'  => FluentProductSingle::class,
 			'product_archive' => ProductArchive::class,
 
 			'page_single'     => PageSingle::class,
