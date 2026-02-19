@@ -6,8 +6,18 @@ use Exception;
 use Templately\Core\Importer\Form;
 use Templately\Core\Importer\Runners\BaseRunner;
 use Templately\Core\Importer\Utils\Utils;
+use Templately\Core\Importer\Utils\SessionData;
 
 class DownloadZip extends BaseRunner {
+	/**
+	 * @var string
+	 */
+	private $download_key;
+
+	/**
+	 * @var string
+	 */
+	private $filePath;
 
 	public function get_name(): string {
 		return 'downloadzip';
@@ -40,10 +50,7 @@ class DownloadZip extends BaseRunner {
          */
         $this->download_zip( $_id );
 
-        $progress['download_zip'] = true;
-        $this->update_session_data( [
-            'progress' => $progress,
-        ] );
+        SessionData::mark_step_complete($this->session_id, 'download_zip');
         $this->sse_message( [
             'type'    => 'continue',
             'action'  => 'continue',
@@ -100,11 +107,9 @@ class DownloadZip extends BaseRunner {
 		$this->filePath   = $this->tmp_dir . "{$this->session_id}.zip";
 		// $this->session_id = $session_id;
 
-		$this->update_session_data([
-			'session_id'   => $this->session_id,
-			'dir_path'     => $this->dir_path,
-			'download_key' => $this->download_key,
-		]);
+		SessionData::set($this->session_id, 'session_id', $this->session_id);
+		SessionData::set($this->session_id, 'dir_path', $this->dir_path);
+		SessionData::set($this->session_id, 'download_key', $this->download_key);
 
 		if (file_put_contents($this->filePath, $response['body'])) { // phpcs:ignore
 			$this->sse_log('download', __('Downloading Template Pack', 'templately'), 100);

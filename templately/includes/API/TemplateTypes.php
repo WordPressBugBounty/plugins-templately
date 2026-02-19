@@ -7,13 +7,12 @@ use WP_REST_Request;
 /**
  * TemplateTypes Class
  *
- * @property mixed $_items
- *
  * @since 2.0.0
  * @package Templately\API
  */
 class TemplateTypes extends API {
     private $endpoint = 'templateTypes';
+    private array $_items = [];
 
 	public function permission_check( WP_REST_Request $request ) {
 		$this->request = $request;

@@ -56,7 +56,7 @@ class AIContent extends BaseRunner {
 		], false);
 
 		if ($total_pages > $updated_pages && !isset($updated_ids['credit_cost'])) {
-			$arr = $this->get_progress([], 'ai_content_time', false);
+			$arr = $this->get_loop_result([], 'ai_content_time', false);
 			$last_progress = $arr['last_progress'] ?? 0;
 			$last_time = $arr['last_time'] ?? 0;
 			$current_time = time();
@@ -70,7 +70,7 @@ class AIContent extends BaseRunner {
 				if ($progress_percentage !== $last_progress) {
 					$arr['last_progress'] = $progress_percentage;
 					$arr['last_time'] = $current_time;
-					$this->update_progress($arr, null, 'ai_content_time', false);
+					$this->set_loop_result($arr, 'ai_content_time');
 				}
 
 				$this->sse_message([

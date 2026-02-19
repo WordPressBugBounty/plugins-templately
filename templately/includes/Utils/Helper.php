@@ -160,6 +160,10 @@ class Helper extends Base {
 		// Check for verification header in the response
 		self::check_verification_header($response);
 
+
+		// Check for site disconnection in response body
+		self::check_site_disconnection($response);
+
 		return $response;
 	}
 
@@ -269,6 +273,101 @@ class Helper extends Base {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Check for site disconnection status in API response body
+	 *
+	 * Detects SiteNotConnected errors and updates user disconnection status.
+	 * Sends X-Templately-Disconnected header for frontend detection.
+	 *
+	 *
+	 * @param array|WP_Error|mixed $response The response object or body array
+	 * @return bool True if site is disconnected, false otherwise
+	 */
+	public static function check_site_disconnection($response) {
+		if (is_wp_error($response)) {
+			return false;
+		}
+
+		$response_body = $response;
+
+		// If it's a raw WP response array with body, decode it
+		if (is_array($response) && isset($response['body']) && is_string($response['body'])) {
+			$response_body = json_decode(wp_remote_retrieve_body($response), true);
+		}
+
+		// Check if response body indicates site disconnection
+		if (!is_array($response_body)) {
+			return false;
+		}
+
+		$status = $response_body['status'] ?? null;
+		$status_text = $response_body['statusText'] ?? null;
+
+		// Check for SiteNotConnected error
+		if ($status === 'error' && $status_text === 'SiteNotConnected') {
+			try {
+				// Get current user data
+				$options = Options::get_instance();
+				$user = $options->get('user');
+
+				// Only update if user data exists
+				if (!empty($user) && is_array($user)) {
+					// Set disconnection flag
+					$user['is_disconnected'] = true;
+
+					// Save updated user data
+					$options->set('user', $user);
+
+					if (defined('TEMPLATELY_DEBUG_LOG') && constant('TEMPLATELY_DEBUG_LOG')) {
+						self::log('Site disconnection detected: SiteNotConnected status');
+					}
+				}
+
+				// Send header for frontend detection
+				if (!headers_sent()) {
+					header('X-Templately-Disconnected: true');
+				}
+
+				return true;
+			} catch (\Exception $e) {
+				// Log error if debug logging is enabled
+				if (defined('TEMPLATELY_DEBUG_LOG') && constant('TEMPLATELY_DEBUG_LOG')) {
+					self::log('Error updating site disconnection status: ' . $e->getMessage());
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Clear site disconnection status
+	 *
+	 * Called after successful site migration to reset the disconnection flag.
+	 *
+	 * @return void
+	 */
+	public static function clear_site_disconnection() {
+		try {
+			$options = Options::get_instance();
+			$user = $options->get('user');
+
+			if (!empty($user) && is_array($user)) {
+				$user['site_url']        = base64_encode( home_url('/') );
+				$user['is_disconnected'] = false;
+				$options->set('user', $user);
+
+				if (defined('TEMPLATELY_DEBUG_LOG') && constant('TEMPLATELY_DEBUG_LOG')) {
+					self::log('Site disconnection status cleared and URL updated.');
+				}
+			}
+		} catch (\Exception $e) {
+			if (defined('TEMPLATELY_DEBUG_LOG') && constant('TEMPLATELY_DEBUG_LOG')) {
+				self::log('Error clearing site disconnection status: ' . $e->getMessage());
+			}
+		}
 	}
 
 	/**

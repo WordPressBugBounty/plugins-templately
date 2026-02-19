@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Templately plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Templately 3.5.0\n"
+"Project-Id-Version: Templately 3.5.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/templately\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-01-15T11:55:35+00:00\n"
+"POT-Creation-Date: 2026-02-19T10:03:45+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: templately\n"
@@ -17,16 +17,13 @@ msgstr ""
 #. Plugin Name of the plugin
 #. Author of the plugin
 #: templately.php
-#: includes/Core/Admin.php:522
+#: includes/Core/Admin.php:523
 #: includes/Core/Platform/Gutenberg.php:83
 #: views/header.php:7
 #: assets/js/elementor.js:1
 #: react-src/elementor/AddSectionBehavior.js:30
 #: react-src/elementor/AddSectionBehavior.js:31
 #: react-src/elementor/AddSectionBehavior.js:32
-#: assets/js/elementor.js:151
-#: assets/js/elementor.js:152
-#: assets/js/elementor.js:153
 msgid "Templately"
 msgstr ""
 
@@ -46,8 +43,9 @@ msgid "https://templately.com/"
 msgstr ""
 
 #: includes/API/AIContent.php:52
-#: includes/API/AIContent.php:173
-#: includes/API/AIContent.php:233
+#: includes/API/AIContent.php:172
+#: includes/API/AIContent.php:232
+#: includes/API/LogoGeneration.php:45
 msgid "Invalid ID."
 msgstr ""
 
@@ -56,139 +54,129 @@ msgid "Missing API key in header."
 msgstr ""
 
 #: includes/API/AIContent.php:67
+#: includes/API/LogoGeneration.php:55
 msgid "Invalid API key provided in header."
 msgstr ""
 
-#: includes/API/AIContent.php:184
-#: includes/API/AIContent.php:283
+#: includes/API/AIContent.php:183
+#: includes/API/AIContent.php:291
 msgid "Request failed."
 msgstr ""
 
-#: includes/API/AIContent.php:191
-#: includes/API/AIContent.php:290
+#: includes/API/AIContent.php:190
+#: includes/API/AIContent.php:298
 msgid "Invalid response."
 msgstr ""
 
-#: includes/API/AIContent.php:236
+#: includes/API/AIContent.php:235
 msgid "Invalid prompt."
 msgstr ""
 
-#: includes/API/AIContent.php:239
+#: includes/API/AIContent.php:238
 msgid "Invalid content ids."
 msgstr ""
 
-#: includes/API/AIContent.php:242
+#: includes/API/AIContent.php:241
 msgid "Invalid platform."
 msgstr ""
 
-#: includes/API/AIContent.php:346
+#: includes/API/AIContent.php:354
 msgid "The content is being generated in the queue"
 msgstr ""
 
-#: includes/API/AIContent.php:443
+#: includes/API/AIContent.php:451
 msgid "Template must be a non-empty array with content_id as keys."
 msgstr ""
 
-#: includes/API/AIContent.php:489
+#: includes/API/AIContent.php:497
 #, php-format
 msgid "Processed %d templates: %d successful, %d failed."
 msgstr ""
 
-#: includes/API/AIContent.php:509
+#: includes/API/AIContent.php:519
 msgid "Pack ID or ID parameter is required."
 msgstr ""
 
-#: includes/API/AIContent.php:524
+#: includes/API/AIContent.php:534
 msgid "Failed to fetch attachments from API."
 msgstr ""
 
-#: includes/API/AIContent.php:537
+#: includes/API/AIContent.php:547
+#: includes/Core/Importer/Utils/AIUtils.php:257
 #, php-format
 msgid "API returned HTTP %d error."
 msgstr ""
 
-#: includes/API/AIContent.php:542
+#: includes/API/AIContent.php:552
 msgid "No XML content found in API response."
 msgstr ""
 
-#: includes/API/AIContent.php:549
+#: includes/API/AIContent.php:559
 msgid "Failed to parse XML content."
 msgstr ""
 
-#: includes/API/AIContent.php:558
+#: includes/API/AIContent.php:568
 #, php-format
 msgid "Found %d attachments."
 msgstr ""
 
-#: includes/API/AIContent.php:562
+#: includes/API/AIContent.php:572
 msgid "An unexpected error occurred while fetching attachments."
 msgstr ""
 
-#: includes/API/AIContent.php:583
+#: includes/API/AIContent.php:593
 msgid "Failed to create temporary file."
 msgstr ""
 
-#: includes/API/AIContent.php:590
+#: includes/API/AIContent.php:600
 msgid "Failed to write XML content to temporary file."
 msgstr ""
 
-#: includes/API/AIContent.php:735
+#: includes/API/AIContent.php:745
 msgid "Search query is required."
 msgstr ""
 
-#: includes/API/AIContent.php:772
+#: includes/API/AIContent.php:782
 msgid "Failed to fetch images from external service."
 msgstr ""
 
-#: includes/API/AIContent.php:784
+#: includes/API/AIContent.php:794
 #, php-format
 msgid "External API returned error code: %d"
 msgstr ""
 
-#: includes/API/AIContent.php:795
+#: includes/API/AIContent.php:805
 msgid "Invalid response from external service."
 msgstr ""
 
-#: includes/API/AIContent.php:805
+#: includes/API/AIContent.php:815
 msgid "External API returned an error status."
 msgstr ""
 
-#: includes/API/AIContent.php:844
-msgid "Description is required for logo generation."
+#: includes/API/AIContent.php:854
+msgid "Prompt is required for tagline generation."
 msgstr ""
 
-#: includes/API/AIContent.php:853
-msgid "Logo type is required."
+#: includes/API/AIContent.php:877
+msgid "Failed to generate tagline."
 msgstr ""
 
-#: includes/API/AIContent.php:878
-#: includes/API/AIContent.php:894
-#: includes/API/AIContent.php:906
-#: includes/API/AIContent.php:1030
-#: includes/API/AIContent.php:1042
+#: includes/API/AIContent.php:893
+#: includes/API/AIContent.php:905
+#: includes/API/LogoGeneration.php:177
+#: includes/API/LogoGeneration.php:193
+#: includes/API/LogoGeneration.php:205
 msgid "Something went wrong. Please try again or contact support."
 msgstr ""
 
-#: includes/API/AIContent.php:917
-#: includes/API/AIContent.php:1053
+#: includes/API/AIContent.php:916
+#: includes/API/LogoGeneration.php:216
 msgid "Invalid response from API."
 msgstr ""
 
-#: includes/API/AIContent.php:927
-#: includes/API/AIContent.php:1063
+#: includes/API/AIContent.php:926
+#: includes/API/LogoGeneration.php:226
 msgid "API returned an unexpected response."
-msgstr ""
-
-#: includes/API/AIContent.php:981
-msgid "Field is required."
-msgstr ""
-
-#: includes/API/AIContent.php:990
-msgid "Text is required for meta generation."
-msgstr ""
-
-#: includes/API/AIContent.php:1014
-msgid "Failed to generate meta."
 msgstr ""
 
 #: includes/API/API.php:166
@@ -200,7 +188,7 @@ msgid "Successfully saved."
 msgstr ""
 
 #: includes/API/Dependencies.php:92
-#: includes/Core/Admin.php:524
+#: includes/Core/Admin.php:525
 #: includes/Core/Importer/Runners/ElementorContent.php:17
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Breadcrumb.js:24
@@ -282,21 +270,76 @@ msgstr ""
 msgid "Type cannot be empty."
 msgstr ""
 
-#: includes/API/Login.php:71
+#: includes/API/Login.php:87
 msgid "API Key field cannot be empty."
 msgstr ""
 
-#: includes/API/Login.php:78
+#: includes/API/Login.php:94
 #: includes/API/SignUp.php:40
 msgid "Make sure you have given a valid email address."
 msgstr ""
 
-#: includes/API/Login.php:82
+#: includes/API/Login.php:98
 msgid "Password field cannot be empty."
 msgstr ""
 
-#: includes/API/Login.php:170
+#: includes/API/Login.php:119
+#: includes/Core/Developer/API/OpenAIEndpoints.php:360
+msgid "Invalid API key."
+msgstr ""
+
+#: includes/API/Login.php:197
 msgid "Logged out."
+msgstr ""
+
+#: includes/API/LogoGeneration.php:70
+#: includes/API/LogoGeneration.php:295
+msgid "Invalid or expired logo generation process ID."
+msgstr ""
+
+#: includes/API/LogoGeneration.php:104
+msgid "Description is required for logo generation."
+msgstr ""
+
+#: includes/API/LogoGeneration.php:115
+msgid "Invalid size parameter. Allowed values: auto, 1024x1024, 1536x1024, 1024x1536"
+msgstr ""
+
+#: includes/API/LogoGeneration.php:126
+msgid "Invalid quality parameter. Allowed values: auto, high, medium, low"
+msgstr ""
+
+#: includes/API/LogoGeneration.php:137
+msgid "Invalid output format. Allowed values: png, jpeg"
+msgstr ""
+
+#: includes/API/LogoGeneration.php:147
+msgid "Invalid quantity. Must be between 1 and 10"
+msgstr ""
+
+#: includes/API/LogoGeneration.php:247
+msgid "Logo generation started"
+msgstr ""
+
+#: includes/API/LogoGeneration.php:340
+msgid "Logo generation completed successfully."
+msgstr ""
+
+#: includes/API/LogoGeneration.php:435
+msgid "Logo generation in progress"
+msgstr ""
+
+#: includes/API/LogoGeneration.php:442
+msgid "Logo generation data not found."
+msgstr ""
+
+#: includes/API/LogoGeneration.php:462
+#: includes/Core/Importer/Utils/AIUtils.php:240
+msgid "Process ID is required for logo polling."
+msgstr ""
+
+#: includes/API/LogoGeneration.php:507
+msgid "Logo generation data retrieved successfully."
 msgstr ""
 
 #: includes/API/MyClouds.php:113
@@ -343,6 +386,18 @@ msgstr ""
 
 #: includes/API/SignUp.php:50
 msgid "Password and confirm password should be matched."
+msgstr ""
+
+#: includes/API/Sites.php:38
+msgid "API key is required for site migration."
+msgstr ""
+
+#: includes/API/Sites.php:80
+msgid "Site migration failed."
+msgstr ""
+
+#: includes/API/Sites.php:95
+msgid "Site successfully migrated. You can now import templates."
 msgstr ""
 
 #: includes/API/ThemeBuilderApi.php:62
@@ -424,7 +479,6 @@ msgid "Product Search"
 msgstr ""
 
 #: includes/Builder/Conditions/Search.php:15
-#: assets/js/developer.js:37546
 #: assets/js/templately.js:1
 #: react-src/developer/components/LogViewer.js:1000
 msgid "Search"
@@ -442,22 +496,22 @@ msgstr ""
 msgid "WooCommerce"
 msgstr ""
 
-#: includes/Builder/Managers/LocationManager.php:57
+#: includes/Builder/Managers/LocationManager.php:63
 #: includes/Builder/Types/Header.php:12
 msgid "Header"
 msgstr ""
 
-#: includes/Builder/Managers/LocationManager.php:61
+#: includes/Builder/Managers/LocationManager.php:67
 #: includes/Builder/Types/Footer.php:12
 msgid "Footer"
 msgstr ""
 
-#: includes/Builder/Managers/LocationManager.php:65
+#: includes/Builder/Managers/LocationManager.php:71
 #: includes/Builder/Types/Archive.php:12
 msgid "Archive"
 msgstr ""
 
-#: includes/Builder/Managers/LocationManager.php:69
+#: includes/Builder/Managers/LocationManager.php:75
 #: includes/Builder/Types/Single.php:11
 msgid "Single"
 msgstr ""
@@ -778,6 +832,7 @@ msgstr ""
 
 #: includes/Builder/Widgets/Post_Content.php:48
 #: includes/Builder/Widgets/Post_Title.php:79
+#: assets/js/templately.js:1
 msgid "Text Color"
 msgstr ""
 
@@ -919,75 +974,74 @@ msgctxt "Screen reader text for the items list heading on the post type listing 
 msgid "Templates list"
 msgstr ""
 
-#: includes/Core/Admin.php:318
+#: includes/Core/Admin.php:319
 #, php-format
 msgid "We hope you're enjoying %s! Could you please do us a favor and give us a review on %s to help us spread the word and boost our motivation?"
 msgstr ""
 
-#: includes/Core/Admin.php:327
+#: includes/Core/Admin.php:328
 msgid "Sure, you deserve it!"
 msgstr ""
 
-#: includes/Core/Admin.php:331
+#: includes/Core/Admin.php:332
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Review.js:58
-#: assets/js/dashboard.js:728
 msgid "I already did"
 msgstr ""
 
-#: includes/Core/Admin.php:338
+#: includes/Core/Admin.php:339
 msgid "Maybe Later"
 msgstr ""
 
-#: includes/Core/Admin.php:350
+#: includes/Core/Admin.php:351
 msgid "I need help"
 msgstr ""
 
-#: includes/Core/Admin.php:354
+#: includes/Core/Admin.php:355
 msgid "Never show again"
 msgstr ""
 
-#: includes/Core/Admin.php:411
+#: includes/Core/Admin.php:412
 msgid "Upgrade To PRO"
 msgstr ""
 
-#: includes/Core/Admin.php:417
+#: includes/Core/Admin.php:418
 msgid "I’ll Grab It Later"
 msgstr ""
 
-#: includes/Core/Admin.php:440
+#: includes/Core/Admin.php:441
 msgid "Get"
 msgstr ""
 
-#: includes/Core/Admin.php:441
+#: includes/Core/Admin.php:442
 msgid "Templately PRO"
 msgstr ""
 
-#: includes/Core/Admin.php:442
+#: includes/Core/Admin.php:443
 msgid "with up to 60% OFF & unlock 6500+ ready WordPress templates to power up web design in 2025."
 msgstr ""
 
-#: includes/Core/Admin.php:448
+#: includes/Core/Admin.php:449
 msgid "GET PRO Lifetime Access"
 msgstr ""
 
-#: includes/Core/Admin.php:453
+#: includes/Core/Admin.php:454
 msgid "No, I’ll Pay Full Price Later"
 msgstr ""
 
-#: includes/Core/Admin.php:523
+#: includes/Core/Admin.php:524
 msgid "requires"
 msgstr ""
 
-#: includes/Core/Admin.php:525
+#: includes/Core/Admin.php:526
 msgid "plugin to be installed and activated. Please install Elementor to continue."
 msgstr ""
 
-#: includes/Core/Admin.php:547
+#: includes/Core/Admin.php:548
 msgid "Open settings page"
 msgstr ""
 
-#: includes/Core/Admin.php:548
+#: includes/Core/Admin.php:549
 msgid "Templates Library"
 msgstr ""
 
@@ -1028,10 +1082,6 @@ msgstr ""
 msgid "No API key provided or stored."
 msgstr ""
 
-#: includes/Core/Developer/API/OpenAIEndpoints.php:360
-msgid "Invalid API key."
-msgstr ""
-
 #: includes/Core/Developer/API/OpenAIEndpoints.php:369
 msgid "API key validation failed."
 msgstr ""
@@ -1052,36 +1102,56 @@ msgstr ""
 msgid "Maximum tool call iterations reached. Please try again."
 msgstr ""
 
-#: includes/Core/Developer/Developer.php:573
+#: includes/Core/Developer/Developer.php:587
 msgid "No Templately transients found to delete."
 msgstr ""
 
 #. translators: %1$d: number of deleted transients, %2$d: total found transients
-#: includes/Core/Developer/Developer.php:625
+#: includes/Core/Developer/Developer.php:639
 #, php-format
 msgid "Successfully deleted %1$d of %2$d Templately transients."
 msgstr ""
 
-#: includes/Core/Developer/Developer.php:629
+#: includes/Core/Developer/Developer.php:643
 msgid "Failed to delete any transients."
 msgstr ""
 
-#: includes/Core/Developer/DeveloperSettings.php:79
+#: includes/Core/Developer/DeveloperSettings.php:91
+#: includes/Core/Developer/DeveloperSettings.php:297
+#: includes/Core/Developer/DeveloperSettings.php:338
 msgid "No settings provided."
 msgstr ""
 
-#: includes/Core/Developer/DeveloperSettings.php:86
+#: includes/Core/Developer/DeveloperSettings.php:98
 msgid "Failed to update developer settings."
 msgstr ""
 
-#: includes/Core/Developer/DeveloperSettings.php:93
-#: assets/js/developer.js:35807
-#: react-src/developer/components/DeveloperSettings.js:205
+#: includes/Core/Developer/DeveloperSettings.php:105
+#: react-src/developer/components/DeveloperSettings.js:246
 msgid "Developer settings saved successfully."
 msgstr ""
 
-#: includes/Core/Developer/DeveloperSettings.php:95
+#: includes/Core/Developer/DeveloperSettings.php:107
 msgid "Settings have been saved to the database. To activate them, add the generated constants to your wp-config.php file or ensure TEMPLATELY_DEVELOPER_MODE is enabled."
+msgstr ""
+
+#: includes/Core/Developer/DeveloperSettings.php:303
+msgid "Failed to update AI settings."
+msgstr ""
+
+#: includes/Core/Developer/DeveloperSettings.php:307
+#: react-src/developer/components/DeveloperSettings.js:381
+msgid "AI settings saved successfully."
+msgstr ""
+
+#: includes/Core/Developer/DeveloperSettings.php:353
+#: react-src/developer/components/DeveloperSettings.js:981
+msgid "FSI settings saved successfully."
+msgstr ""
+
+#: includes/Core/Developer/DeveloperSettings.php:400
+#: react-src/developer/components/DeveloperSettings.js:296
+msgid "API info updated successfully."
 msgstr ""
 
 #: includes/Core/Developer/HttpToCurl.php:365
@@ -1092,12 +1162,32 @@ msgstr ""
 msgid "Comprehensive log viewing and management system"
 msgstr ""
 
-#: includes/Core/Developer/NetworkAdmin.php:130
+#: includes/Core/Developer/NetworkAdmin.php:134
 msgid "You do not have sufficient permissions to access this page."
 msgstr ""
 
-#: includes/Core/Developer/NetworkAdmin.php:339
+#: includes/Core/Developer/NetworkAdmin.php:343
 msgid "Error creating site: "
+msgstr ""
+
+#: includes/Core/Developer/NetworkAdmin.php:393
+msgid "Insufficient permissions to create sites."
+msgstr ""
+
+#: includes/Core/Developer/NetworkAdmin.php:402
+msgid "Site title is required."
+msgstr ""
+
+#: includes/Core/Developer/NetworkAdmin.php:424
+msgid "Network admin API key not found. Please authenticate Templately on the network admin first."
+msgstr ""
+
+#: includes/Core/Developer/NetworkAdmin.php:455
+msgid "Site created but authentication failed: "
+msgstr ""
+
+#: includes/Core/Developer/NetworkAdmin.php:469
+msgid "Site created and authenticated successfully."
 msgstr ""
 
 #: includes/Core/Developer/OnboardingTest.php:96
@@ -1120,103 +1210,101 @@ msgstr ""
 msgid "Cannot be imported."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:99
+#: includes/Core/Importer/FullSiteImport.php:100
 msgid "Invalid nonce"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:105
+#: includes/Core/Importer/FullSiteImport.php:106
 msgid "Insufficient permissions"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:251
-#: includes/Core/Importer/FullSiteImport.php:520
+#: includes/Core/Importer/FullSiteImport.php:249
+#: includes/Core/Importer/FullSiteImport.php:523
 msgid "Invalid Pack ID."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:279
-#: includes/Core/Importer/FullSiteImport.php:576
+#: includes/Core/Importer/FullSiteImport.php:274
+#: includes/Core/Importer/FullSiteImport.php:573
 msgid "Please update the templately plugin."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:294
+#: includes/Core/Importer/FullSiteImport.php:289
 msgid "Session created and pack downloaded successfully"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:486
-#: includes/Core/Importer/Utils/Utils.php:474
-#: includes/Core/Importer/Utils/Utils.php:481
+#: includes/Core/Importer/FullSiteImport.php:487
 msgid "Invalid Session ID."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:608
-#: includes/Core/Importer/FullSiteImport.php:1277
+#: includes/Core/Importer/FullSiteImport.php:605
+#: includes/Core/Importer/FullSiteImport.php:1290
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/index.js:310
+#: react-src/app/components/core/AiContentSidebar/index.js:312
 #: react-src/app/components/core/itemDetails/Packs/FullSiteImport.js:111
 #: react-src/app/components/core/itemDetails/Packs/FullSiteImport.js:140
 #: react-src/app/hooks/useFullSiteImport.js:362
 msgid "Oops!"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:693
+#: includes/Core/Importer/FullSiteImport.php:690
 msgid "Upload directory is not writable."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:702
+#: includes/Core/Importer/FullSiteImport.php:699
 msgid "Permission Passed"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:709
-#: includes/Core/Importer/FullSiteImport.php:740
-#: includes/Core/Importer/FullSiteImport.php:755
-#: includes/Core/Importer/Runners/DownloadZip.php:61
-#: includes/Core/Importer/Runners/DownloadZip.php:96
-#: includes/Core/Importer/Runners/DownloadZip.php:110
+#: includes/Core/Importer/FullSiteImport.php:706
+#: includes/Core/Importer/FullSiteImport.php:737
+#: includes/Core/Importer/FullSiteImport.php:756
+#: includes/Core/Importer/Runners/DownloadZip.php:68
+#: includes/Core/Importer/Runners/DownloadZip.php:103
+#: includes/Core/Importer/Runners/DownloadZip.php:115
 msgid "Downloading Template Pack"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:722
-#: includes/Core/Importer/Runners/DownloadZip.php:78
+#: includes/Core/Importer/FullSiteImport.php:719
+#: includes/Core/Importer/Runners/DownloadZip.php:85
 msgid "Template pack download failed"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:732
-#: includes/Core/Importer/Runners/DownloadZip.php:88
+#: includes/Core/Importer/FullSiteImport.php:729
+#: includes/Core/Importer/Runners/DownloadZip.php:95
 #, php-format
 msgid " Please try again or contact <a href='%s' target='_blank'>support</a>."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:737
-#: includes/Core/Importer/Runners/DownloadZip.php:93
+#: includes/Core/Importer/FullSiteImport.php:734
+#: includes/Core/Importer/Runners/DownloadZip.php:100
 msgid "Template pack download failed with response code: "
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:759
-#: includes/Core/Importer/Runners/DownloadZip.php:114
+#: includes/Core/Importer/FullSiteImport.php:760
+#: includes/Core/Importer/Runners/DownloadZip.php:119
 msgid "Downloading Failed. Please try again"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:768
+#: includes/Core/Importer/FullSiteImport.php:769
 msgid "WP_Filesystem cannot be initialized"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:812
-#: includes/Core/Importer/FullSiteImport.php:1267
+#: includes/Core/Importer/FullSiteImport.php:813
+#: includes/Core/Importer/FullSiteImport.php:1280
 #: assets/js/templately.js:1
 #: react-src/app/hooks/useFullSiteImport.js:363
 #, php-format,js-format
 msgid "It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:896
+#: includes/Core/Importer/FullSiteImport.php:897
 msgid "Cannot be imported, as the manifest file is corrupted"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:968
+#: includes/Core/Importer/FullSiteImport.php:969
 msgid "Missing Credit Cost"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:1618
+#: includes/Core/Importer/FullSiteImport.php:1629
 msgid "API request failed with response code "
 msgstr ""
 
@@ -1250,32 +1338,32 @@ msgid "Customizer"
 msgstr ""
 
 #: includes/Core/Importer/Runners/Customizer.php:29
-#: includes/Core/Importer/Runners/DownloadZip.php:29
+#: includes/Core/Importer/Runners/DownloadZip.php:39
 msgid "Updating customizer settings."
 msgstr ""
 
-#: includes/Core/Importer/Runners/Dependencies.php:20
+#: includes/Core/Importer/Runners/Dependencies.php:21
 msgid "Download Dependencies"
 msgstr ""
 
-#: includes/Core/Importer/Runners/Dependencies.php:32
+#: includes/Core/Importer/Runners/Dependencies.php:33
 msgid "Downloading Dependencies"
 msgstr ""
 
-#: includes/Core/Importer/Runners/Dependencies.php:210
+#: includes/Core/Importer/Runners/Dependencies.php:208
 msgid "Elementor plugin is not properly activated. Please refresh the page and try again."
 msgstr ""
 
-#: includes/Core/Importer/Runners/Dependencies.php:219
+#: includes/Core/Importer/Runners/Dependencies.php:217
 msgid "Essential Blocks plugin is not properly activated. Please refresh the page and try again."
 msgstr ""
 
-#: includes/Core/Importer/Runners/Dependencies.php:231
+#: includes/Core/Importer/Runners/Dependencies.php:229
 #, php-format
 msgid "Required plugin \"%s\" is not active. Please refresh the page and try again."
 msgstr ""
 
-#: includes/Core/Importer/Runners/DownloadZip.php:17
+#: includes/Core/Importer/Runners/DownloadZip.php:27
 msgid "Download Zip"
 msgstr ""
 
@@ -1356,27 +1444,31 @@ msgstr ""
 msgid "Invalid file path: path is outside WordPress upload directory."
 msgstr ""
 
-#: includes/Core/Importer/Utils/AIUtils.php:559
+#: includes/Core/Importer/Utils/AIUtils.php:269
+msgid "API returned an error response."
+msgstr ""
+
+#: includes/Core/Importer/Utils/AIUtils.php:614
 msgid "Content ID not found in AI page IDs."
 msgstr ""
 
-#: includes/Core/Importer/Utils/AIUtils.php:606
+#: includes/Core/Importer/Utils/AIUtils.php:661
 msgid "Failed to save template file."
 msgstr ""
 
-#: includes/Core/Importer/Utils/AIUtils.php:791
+#: includes/Core/Importer/Utils/AIUtils.php:840
 msgid "Process ID is required."
 msgstr ""
 
-#: includes/Core/Importer/Utils/AIUtils.php:796
+#: includes/Core/Importer/Utils/AIUtils.php:845
 msgid "Process ID not found."
 msgstr ""
 
-#: includes/Core/Importer/Utils/AIUtils.php:803
+#: includes/Core/Importer/Utils/AIUtils.php:852
 msgid "Session ID missing from process data."
 msgstr ""
 
-#: includes/Core/Importer/Utils/AIUtils.php:807
+#: includes/Core/Importer/Utils/AIUtils.php:856
 msgid "AI page IDs missing from process data."
 msgstr ""
 
@@ -1416,23 +1508,23 @@ msgstr ""
 msgid "Base64 is empty"
 msgstr ""
 
-#: includes/Core/Importer/Utils/Utils.php:240
+#: includes/Core/Importer/Utils/Utils.php:248
 msgid "Invalid base64 data."
 msgstr ""
 
-#: includes/Core/Importer/Utils/Utils.php:246
+#: includes/Core/Importer/Utils/Utils.php:254
 msgid "Unable to determine image MIME type."
 msgstr ""
 
-#: includes/Core/Importer/Utils/Utils.php:252
+#: includes/Core/Importer/Utils/Utils.php:260
 msgid "Unsupported image MIME type."
 msgstr ""
 
-#: includes/Core/Importer/Utils/Utils.php:263
+#: includes/Core/Importer/Utils/Utils.php:271
 msgid "Unable to access upload directory."
 msgstr ""
 
-#: includes/Core/Importer/Utils/Utils.php:268
+#: includes/Core/Importer/Utils/Utils.php:276
 msgid "Error uploading image."
 msgstr ""
 
@@ -1454,12 +1546,24 @@ msgstr ""
 msgid "Save %s in Templately"
 msgstr ""
 
-#: includes/Plugin.php:99
+#: includes/Plugin.php:105
 msgid "Cloning is forbidden."
 msgstr ""
 
-#: includes/Plugin.php:108
+#: includes/Plugin.php:114
 msgid "Un-serializing instances of this class is forbidden."
+msgstr ""
+
+#: includes/Plugin.php:292
+msgid "Login failed."
+msgstr ""
+
+#: includes/Plugin.php:295
+msgid "Missing API Key."
+msgstr ""
+
+#: includes/Utils/Http.php:299
+msgid "Unknown error occurred"
 msgstr ""
 
 #: includes/Utils/Installer.php:60
@@ -1508,7 +1612,6 @@ msgstr ""
 #: views/builder/conditions.php:3
 #: assets/js/elementor.js:1
 #: react-src/elementor/FooterMenuModule.js:30
-#: assets/js/elementor.js:389
 msgid "Condition (by Templately)"
 msgstr ""
 
@@ -1518,13 +1621,11 @@ msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Feedback.js:40
-#: assets/js/dashboard.js:508
 msgid "Thank you for sharing your experience."
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Feedback.js:41
-#: assets/js/dashboard.js:509
 msgid "We truly value your feedback. Please let us know how we can improve and enhance your experience."
 msgstr ""
 
@@ -1532,7 +1633,6 @@ msgstr ""
 #: assets/js/templately.js:1
 #: react-src/app/components/profile/Profile.js:48
 #: react-src/dashboard/Feedback/Feedback.js:49
-#: assets/js/dashboard.js:517
 msgid "Email"
 msgstr ""
 
@@ -1540,751 +1640,93 @@ msgstr ""
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/ItemsDetailsInfo.js:43
 #: react-src/dashboard/Feedback/Feedback.js:55
-#: assets/js/dashboard.js:523
 msgid "Description"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Feedback.js:68
-#: assets/js/dashboard.js:536
 msgid "Send"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/FeedbackComplete.js:23
-#: assets/js/dashboard.js:569
 msgid "Thanks a lot for your Feedback!"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/FeedbackComplete.js:27
-#: assets/js/dashboard.js:573
 msgid "We really appreciate you taking the time to share your thoughts with us. Your feedback helps us improve and create a better experience for everyone."
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Rating.js:23
-#: assets/js/dashboard.js:634
 msgid "I see that you've already started using Templately. How has your experience been so far, and how would you rate us?"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Rating.js:28
-#: assets/js/dashboard.js:639
 msgid "1 Star"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Rating.js:32
-#: assets/js/dashboard.js:643
 msgid "2 Stars"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Rating.js:36
-#: assets/js/dashboard.js:647
 msgid "3 Stars"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Rating.js:40
-#: assets/js/dashboard.js:651
 msgid "4 Stars"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Rating.js:44
-#: assets/js/dashboard.js:655
 msgid "5 Stars"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Rating.js:48
-#: assets/js/dashboard.js:659
 msgid "Not Satisfied"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Rating.js:49
-#: assets/js/dashboard.js:660
 msgid "Very Satisfied"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Review.js:46
-#: assets/js/dashboard.js:716
 msgid "We're glad that you liked us! 😍"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Review.js:49
-#: assets/js/dashboard.js:719
 msgid "If you don't mind, could you take 30 seconds to review us on WordPress? Your feedback will help us improve and grow. Thank you in advance! 🙏"
 msgstr ""
 
 #: assets/js/dashboard.js:1
 #: react-src/dashboard/Feedback/Review.js:54
-#: assets/js/dashboard.js:724
 msgid "Rate Templately"
-msgstr ""
-
-#: assets/js/developer.js:35626
-#: react-src/developer/components/DeveloperSettings.js:80
-msgid "Settings"
-msgstr ""
-
-#: assets/js/developer.js:35628
-#: react-src/developer/components/DeveloperSettings.js:82
-msgid "Configure developer constants and options"
-msgstr ""
-
-#: assets/js/developer.js:35631
-#: react-src/developer/components/DeveloperSettings.js:86
-msgid "AI Chat"
-msgstr ""
-
-#: assets/js/developer.js:35633
-#: react-src/developer/components/DeveloperSettings.js:88
-msgid "Use the OpenAI assistant with MCP tools"
-msgstr ""
-
-#: assets/js/developer.js:35636
-#: assets/js/developer.js:36026
-#: react-src/developer/components/DeveloperSettings.js:92
-#: react-src/developer/components/DeveloperSettings.js:405
-msgid "Cache Management"
-msgstr ""
-
-#: assets/js/developer.js:35638
-#: react-src/developer/components/DeveloperSettings.js:94
-msgid "Manage cached data, transients, and object cache"
-msgstr ""
-
-#: assets/js/developer.js:35641
-#: assets/js/developer.js:37467
-#: react-src/developer/components/DeveloperSettings.js:98
-#: react-src/developer/components/LogViewer.js:927
-msgid "Log Viewer"
-msgstr ""
-
-#: assets/js/developer.js:35643
-#: react-src/developer/components/DeveloperSettings.js:100
-msgid "View and search WordPress and Templately log files"
-msgstr ""
-
-#: assets/js/developer.js:35646
-#: react-src/developer/components/DeveloperSettings.js:104
-msgid "API Testing"
-msgstr ""
-
-#: assets/js/developer.js:35648
-#: react-src/developer/components/DeveloperSettings.js:106
-msgid "Test API endpoints and connections"
-msgstr ""
-
-#: assets/js/developer.js:35651
-#: react-src/developer/components/DeveloperSettings.js:110
-msgid "Onboarding Test"
-msgstr ""
-
-#: assets/js/developer.js:35653
-#: react-src/developer/components/DeveloperSettings.js:112
-msgid "Test AI Builder onboarding functionality"
-msgstr ""
-
-#: assets/js/developer.js:35656
-#: react-src/developer/components/DeveloperSettings.js:116
-msgid "System Info"
-msgstr ""
-
-#: assets/js/developer.js:35658
-#: react-src/developer/components/DeveloperSettings.js:118
-msgid "View system information and diagnostics"
-msgstr ""
-
-#: assets/js/developer.js:35736
-#: react-src/developer/components/DeveloperSettings.js:163
-msgid "Failed to load developer settings. Check console for details."
-msgstr ""
-
-#: assets/js/developer.js:35818
-#: react-src/developer/components/DeveloperSettings.js:213
-msgid "Failed to save developer settings"
-msgstr ""
-
-#: assets/js/developer.js:35849
-#: assets/js/developer.js:36050
-#: react-src/developer/components/DeveloperSettings.js:224
-#: react-src/developer/components/DeveloperSettings.js:437
-msgid "Templately Transients"
-msgstr ""
-
-#: assets/js/developer.js:35850
-#: assets/js/developer.js:36030
-#: react-src/developer/components/DeveloperSettings.js:225
-#: react-src/developer/components/DeveloperSettings.js:412
-msgid "Object Cache"
-msgstr ""
-
-#: assets/js/developer.js:35851
-#: assets/js/developer.js:36070
-#: react-src/developer/components/DeveloperSettings.js:226
-#: react-src/developer/components/DeveloperSettings.js:468
-msgid "OPcache"
-msgstr ""
-
-#: assets/js/developer.js:35852
-#: react-src/developer/components/DeveloperSettings.js:227
-msgid "All Cache Types"
-msgstr ""
-
-#: assets/js/developer.js:35854
-#: react-src/developer/components/DeveloperSettings.js:231
-msgid "Clear"
-msgstr ""
-
-#: assets/js/developer.js:35854
-#: react-src/developer/components/DeveloperSettings.js:232
-msgid "This will clear cached data. This action cannot be undone."
-msgstr ""
-
-#: assets/js/developer.js:35878
-#: react-src/developer/components/DeveloperSettings.js:253
-msgid "Cache cleared successfully."
-msgstr ""
-
-#: assets/js/developer.js:35892
-#: react-src/developer/components/DeveloperSettings.js:264
-msgid "Failed to clear cache"
-msgstr ""
-
-#: assets/js/developer.js:35945
-#: react-src/developer/components/DeveloperSettings.js:310
-msgid "Developer Constants Configuration"
-msgstr ""
-
-#: assets/js/developer.js:35947
-#: react-src/developer/components/DeveloperSettings.js:312
-msgid "Constants defined in wp-config.php will override these settings and appear disabled below."
-msgstr ""
-
-#: assets/js/developer.js:35999
-#: react-src/developer/components/DeveloperSettings.js:366
-msgid "Currently controlled by wp-config.php constant:"
-msgstr ""
-
-#: assets/js/developer.js:36006
-#: assets/js/templately.js:1
-#: react-src/app/display-conditions/Footer.js:10
-#: react-src/developer/components/DeveloperSettings.js:378
-msgid "Saving..."
-msgstr ""
-
-#: assets/js/developer.js:36006
-#: react-src/developer/components/DeveloperSettings.js:378
-msgid "Save Settings"
-msgstr ""
-
-#: assets/js/developer.js:36008
-#: react-src/developer/components/DeveloperSettings.js:384
-msgid "wp-config.php Code Snippet"
-msgstr ""
-
-#: assets/js/developer.js:36010
-#: react-src/developer/components/DeveloperSettings.js:386
-msgid "Copy this code to your wp-config.php file to define these constants:"
-msgstr ""
-
-#: assets/js/developer.js:36028
-#: react-src/developer/components/DeveloperSettings.js:407
-msgid "Manage all types of cache including transients, object cache, and OPcache."
-msgstr ""
-
-#: assets/js/developer.js:36034
-#: assets/js/developer.js:36074
-#: react-src/developer/components/DeveloperSettings.js:416
-#: react-src/developer/components/DeveloperSettings.js:472
-msgid "Status"
-msgstr ""
-
-#: assets/js/developer.js:36048
-#: assets/js/developer.js:36068
-#: assets/js/developer.js:36084
-#: assets/js/developer.js:36098
-#: react-src/developer/components/DeveloperSettings.js:431
-#: react-src/developer/components/DeveloperSettings.js:462
-#: react-src/developer/components/DeveloperSettings.js:486
-#: react-src/developer/components/DeveloperSettings.js:502
-msgid "Clearing..."
-msgstr ""
-
-#: assets/js/developer.js:36048
-#: react-src/developer/components/DeveloperSettings.js:431
-msgid "Clear Object Cache"
-msgstr ""
-
-#: assets/js/developer.js:36052
-#: react-src/developer/components/DeveloperSettings.js:441
-msgid "Templately transients found"
-msgstr ""
-
-#: assets/js/developer.js:36052
-#: react-src/developer/components/DeveloperSettings.js:443
-msgid "Last cleanup:"
-msgstr ""
-
-#: assets/js/developer.js:36057
-#: react-src/developer/components/DeveloperSettings.js:448
-msgid "No transients found to delete."
-msgstr ""
-
-#: assets/js/developer.js:36068
-#: react-src/developer/components/DeveloperSettings.js:462
-msgid "Clear All Templately Transients"
-msgstr ""
-
-#: assets/js/developer.js:36084
-#: react-src/developer/components/DeveloperSettings.js:486
-msgid "Reset OPcache"
-msgstr ""
-
-#: assets/js/developer.js:36086
-#: assets/js/developer.js:36098
-#: react-src/developer/components/DeveloperSettings.js:492
-#: react-src/developer/components/DeveloperSettings.js:502
-msgid "Clear All Cache"
-msgstr ""
-
-#: assets/js/developer.js:36088
-#: react-src/developer/components/DeveloperSettings.js:494
-msgid "Clear all cache types at once (transients, object cache, and OPcache)."
-msgstr ""
-
-#: assets/js/developer.js:36104
-#: react-src/developer/components/DeveloperSettings.js:505
-msgid "Warning:"
-msgstr ""
-
-#: assets/js/developer.js:36104
-#: react-src/developer/components/DeveloperSettings.js:505
-msgid "This action cannot be undone. All cached data will be permanently deleted."
-msgstr ""
-
-#: assets/js/developer.js:36112
-#: react-src/developer/components/DeveloperSettings.js:516
-msgid "API Testing Tools"
-msgstr ""
-
-#: assets/js/developer.js:36114
-#: react-src/developer/components/DeveloperSettings.js:518
-msgid "Test API endpoints and connections."
-msgstr ""
-
-#: assets/js/developer.js:36116
-#: react-src/developer/components/DeveloperSettings.js:522
-msgid "Current API Configuration"
-msgstr ""
-
-#: assets/js/developer.js:36120
-#: react-src/developer/components/DeveloperSettings.js:526
-msgid "Development API"
-msgstr ""
-
-#: assets/js/developer.js:36127
-#: react-src/developer/components/DeveloperSettings.js:539
-msgid "Debug Logging"
-msgstr ""
-
-#: assets/js/developer.js:36138
-#: react-src/developer/components/DeveloperSettings.js:552
-msgid "API testing tools will be added in future updates."
-msgstr ""
-
-#: assets/js/developer.js:36147
-#: react-src/developer/components/DeveloperSettings.js:563
-msgid "OpenAI Chat Assistant"
-msgstr ""
-
-#: assets/js/developer.js:36149
-#: react-src/developer/components/DeveloperSettings.js:565
-msgid "Chat with the developer-only assistant backed by your MCP tools to inspect data, search templates, and debug flows."
-msgstr ""
-
-#: assets/js/developer.js:36171
-#: react-src/developer/components/DeveloperSettings.js:581
-msgid "Please provide at least one parameter (API key or enable redirect)."
-msgstr ""
-
-#: assets/js/developer.js:36192
-#: react-src/developer/components/DeveloperSettings.js:600
-msgid "Test data set successfully!"
-msgstr ""
-
-#: assets/js/developer.js:36201
-#: react-src/developer/components/DeveloperSettings.js:609
-msgid "Failed to set test data."
-msgstr ""
-
-#: assets/js/developer.js:36209
-#: react-src/developer/components/DeveloperSettings.js:614
-msgid "Failed to set test data. Check console for details."
-msgstr ""
-
-#: assets/js/developer.js:36226
-#: react-src/developer/components/DeveloperSettings.js:624
-msgid "AI Builder Onboarding Test"
-msgstr ""
-
-#: assets/js/developer.js:36228
-#: react-src/developer/components/DeveloperSettings.js:626
-msgid "This is a temporary testing feature for AI Builder onboarding. Set test data to simulate onboarding scenarios without going through the full authentication flow."
-msgstr ""
-
-#: assets/js/developer.js:36238
-#: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:160
-#: react-src/developer/components/DeveloperSettings.js:635
-msgid "API Key"
-msgstr ""
-
-#: assets/js/developer.js:36244
-#: react-src/developer/components/DeveloperSettings.js:635
-msgid "optional"
-msgstr ""
-
-#: assets/js/developer.js:36254
-#: react-src/developer/components/DeveloperSettings.js:647
-msgid "Enter test API key (optional)"
-msgstr ""
-
-#: assets/js/developer.js:36258
-#: react-src/developer/components/DeveloperSettings.js:651
-msgid "Optional: Enter a test API key to set as user meta. This will be stored as _templately_api_key."
-msgstr ""
-
-#: assets/js/developer.js:36262
-#: react-src/developer/components/DeveloperSettings.js:657
-msgid "Enable Redirect to Onboarding"
-msgstr ""
-
-#: assets/js/developer.js:36278
-#: react-src/developer/components/DeveloperSettings.js:674
-msgid "When enabled, sets the ai_builder_onboarding_redirect_key option to trigger onboarding redirect."
-msgstr ""
-
-#: assets/js/developer.js:36282
-#: react-src/developer/components/DeveloperSettings.js:687
-msgid "Setting Test Data..."
-msgstr ""
-
-#: assets/js/developer.js:36282
-#: react-src/developer/components/DeveloperSettings.js:687
-msgid "Set Test Data"
-msgstr ""
-
-#: assets/js/developer.js:36284
-#: react-src/developer/components/DeveloperSettings.js:694
-msgid "What This Does"
-msgstr ""
-
-#: assets/js/developer.js:36288
-#: react-src/developer/components/DeveloperSettings.js:696
-msgid "Optionally sets user meta _templately_api_key with the provided API key (if provided)"
-msgstr ""
-
-#: assets/js/developer.js:36288
-#: react-src/developer/components/DeveloperSettings.js:697
-msgid "Optionally enables the onboarding redirect by setting ai_builder_onboarding_redirect_key option"
-msgstr ""
-
-#: assets/js/developer.js:36288
-#: react-src/developer/components/DeveloperSettings.js:698
-msgid "At least one option (API key or redirect) must be selected"
-msgstr ""
-
-#: assets/js/developer.js:36288
-#: react-src/developer/components/DeveloperSettings.js:699
-msgid "Works with both single-site and multisite WordPress installations"
-msgstr ""
-
-#: assets/js/developer.js:36294
-#: react-src/developer/components/DeveloperSettings.js:702
-msgid "Note: This is a temporary testing feature and should only be used in development environments."
-msgstr ""
-
-#: assets/js/developer.js:36302
-#: react-src/developer/components/DeveloperSettings.js:713
-msgid "System Information"
-msgstr ""
-
-#: assets/js/developer.js:36304
-#: react-src/developer/components/DeveloperSettings.js:715
-msgid "View system information and diagnostics."
-msgstr ""
-
-#: assets/js/developer.js:36306
-#: react-src/developer/components/DeveloperSettings.js:719
-msgid "Available Constants"
-msgstr ""
-
-#: assets/js/developer.js:36310
-#: react-src/developer/components/DeveloperSettings.js:728
-msgid "Network Admin Support"
-msgstr ""
-
-#: assets/js/developer.js:36310
-#: react-src/developer/components/DeveloperSettings.js:730
-msgid "When developer mode is enabled, Full Site Import functionality is available in WordPress Network Admin for multisite installations."
-msgstr ""
-
-#: assets/js/developer.js:36310
-#: react-src/developer/components/DeveloperSettings.js:733
-msgid "Developer Bundle Information"
-msgstr ""
-
-#: assets/js/developer.js:36314
-#: react-src/developer/components/DeveloperSettings.js:737
-msgid "Bundle Version"
-msgstr ""
-
-#: assets/js/developer.js:36316
-#: react-src/developer/components/DeveloperSettings.js:741
-msgid "Initialization Status"
-msgstr ""
-
-#: assets/js/developer.js:36332
-#: react-src/developer/components/DeveloperSettings.js:1638
-msgid "Developer Settings"
-msgstr ""
-
-#: assets/js/developer.js:36334
-#: react-src/developer/components/DeveloperSettings.js:1640
-msgid "These settings are only available in development builds and provide advanced debugging and development tools."
-msgstr ""
-
-#: assets/js/developer.js:37110
-#: react-src/developer/components/LogViewer.js:474
-msgid "Clear Log File?"
-msgstr ""
-
-#: assets/js/developer.js:37110
-#: react-src/developer/components/LogViewer.js:475
-msgid "This will permanently delete all content in:"
-msgstr ""
-
-#: assets/js/developer.js:37110
-#: react-src/developer/components/LogViewer.js:476
-msgid "This action cannot be undone."
-msgstr ""
-
-#: assets/js/developer.js:37469
-#: react-src/developer/components/LogViewer.js:929
-msgid "View and search WordPress and Templately log files in real-time."
-msgstr ""
-
-#: assets/js/developer.js:37482
-#: react-src/developer/components/LogViewer.js:937
-msgid "Error:"
-msgstr ""
-
-#: assets/js/developer.js:37492
-#: react-src/developer/components/LogViewer.js:941
-msgid "Try reducing the chunk size or refreshing the page."
-msgstr ""
-
-#: assets/js/developer.js:37498
-#: react-src/developer/components/LogViewer.js:946
-msgid "Please check your connection and try again."
-msgstr ""
-
-#: assets/js/developer.js:37511
-#: react-src/developer/components/LogViewer.js:961
-msgid "Dismiss error"
-msgstr ""
-
-#: assets/js/developer.js:37516
-#: react-src/developer/components/LogViewer.js:971
-msgid "Log File:"
-msgstr ""
-
-#: assets/js/developer.js:37525
-#: react-src/developer/components/LogViewer.js:978
-msgid "Select a log file..."
-msgstr ""
-
-#: assets/js/developer.js:37534
-#: react-src/developer/components/LogViewer.js:990
-msgid "Search in log..."
-msgstr ""
-
-#: assets/js/developer.js:37554
-#: react-src/developer/components/LogViewer.js:1011
-msgid "Auto-refresh"
-msgstr ""
-
-#: assets/js/developer.js:37575
-#: react-src/developer/components/LogViewer.js:1035
-msgid "Reverse order"
-msgstr ""
-
-#: assets/js/developer.js:37583
-#: react-src/developer/components/LogViewer.js:1046
-msgid "Enhanced view"
-msgstr ""
-
-#: assets/js/developer.js:37593
-#: assets/js/developer.js:37690
-#: assets/js/developer.js:37715
-#: react-src/developer/components/LogViewer.js:1061
-#: react-src/developer/components/LogViewer.js:1170
-#: react-src/developer/components/LogViewer.js:1195
-msgid "Loading..."
-msgstr ""
-
-#: assets/js/developer.js:37593
-#: react-src/developer/components/LogViewer.js:1061
-msgid "Refresh"
-msgstr ""
-
-#: assets/js/developer.js:37602
-#: react-src/developer/components/LogViewer.js:1070
-msgid "Clear Log"
-msgstr ""
-
-#: assets/js/developer.js:37606
-#: react-src/developer/components/LogViewer.js:1074
-msgid "Chunk Size:"
-msgstr ""
-
-#: assets/js/developer.js:37630
-#: react-src/developer/components/LogViewer.js:1096
-msgid "Memory:"
-msgstr ""
-
-#: assets/js/developer.js:37637
-#: react-src/developer/components/LogViewer.js:1104
-msgid "Clear cache to free memory"
-msgstr ""
-
-#: assets/js/developer.js:37638
-#: react-src/developer/components/LogViewer.js:1106
-msgid "Clear Cache"
-msgstr ""
-
-#: assets/js/developer.js:37640
-#: react-src/developer/components/LogViewer.js:1116
-msgid "Size:"
-msgstr ""
-
-#: assets/js/developer.js:37640
-#: react-src/developer/components/LogViewer.js:1117
-msgid "Modified:"
-msgstr ""
-
-#: assets/js/developer.js:37640
-#: react-src/developer/components/LogViewer.js:1118
-msgid "Type:"
-msgstr ""
-
-#: assets/js/developer.js:37645
-#: react-src/developer/components/LogViewer.js:1126
-msgid "Search Results:"
-msgstr ""
-
-#: assets/js/developer.js:37645
-#: react-src/developer/components/LogViewer.js:1126
-msgid "matches"
-msgstr ""
-
-#: assets/js/developer.js:37655
-#: react-src/developer/components/LogViewer.js:1130
-msgid "Line"
-msgstr ""
-
-#: assets/js/developer.js:37677
-#: react-src/developer/components/LogViewer.js:1155
-msgid "Loading chunk..."
-msgstr ""
-
-#: assets/js/developer.js:37690
-#: react-src/developer/components/LogViewer.js:1171
-msgid "Log file is empty"
-msgstr ""
-
-#: assets/js/developer.js:37690
-#: react-src/developer/components/LogViewer.js:1171
-msgid "Select a log file to view its contents"
-msgstr ""
-
-#: assets/js/developer.js:37710
-#: react-src/developer/components/LogViewer.js:1194
-msgid "Chunk"
-msgstr ""
-
-#: assets/js/developer.js:37710
-#: assets/js/developer.js:37780
-#: react-src/developer/components/LogViewer.js:1194
-#: react-src/developer/components/LogViewer.js:1258
-msgid "of"
-msgstr ""
-
-#: assets/js/developer.js:37727
-#: react-src/developer/components/LogViewer.js:1203
-msgid "First chunk"
-msgstr ""
-
-#: assets/js/developer.js:37732
-#: react-src/developer/components/LogViewer.js:1211
-msgid "Previous chunk"
-msgstr ""
-
-#: assets/js/developer.js:37737
-#: react-src/developer/components/LogViewer.js:1219
-msgid "Next chunk"
-msgstr ""
-
-#: assets/js/developer.js:37744
-#: react-src/developer/components/LogViewer.js:1227
-msgid "Last chunk"
-msgstr ""
-
-#: assets/js/developer.js:37757
-#: react-src/developer/components/LogViewer.js:1234
-msgid "Go to chunk:"
-msgstr ""
-
-#: assets/js/developer.js:37780
-#: react-src/developer/components/LogViewer.js:1258
-msgid "Showing"
-msgstr ""
-
-#: assets/js/developer.js:37780
-#: react-src/developer/components/LogViewer.js:1258
-msgid "lines"
-msgstr ""
-
-#: assets/js/developer.js:37780
-#: react-src/developer/components/LogViewer.js:1259
-msgid "more available"
 msgstr ""
 
 #: assets/js/elementor.js:1
 #: react-src/elementor/ElementorModule.js:37
 #: react-src/elementor/FooterMenuModule.js:49
-#: assets/js/elementor.js:293
-#: assets/js/elementor.js:408
 msgid "Save Page in Templately"
 msgstr ""
 
 #: assets/js/elementor.js:1
 #: react-src/elementor/ElementorModule.js:74
-#: assets/js/elementor.js:330
 msgid "Save Block in Templately"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/utils/api.js:323
-#: react-src/utils/api.js:326
+#: react-src/utils/api.js:355
+#: react-src/utils/api.js:358
 msgid "Request failed"
 msgstr ""
 
@@ -2362,7 +1804,7 @@ msgid "You have deleted a WorkSpace from your account."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1867
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2089
 #: react-src/utils/workSpaceContextMenu.js:63
 msgid "Edit"
 msgstr ""
@@ -2412,13 +1854,13 @@ msgid "Create a Page"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/modals/DependencyInstaller.js:132
+#: react-src/app/components/core/modals/DependencyInstaller.js:133
 #: react-src/app/components/core/modals/partials/ImportModal.js:76
 msgid "Importing..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/modals/DependencyInstaller.js:132
+#: react-src/app/components/core/modals/DependencyInstaller.js:133
 #: react-src/app/components/core/modals/partials/ImportModal.js:76
 msgid "Your chosen template is being imported right now, please do not refresh or close this tab."
 msgstr ""
@@ -2456,7 +1898,7 @@ msgstr ""
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/AddTemplatesModal.js:168
 #: react-src/app/components/clouds/components/modals/DeleteWorkSpaceModal.js:14
-#: react-src/app/components/core/AiContentSidebar/helper.js:501
+#: react-src/app/components/core/AiContentSidebar/helper.js:762
 #: react-src/app/components/core/modals/partials/DependencyShowcase.js:123
 msgid "Note"
 msgstr ""
@@ -2477,11 +1919,11 @@ msgstr[1] ""
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/DeleteFileModal.js:16
 #: react-src/app/components/clouds/components/modals/DeleteWorkSpaceModal.js:32
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1823
-#: react-src/app/components/core/itemDetails/Packs/import-parts/AIPromptPicker.js:155
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2060
 #: react-src/app/components/core/modals/partials/DependencyShowcase.js:127
 #: react-src/app/revert/Modal.js:72
 #: react-src/app/settings/components/Modal.js:71
+#: react-src/utils/siteDisconnectedModal.js:98
 msgid "Cancel"
 msgstr ""
 
@@ -2529,12 +1971,12 @@ msgid "NOTE"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/modals/DependencyInstaller.js:136
+#: react-src/app/components/core/modals/DependencyInstaller.js:137
 msgid "Checking..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/modals/DependencyInstaller.js:136
+#: react-src/app/components/core/modals/DependencyInstaller.js:137
 msgid "Checking template dependencies are installed or not..."
 msgstr ""
 
@@ -2904,6 +2346,16 @@ msgid "If it's taking longer than expected, please try again or contact <a href=
 msgstr ""
 
 #: assets/js/templately.js:1
+#: react-src/app/hooks/useFullSiteImport.js:448
+msgid "Import Error"
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/hooks/useFullSiteImport.js:449
+msgid "Failed to start import"
+msgstr ""
+
+#: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Badge.js:15
 #: react-src/app/components/core/itemPartials/Badge.js:17
 #: react-src/app/components/header/PlanSwitcher.js:35
@@ -3248,63 +2700,70 @@ msgid "You do not have any workspaces."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:161
+#: react-src/app/components/admin/SignIn.js:170
+#: react-src/developer/components/DeveloperSettings.js:691
+#: react-src/developer/components/DeveloperSettings.js:823
+msgid "API Key"
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/admin/SignIn.js:171
 msgid "Your API Key"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:190
+#: react-src/app/components/admin/SignIn.js:200
 #: react-src/app/components/admin/SignUp.js:190
 msgid "Email Address"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:191
+#: react-src/app/components/admin/SignIn.js:201
 #: react-src/app/components/admin/SignUp.js:191
 msgid "Enter Your Email Address"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:207
-#: react-src/app/components/admin/SignIn.js:208
+#: react-src/app/components/admin/SignIn.js:217
+#: react-src/app/components/admin/SignIn.js:218
 #: react-src/app/components/admin/SignUp.js:209
 #: react-src/app/components/admin/SignUp.js:210
 msgid "Password"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:234
+#: react-src/app/components/admin/SignIn.js:244
 msgid "Forgot Password?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:252
+#: react-src/app/components/admin/SignIn.js:262
 msgid "Global Sign In"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:263
+#: react-src/app/components/admin/SignIn.js:273
 msgid "All the sitewide users will be logged in with this Templately account"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/FrontPage.js:70
-#: react-src/app/components/admin/SignIn.js:270
+#: react-src/app/components/admin/FrontPage.js:101
+#: react-src/app/components/admin/SignIn.js:280
 msgid "Sign In"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:271
+#: react-src/app/components/admin/SignIn.js:281
 msgid "Signing In..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:275
+#: react-src/app/components/admin/SignIn.js:285
 msgid "Connect via API"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:276
+#: react-src/app/components/admin/SignIn.js:286
 msgid "Connect via Login Credentials"
 msgstr ""
 
@@ -3353,268 +2812,304 @@ msgid "Sign Up"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/FrontPage.js:57
+#: react-src/app/components/admin/FrontPage.js:83
 msgid "Ultimate Templates "
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/FrontPage.js:58
+#: react-src/app/components/admin/FrontPage.js:84
 msgid "Cloud for WordPress"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/FrontPage.js:60
+#: react-src/app/components/admin/FrontPage.js:87
 msgid "Take Your Favourite Page Builders To A Whole New Level & Manage All Your Designs In One Place With Templately"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/FrontPage.js:73
+#: react-src/app/components/admin/FrontPage.js:104
 msgid "Free Sign Up"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:153
-#: react-src/app/components/core/AiContentSidebar/helper.js:162
+#: react-src/app/components/admin/FrontPage.js:115
+msgid "Redirecting..."
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/admin/FrontPage.js:117
+msgid "Sign up with Google"
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/admin/FrontPage.js:118
+msgid "Continue with Google"
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/admin/FrontPage.js:122
+msgid "Or with email"
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/AiContentSidebar/helper.js:414
+#: react-src/app/components/core/AiContentSidebar/helper.js:423
 msgid "Email is required"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:172
-#: react-src/app/components/core/AiContentSidebar/helper.js:189
-#: react-src/app/components/core/AiContentSidebar/helper.js:207
-#: react-src/app/components/core/AiContentSidebar/helper.js:215
-#: react-src/app/components/core/AiContentSidebar/helper.js:227
+#: react-src/app/components/core/AiContentSidebar/helper.js:433
+#: react-src/app/components/core/AiContentSidebar/helper.js:450
+#: react-src/app/components/core/AiContentSidebar/helper.js:468
+#: react-src/app/components/core/AiContentSidebar/helper.js:476
+#: react-src/app/components/core/AiContentSidebar/helper.js:488
 msgid "Please enter a valid email address"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:180
-#: react-src/app/components/core/AiContentSidebar/helper.js:199
+#: react-src/app/components/core/AiContentSidebar/helper.js:441
+#: react-src/app/components/core/AiContentSidebar/helper.js:460
 msgid "Email address is too long"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:297
-#: react-src/app/components/core/AiContentSidebar/helper.js:306
+#: react-src/app/components/core/AiContentSidebar/helper.js:558
+#: react-src/app/components/core/AiContentSidebar/helper.js:567
 msgid "Phone number is required"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:317
+#: react-src/app/components/core/AiContentSidebar/helper.js:578
 msgid "Contains invalid characters"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:338
-#: react-src/app/components/core/AiContentSidebar/helper.js:372
+#: react-src/app/components/core/AiContentSidebar/helper.js:599
+#: react-src/app/components/core/AiContentSidebar/helper.js:633
 msgid "Phone number is too short"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:346
+#: react-src/app/components/core/AiContentSidebar/helper.js:607
 msgid "Phone number is too long"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:355
+#: react-src/app/components/core/AiContentSidebar/helper.js:616
 msgid "Only one + allowed"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:362
+#: react-src/app/components/core/AiContentSidebar/helper.js:623
 msgid "+ must be at the beginning"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:384
+#: react-src/app/components/core/AiContentSidebar/helper.js:645
 msgid "Invalid country code"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:395
-#: react-src/app/components/core/AiContentSidebar/helper.js:436
+#: react-src/app/components/core/AiContentSidebar/helper.js:656
+#: react-src/app/components/core/AiContentSidebar/helper.js:697
 msgid "Invalid phone number format"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:405
+#: react-src/app/components/core/AiContentSidebar/helper.js:666
 msgid "Unmatched parentheses"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:445
+#: react-src/app/components/core/AiContentSidebar/helper.js:706
 msgid "Invalid phone number pattern"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:457
+#: react-src/app/components/core/AiContentSidebar/helper.js:718
 msgid "Enter a valid number"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:485
+#: react-src/app/components/core/AiContentSidebar/helper.js:746
 msgid "Hi"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:362
-#: react-src/app/components/core/AiContentSidebar/helper.js:485
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:392
+#: react-src/app/components/core/AiContentSidebar/helper.js:746
 msgid "there"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:485
+#: react-src/app/components/core/AiContentSidebar/helper.js:746
 msgid "Ready to build your website?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:486
+#: react-src/app/components/core/AiContentSidebar/helper.js:747
 msgid "Yes, let’s start!"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:495
+#: react-src/app/components/core/AiContentSidebar/helper.js:756
 msgid "Great! What’s your business name?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:501
+#: react-src/app/components/core/AiContentSidebar/helper.js:762
 msgid "Share the name of your business only."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:501
+#: react-src/app/components/core/AiContentSidebar/helper.js:762
 msgid "If your business name is ‘BizRise’, share the name only."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:504
-#: react-src/app/components/core/AiContentSidebar/helper.js:514
-#: react-src/app/components/core/AiContentSidebar/helper.js:527
-#: react-src/app/components/core/AiContentSidebar/helper.js:540
-#: react-src/app/components/core/AiContentSidebar/helper.js:550
-#: react-src/app/components/core/AiContentSidebar/helper.js:560
-#: react-src/app/components/core/AiContentSidebar/helper.js:573
+#: react-src/app/components/core/AiContentSidebar/helper.js:765
+#: react-src/app/components/core/AiContentSidebar/helper.js:781
+#: react-src/app/components/core/AiContentSidebar/helper.js:791
+#: react-src/app/components/core/AiContentSidebar/helper.js:804
+#: react-src/app/components/core/AiContentSidebar/helper.js:817
+#: react-src/app/components/core/AiContentSidebar/helper.js:827
+#: react-src/app/components/core/AiContentSidebar/helper.js:837
+#: react-src/app/components/core/AiContentSidebar/helper.js:850
 msgid "For example"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:508
+#: react-src/app/components/core/AiContentSidebar/helper.js:769
+msgid "Do you want to change the language for content generation? By default, we generate content in English."
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/AiContentSidebar/helper.js:778
+msgid "Here you can change your content language or can click skip to keep the default language."
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/AiContentSidebar/helper.js:781
+msgid "English, Spanish, French, German, etc."
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/AiContentSidebar/helper.js:785
 msgid "Love that!"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:508
+#: react-src/app/components/core/AiContentSidebar/helper.js:785
 msgid "What type of business or industry are you in?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:514
+#: react-src/app/components/core/AiContentSidebar/helper.js:791
 msgid "Share your business type. You can either select from the available categories in the dropdown or write down any specific type."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:517
+#: react-src/app/components/core/AiContentSidebar/helper.js:794
 msgid "Agency, Restaurant, Technology"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:521
+#: react-src/app/components/core/AiContentSidebar/helper.js:798
 msgid "Sounds great! Tell me more about your business — what you do, who you serve, and what makes you special. Please write at least 50 words."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:527
+#: react-src/app/components/core/AiContentSidebar/helper.js:804
 msgid "Share your business details with us."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:527
+#: react-src/app/components/core/AiContentSidebar/helper.js:804
 msgid "It’s an agency website that offers education consultancy to students who want to study abroad."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:534
+#: react-src/app/components/core/AiContentSidebar/helper.js:811
 msgid "Thank you! What’s the email address you’d like to show on your website?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:540
+#: react-src/app/components/core/AiContentSidebar/helper.js:817
 msgid "Share the email address that you want to show on your website."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:540
+#: react-src/app/components/core/AiContentSidebar/helper.js:817
 msgid "xyz@gmail.com"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:544
+#: react-src/app/components/core/AiContentSidebar/helper.js:821
 msgid "Do you also want to add a contact number? If yes, please share it."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:550
+#: react-src/app/components/core/AiContentSidebar/helper.js:827
 msgid "Share the contact number you want to add."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:550
+#: react-src/app/components/core/AiContentSidebar/helper.js:827
 msgid "+02860630"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:554
+#: react-src/app/components/core/AiContentSidebar/helper.js:831
 msgid "Nice! What’s your business address?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:560
+#: react-src/app/components/core/AiContentSidebar/helper.js:837
 msgid "Share your business address you want to show."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:560
+#: react-src/app/components/core/AiContentSidebar/helper.js:837
 msgid "123 Business Lane, Suite 456 Downtown District, New York, NY 10001 United States"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:567
+#: react-src/app/components/core/AiContentSidebar/helper.js:844
 msgid "Awesome"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:567
+#: react-src/app/components/core/AiContentSidebar/helper.js:844
 msgid "Do you have any opening hours you want to display?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:573
+#: react-src/app/components/core/AiContentSidebar/helper.js:850
 msgid "Share your opening hours."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:573
+#: react-src/app/components/core/AiContentSidebar/helper.js:850
 msgid "We stay open from 08:00 AM to 06:00 PM (GMT+6)"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:577
+#: react-src/app/components/core/AiContentSidebar/helper.js:854
 msgid "Thank you! Do you want to replace the default images with new ones?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:583
+#: react-src/app/components/core/AiContentSidebar/helper.js:860
 msgid "To replace default images, select an image from the left column, then upload your own or choose one from the image library on the right."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:587
+#: react-src/app/components/core/AiContentSidebar/helper.js:864
 msgid "Thank you! That’s all we need for now. Should we go ahead and generate your website content?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:588
+#: react-src/app/components/core/AiContentSidebar/helper.js:865
 msgid "Yes, Generate and Proceed."
 msgstr ""
 
@@ -3792,7 +3287,7 @@ msgstr ""
 #: assets/js/templately.js:1
 #: react-src/app/components/core/AiContentSidebar/Utils.js:766
 #: react-src/app/components/core/AiContentSidebar/Utils.js:948
-#: react-src/app/components/core/AiContentSidebar/Utils.js:977
+#: react-src/app/components/core/AiContentSidebar/Utils.js:988
 msgid "Polling was cancelled"
 msgstr ""
 
@@ -3885,7 +3380,7 @@ msgid "Browse media library"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2412
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2718
 msgid "Skip"
 msgstr ""
 
@@ -3894,125 +3389,136 @@ msgid "Failed to search images. Please try again."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:362
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:392
 msgid "Would you like us to generate your website content based on your previous conversation?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:371
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:701
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1996
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:401
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:749
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2220
 msgid "Yes, I would like to change images"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:385
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:913
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:415
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:988
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1312
 msgid "I want to skip the question"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:717
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:765
 msgid "No, I will keep the default images."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1454
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:987
+msgid "I want to keep English"
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1656
 msgid "Oops! An unexpected error occurred."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1470
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1672
 msgid "Oops! It's taking a bit longer than usual."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1474
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1485
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1676
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1687
 msgid "Sorry, something went wrong."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1479
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1681
 msgid "Oops! Something went wrong while updating your content."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1604
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1798
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2302
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2325
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1808
+msgid "Unknown Language"
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1837
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2035
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2527
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2550
 msgid "Unknown Category"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1651
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1884
 msgid "You can check your AI Credits here!"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1653
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1886
 msgid "Buy credits if you needed!"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1688
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1923
 #: react-src/app/layouts/CloudsLayout.js:49
 msgid "Profile"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1729
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1759
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2352
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2378
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1965
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1996
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2658
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2684
 msgid "Type your answer..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1756
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2375
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1993
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2681
 msgid "Enter your email address..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1758
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2377
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1995
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2683
 msgid "Enter your phone number..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1821
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2058
 msgid "Cancel editing"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1844
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2066
 msgid "Save changes"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1846
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2068
 msgid "Save"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1861
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2083
 msgid "Edit answer"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1864
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2086
 msgid "Cannot edit while AI generation is in progress"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1866
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2088
 msgid "Please finish editing the current conversation first"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1888
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2111
 #, js-format
 msgid "%d image replaced successfully."
 msgid_plural "%d images replaced successfully."
@@ -4020,156 +3526,167 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1898
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2121
 msgid "No image has been replaced yet."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1914
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2059
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2078
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2090
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2137
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2284
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2303
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2315
 msgid "Please finish editing conversations before starting"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1915
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2138
 msgid "View and Edit"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1918
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2141
 msgid "View & Edit"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2060
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2064
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2285
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2289
 msgid "Yes, let’s start"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2079
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2082
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2304
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2307
 msgid "Yes"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2091
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2094
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2316
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2319
 msgid "No"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2110
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2147
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2191
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2227
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2335
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2372
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2416
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2452
 msgid "Please finish editing conversations before starting new chat"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2111
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2148
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2192
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2196
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2228
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2336
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2373
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2417
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2421
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2453
 msgid "New Chat"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2209
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2212
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2434
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2437
 msgid "Generate Again"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2118
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2155
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2235
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2343
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2380
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2460
 msgid "No, Let’s Start Fresh"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2247
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2472
 msgid "AI generation in progress..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2127
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2170
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2249
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2352
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2395
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2474
 msgid "Please finish editing conversations before proceeding"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2250
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2475
 msgid "Generate and Proceed"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2132
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2175
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2254
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2357
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2400
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2479
 msgid "Yes, Let’s Do It!"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2128
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2171
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2353
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2396
 msgid "Generate and Proceed..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2270
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2495
 msgid "Type your business category..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2408
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2574
+msgid "Search or select a language..."
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2604
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2631
+msgid "Unknown language"
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2714
 msgid "Please finish editing conversations before skipping"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2409
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2715
 msgid "Skip this question"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2431
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2435
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2745
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2749
 msgid "Submit answer"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2434
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2748
 msgid "Please finish editing conversations before submitting"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/index.js:156
+#: react-src/app/components/core/AiContentSidebar/index.js:158
 msgid "Are you sure you want to cancel the template building process? Note: Credits will be deducted based on usage."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/index.js:248
+#: react-src/app/components/core/AiContentSidebar/index.js:250
 msgid "Your AI Credits"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/index.js:257
+#: react-src/app/components/core/AiContentSidebar/index.js:259
 msgid "Buy Credits"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/index.js:258
+#: react-src/app/components/core/AiContentSidebar/index.js:260
 #: react-src/app/components/core/itemDetails/Packs/import-parts/AvailableCredit.js:51
 msgid "Increase Limit"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/index.js:263
-#: react-src/app/components/core/AiContentSidebar/index.js:266
+#: react-src/app/components/core/AiContentSidebar/index.js:265
+#: react-src/app/components/core/AiContentSidebar/index.js:268
 #: react-src/app/components/core/itemDetails/Packs/import-parts/AvailableCredit.js:36
 #: react-src/app/components/core/itemDetails/Packs/import-parts/AvailableCredit.js:38
 #: react-src/app/components/core/itemDetails/Packs/import-parts/AvailableCredit.js:40
@@ -4177,49 +3694,49 @@ msgid "AI Credits"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/index.js:263
+#: react-src/app/components/core/AiContentSidebar/index.js:265
 msgid "Month"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/index.js:273
+#: react-src/app/components/core/AiContentSidebar/index.js:275
 msgid "Credits"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/index.js:280
+#: react-src/app/components/core/AiContentSidebar/index.js:282
 msgid "Monthly reset in"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/index.js:281
+#: react-src/app/components/core/AiContentSidebar/index.js:283
 msgid "AI credits validity: Lifetime – use anytime."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/index.js:282
+#: react-src/app/components/core/AiContentSidebar/index.js:284
 #: react-src/app/components/core/itemDetails/Packs/import-parts/AvailableCredit.js:84
 msgid "To generate AI content - buy credits now!"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/index.js:296
+#: react-src/app/components/core/AiContentSidebar/index.js:298
 #: react-src/app/components/core/itemDetails/Packs/import-parts/AvailableCredit.js:108
 msgid "Estimated AI Credits for this generation:"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/index.js:326
+#: react-src/app/components/core/AiContentSidebar/index.js:328
 msgid "Close AI Sidebar"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/index.js:352
+#: react-src/app/components/core/AiContentSidebar/index.js:353
 msgid "Credits Left"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/index.js:353
+#: react-src/app/components/core/AiContentSidebar/index.js:354
 msgid "No Credit Remaining"
 msgstr ""
 
@@ -4243,19 +3760,283 @@ msgid "Google"
 msgstr ""
 
 #: assets/js/templately.js:1
-msgid "Failed to load customizer settings. Please try again."
+msgid "Auto"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/Packs/import-parts/AIPromptPicker.js:68
+msgid "High"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Medium"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Low"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Typographic Logo"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Shape Logo"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Handwritten Logo"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "PNG"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "JPEG"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "1536×1024 (Landscape)"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "1024×1536 (Portrait)"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "1024×1024 (Square)"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Prompt"
+msgstr ""
+
+#: assets/js/templately.js:1
+#, js-format
+msgid "Create a professional, modern logo for my company “%s” using a clean minimal style and a blue color palette."
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Number of variations"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Image size"
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/itemDetails/Sidebar.js:108
+msgid "Category"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Image quality"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Output format"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Generating..."
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Generate Now"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "None"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Loading icons..."
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Logo text"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Enter your logo text"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Font family"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Font weight"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Font size"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Icon gap"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Shape"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Shape size"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Text color"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Background color"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Background Color"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Generating your site logo… please wait."
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Logo Preview"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Generate your logo with AI and see a live preview here."
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "used for this generation"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Shuffle Settings"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Zoom Out"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Reset Zoom"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Zoom In"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Fit to View"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Insert Logo"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Your Logo"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Generate Logo with AI"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Site Logo Generator"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Available Credit"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Create your site logo using AI or design a custom typography logo manually."
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "AI Generator"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Typography"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Generate with AI"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Generate Site Title"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Generate Site Tagline"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Generate Field"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Enter your prompt"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Generate"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Logo generation is not available"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Tagline generation is not available"
+msgstr ""
+
+#: assets/js/templately.js:1
 #: react-src/app/settings/tabs/General.js:33
 msgid "Site Title"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/Packs/import-parts/AIPromptPicker.js:70
 #: react-src/app/settings/tabs/General.js:34
 msgid "Site Tagline"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Upload your own logo"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "OR"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Logo"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Logo generation polling cancelled"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Logo generation timed out. Please try again."
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Failed to retrieve logo generation data"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Logo generation completed"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "An error occurred while polling logo generation"
 msgstr ""
 
 #: assets/js/templately.js:1
@@ -4263,7 +4044,19 @@ msgid "Failed to generate logo"
 msgstr ""
 
 #: assets/js/templately.js:1
-msgid "Failed to generate content"
+msgid "An error occurred while generating logo"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Failed to generate tagline"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "An error occurred while generating tagline"
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Failed to load customizer settings. Please try again."
 msgstr ""
 
 #: assets/js/templately.js:1
@@ -4357,22 +4150,37 @@ msgid "Imported Templates:"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/Packs/import-parts/DependencyInstalled.js:173
+#: react-src/app/components/core/itemDetails/Packs/import-parts/DependencyInstalled.js:177
+msgid "Skipped Items:"
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/itemDetails/Packs/import-parts/DependencyInstalled.js:187
+msgid "Item"
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/itemDetails/Packs/import-parts/DependencyInstalled.js:187
+msgid "Unknown error"
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/itemDetails/Packs/import-parts/DependencyInstalled.js:194
 msgid "Imported Site Settings: Layout, Fonts, Colors, Typography, Images, Custom CSS, etc."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/Packs/import-parts/DependencyInstalled.js:181
+#: react-src/app/components/core/itemDetails/Packs/import-parts/DependencyInstalled.js:202
 msgid "Congratulations! Your Website is ready 🚀"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/Packs/import-parts/DependencyInstalled.js:182
+#: react-src/app/components/core/itemDetails/Packs/import-parts/DependencyInstalled.js:203
 msgid "You have imported and applied the following to your site:"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/Packs/import-parts/DependencyInstalled.js:216
+#: react-src/app/components/core/itemDetails/Packs/import-parts/DependencyInstalled.js:237
 msgid "Visit your website"
 msgstr ""
 
@@ -4547,15 +4355,15 @@ msgid "Gutenberg"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/NewSidebar.js:430
-#: react-src/app/components/core/itemDetails/NewSidebar.js:454
+#: react-src/app/components/core/itemDetails/NewSidebar.js:431
+#: react-src/app/components/core/itemDetails/NewSidebar.js:455
 #: react-src/app/components/core/itemDetails/Sidebar.js:173
 #, js-format
 msgid "Purchase This %s"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/NewSidebar.js:481
+#: react-src/app/components/core/itemDetails/NewSidebar.js:482
 #, js-format
 msgid "Insert This %s"
 msgstr ""
@@ -4602,27 +4410,27 @@ msgid "Login"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/layouts/GlobalLayout.js:33
+#: react-src/app/components/banners/VerificationModal.js:24
 msgid "Please complete your account by the verification email we sent you, If you don't get an email"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/layouts/GlobalLayout.js:35
+#: react-src/app/components/banners/VerificationModal.js:30
 msgid "click here"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/layouts/GlobalLayout.js:37
+#: react-src/app/components/banners/VerificationModal.js:32
 msgid "to resend verification mail."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/layouts/GlobalLayout.js:40
+#: react-src/app/components/banners/VerificationModal.js:38
 msgid "Verifying . . ."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/layouts/GlobalLayout.js:40
+#: react-src/app/components/banners/VerificationModal.js:38
 msgid "I've verified & Close"
 msgstr ""
 
@@ -4717,6 +4525,14 @@ msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/display-conditions/Footer.js:10
+#: react-src/developer/components/DeveloperSettings.js:510
+#: react-src/developer/components/DeveloperSettings.js:1043
+#: react-src/developer/components/DeveloperSettings.js:1115
+msgid "Saving..."
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/display-conditions/Footer.js:10
 msgid "Save & Close"
 msgstr ""
 
@@ -4750,6 +4566,51 @@ msgstr ""
 msgid "Revert Now"
 msgstr ""
 
+#: react-src/app/components/banners/SiteMigrationModal.js:36
+#: react-src/utils/siteDisconnectedModal.js:39
+msgid "Migration failed"
+msgstr ""
+
+#: react-src/app/components/banners/SiteMigrationModal.js:45
+#: react-src/utils/siteDisconnectedModal.js:52
+msgid "Site Migrated"
+msgstr ""
+
+#: react-src/app/components/banners/SiteMigrationModal.js:46
+msgid "Site Migrated!"
+msgstr ""
+
+#: react-src/app/components/banners/SiteMigrationModal.js:46
+#: react-src/utils/siteDisconnectedModal.js:53
+msgid "Your site has been successfully connected. You can now import templates."
+msgstr ""
+
+#: react-src/app/components/banners/SiteMigrationModal.js:53
+#: react-src/utils/siteDisconnectedModal.js:63
+msgid "Migration Failed"
+msgstr ""
+
+#: react-src/app/components/banners/SiteMigrationModal.js:54
+#: react-src/utils/siteDisconnectedModal.js:64
+msgid "Failed to migrate site connection. Please try again."
+msgstr ""
+
+#: react-src/app/components/banners/SiteMigrationModal.js:69
+msgid "Your site connection needs to be updated. This typically happens when migrating from staging to production."
+msgstr ""
+
+#: react-src/app/components/banners/SiteMigrationModal.js:70
+msgid "Click the button below to migrate your connection to this site."
+msgstr ""
+
+#: react-src/app/components/banners/SiteMigrationModal.js:77
+msgid "Migrating . . ."
+msgstr ""
+
+#: react-src/app/components/banners/SiteMigrationModal.js:77
+msgid "Migrate Site Connection"
+msgstr ""
+
 #: react-src/app/components/core/itemDetails/Banner.js:24
 msgid "Screenshots"
 msgstr ""
@@ -4762,56 +4623,12 @@ msgstr ""
 msgid "Layouts In This Pack"
 msgstr ""
 
-#: react-src/app/components/core/itemDetails/Packs/import-parts/AIPromptPicker.js:60
-msgid "Typographic Logo"
-msgstr ""
-
-#: react-src/app/components/core/itemDetails/Packs/import-parts/AIPromptPicker.js:61
-msgid "Shape Logo"
-msgstr ""
-
-#: react-src/app/components/core/itemDetails/Packs/import-parts/AIPromptPicker.js:62
-msgid "Handwritten Logo"
-msgstr ""
-
-#: react-src/app/components/core/itemDetails/Packs/import-parts/AIPromptPicker.js:72
-msgid "Logo"
-msgstr ""
-
-#: react-src/app/components/core/itemDetails/Packs/import-parts/AIPromptPicker.js:74
-msgid "Field"
-msgstr ""
-
-#: react-src/app/components/core/itemDetails/Packs/import-parts/AIPromptPicker.js:117
-msgid "AI Prompt for"
-msgstr ""
-
-#: react-src/app/components/core/itemDetails/Packs/import-parts/AIPromptPicker.js:122
-msgid "Logo Style"
-msgstr ""
-
-#: react-src/app/components/core/itemDetails/Packs/import-parts/AIPromptPicker.js:138
-msgid "Enter your AI prompt here..."
-msgstr ""
-
-#: react-src/app/components/core/itemDetails/Packs/import-parts/AIPromptPicker.js:148
-msgid "Generating..."
-msgstr ""
-
-#: react-src/app/components/core/itemDetails/Packs/import-parts/AIPromptPicker.js:148
-msgid "Submit"
-msgstr ""
-
 #: react-src/app/components/core/itemDetails/Packs/import-parts/AvailableCredit.js:38
 msgid "AI Credits/Month"
 msgstr ""
 
 #: react-src/app/components/core/itemDetails/Sidebar.js:94
 msgid "Template Type"
-msgstr ""
-
-#: react-src/app/components/core/itemDetails/Sidebar.js:108
-msgid "Category"
 msgstr ""
 
 #: react-src/app/components/core/itemDetails/Sidebar.js:114
@@ -4852,4 +4669,678 @@ msgstr ""
 
 #: react-src/app/settings/tabs/Developer.js:52
 msgid "This is expected behavior in production builds where developer functionality is excluded for security and performance."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:80
+msgid "Settings"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:82
+msgid "Configure developer constants and options"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:86
+msgid "FSI Settings"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:88
+msgid "Configure Full Site Import behavior"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:92
+msgid "AI Settings"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:94
+msgid "Configure AI model and content generation settings"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:98
+msgid "AI Chat"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:100
+msgid "Use the OpenAI assistant with MCP tools"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:104
+#: react-src/developer/components/DeveloperSettings.js:537
+msgid "Cache Management"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:106
+msgid "Manage cached data, transients, and object cache"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:110
+#: react-src/developer/components/LogViewer.js:927
+msgid "Log Viewer"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:112
+msgid "View and search WordPress and Templately log files"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:116
+msgid "API Testing"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:118
+msgid "Test API endpoints and connections"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:122
+msgid "Onboarding Test"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:124
+msgid "Test AI Builder onboarding functionality"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:128
+msgid "System Info"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:130
+msgid "View system information and diagnostics"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:188
+msgid "Failed to load developer settings. Check console for details."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:254
+msgid "Failed to save developer settings"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:310
+msgid "Failed to update API info"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:321
+#: react-src/developer/components/DeveloperSettings.js:569
+msgid "Templately Transients"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:322
+#: react-src/developer/components/DeveloperSettings.js:544
+msgid "Object Cache"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:323
+#: react-src/developer/components/DeveloperSettings.js:600
+msgid "OPcache"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:324
+msgid "All Cache Types"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:328
+msgid "Clear"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:329
+msgid "This will clear cached data. This action cannot be undone."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:350
+msgid "Cache cleared successfully."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:361
+msgid "Failed to clear cache"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:392
+msgid "Failed to save AI settings"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:442
+msgid "Developer Constants Configuration"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:444
+msgid "Constants defined in wp-config.php will override these settings and appear disabled below."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:498
+msgid "Currently controlled by wp-config.php constant:"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:510
+msgid "Save Settings"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:516
+msgid "wp-config.php Code Snippet"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:518
+msgid "Copy this code to your wp-config.php file to define these constants:"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:539
+msgid "Manage all types of cache including transients, object cache, and OPcache."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:548
+#: react-src/developer/components/DeveloperSettings.js:604
+msgid "Status"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:563
+#: react-src/developer/components/DeveloperSettings.js:594
+#: react-src/developer/components/DeveloperSettings.js:618
+#: react-src/developer/components/DeveloperSettings.js:634
+msgid "Clearing..."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:563
+msgid "Clear Object Cache"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:573
+msgid "Templately transients found"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:575
+msgid "Last cleanup:"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:580
+msgid "No transients found to delete."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:594
+msgid "Clear All Templately Transients"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:618
+msgid "Reset OPcache"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:624
+#: react-src/developer/components/DeveloperSettings.js:634
+msgid "Clear All Cache"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:626
+msgid "Clear all cache types at once (transients, object cache, and OPcache)."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:637
+msgid "Warning:"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:637
+msgid "This action cannot be undone. All cached data will be permanently deleted."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:648
+msgid "API Testing Tools"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:650
+msgid "Test API endpoints and connections."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:654
+msgid "Current API Configuration"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:658
+msgid "Development API"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:671
+msgid "Debug Logging"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:683
+msgid "Update API Testing Data"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:685
+msgid "Manually update API key and Site URL for testing purposes. These values are used for making requests to the Templately API."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:700
+msgid "Enter API key"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:703
+msgid "Stored in user meta as _templately_api_key."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:709
+msgid "User Site URL"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:718
+msgid "Enter Site URL"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:721
+msgid "Stored in _templately_user meta. This is the URL sent to the Templately API."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:733
+msgid "Updating..."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:733
+msgid "Update API Info"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:740
+msgid "Additional API testing tools will be added in future updates."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:751
+msgid "OpenAI Chat Assistant"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:753
+msgid "Chat with the developer-only assistant backed by your MCP tools to inspect data, search templates, and debug flows."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:769
+msgid "Please provide at least one parameter (API key or enable redirect)."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:788
+msgid "Test data set successfully!"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:797
+msgid "Failed to set test data."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:802
+msgid "Failed to set test data. Check console for details."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:812
+msgid "AI Builder Onboarding Test"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:814
+msgid "This is a temporary testing feature for AI Builder onboarding. Set test data to simulate onboarding scenarios without going through the full authentication flow."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:823
+msgid "optional"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:835
+msgid "Enter test API key (optional)"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:839
+msgid "Optional: Enter a test API key to set as user meta. This will be stored as _templately_api_key."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:845
+msgid "Enable Redirect to Onboarding"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:862
+msgid "When enabled, sets the ai_builder_onboarding_redirect_key option to trigger onboarding redirect."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:875
+msgid "Setting Test Data..."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:875
+msgid "Set Test Data"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:882
+msgid "What This Does"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:884
+msgid "Optionally sets user meta _templately_api_key with the provided API key (if provided)"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:885
+msgid "Optionally enables the onboarding redirect by setting ai_builder_onboarding_redirect_key option"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:886
+msgid "At least one option (API key or redirect) must be selected"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:887
+msgid "Works with both single-site and multisite WordPress installations"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:890
+msgid "Note: This is a temporary testing feature and should only be used in development environments."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:901
+msgid "System Information"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:903
+msgid "View system information and diagnostics."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:907
+msgid "Available Constants"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:916
+msgid "Network Admin Support"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:918
+msgid "When developer mode is enabled, Full Site Import functionality is available in WordPress Network Admin for multisite installations."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:921
+msgid "Developer Bundle Information"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:925
+msgid "Bundle Version"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:929
+msgid "Initialization Status"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:992
+msgid "Failed to save FSI settings"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1004
+msgid "Full Site Import (FSI) Settings"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1006
+msgid "Configure behavior for Full Site Import processes, including error handling and skip functionality."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1014
+msgid "Skip Failed Items"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1031
+msgid "Automatically skip items that fail 2+ times during Full Site Import. When enabled, the import will continue instead of stopping completely."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1034
+msgid "Note:"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1034
+msgid "This feature is experimental. Skipped items will be listed in the import completion screen."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1043
+msgid "Save FSI Settings"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1049
+msgid "How Skip-on-Error Works"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1051
+msgid "Each import item is attempted up to 2 times"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1052
+msgid "After 2 failures, the item is automatically skipped"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1053
+msgid "Import continues with the next item instead of failing completely"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1054
+msgid "Maximum of 5 consecutive skips allowed before hard failure"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1055
+msgid "Skipped items are tracked and shown in the completion summary"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1065
+msgid "4.1 Nano"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1065
+msgid "Faster processing with 4.1 Nano model"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1066
+msgid "4.1-mini"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1066
+msgid "Balanced performance with 4.1-mini model"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1071
+msgid "AI Model Configuration"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1073
+msgid "Configure the AI model used for content generation. Higher models provide better quality but may use more credits."
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1081
+msgid "AI Model"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1115
+msgid "Save AI Settings"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1121
+msgid "Model Information"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1123
+msgid "4.1 Nano (1):"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1123
+msgid "Lower latency, suitable for faster interactions"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1124
+msgid "4.1-mini (2):"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:1124
+msgid "Balanced performance and cost, good for most tasks"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:2052
+msgid "Developer Settings"
+msgstr ""
+
+#: react-src/developer/components/DeveloperSettings.js:2054
+msgid "These settings are only available in development builds and provide advanced debugging and development tools."
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:474
+msgid "Clear Log File?"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:475
+msgid "This will permanently delete all content in:"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:476
+msgid "This action cannot be undone."
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:929
+msgid "View and search WordPress and Templately log files in real-time."
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:937
+msgid "Error:"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:941
+msgid "Try reducing the chunk size or refreshing the page."
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:946
+msgid "Please check your connection and try again."
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:961
+msgid "Dismiss error"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:971
+msgid "Log File:"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:978
+msgid "Select a log file..."
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:990
+msgid "Search in log..."
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1011
+msgid "Auto-refresh"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1035
+msgid "Reverse order"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1046
+msgid "Enhanced view"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1061
+#: react-src/developer/components/LogViewer.js:1170
+#: react-src/developer/components/LogViewer.js:1195
+msgid "Loading..."
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1061
+msgid "Refresh"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1070
+msgid "Clear Log"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1074
+msgid "Chunk Size:"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1096
+msgid "Memory:"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1104
+msgid "Clear cache to free memory"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1106
+msgid "Clear Cache"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1116
+msgid "Size:"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1117
+msgid "Modified:"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1118
+msgid "Type:"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1126
+msgid "Search Results:"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1126
+msgid "matches"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1130
+msgid "Line"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1155
+msgid "Loading chunk..."
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1171
+msgid "Log file is empty"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1171
+msgid "Select a log file to view its contents"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1194
+msgid "Chunk"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1194
+#: react-src/developer/components/LogViewer.js:1258
+msgid "of"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1203
+msgid "First chunk"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1211
+msgid "Previous chunk"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1219
+msgid "Next chunk"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1227
+msgid "Last chunk"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1234
+msgid "Go to chunk:"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1258
+msgid "Showing"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1258
+msgid "lines"
+msgstr ""
+
+#: react-src/developer/components/LogViewer.js:1259
+msgid "more available"
+msgstr ""
+
+#: react-src/utils/siteDisconnectedModal.js:88
+msgid "Site Not Connected"
+msgstr ""
+
+#: react-src/utils/siteDisconnectedModal.js:90
+#, js-format
+msgid "This site is not connected to your Templately account. It appears your account is connected to a different site.<br/><br/>Would you like to <strong>migrate your connection</strong> to this site? This will disconnect your previous site and connect this one.<br/><br/>Need help? Contact our <a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">support team</a>."
+msgstr ""
+
+#: react-src/utils/siteDisconnectedModal.js:97
+msgid "Migrate to This Site"
 msgstr ""

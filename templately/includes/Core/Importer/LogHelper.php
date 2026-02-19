@@ -3,6 +3,7 @@
 namespace Templately\Core\Importer;
 
 use Templately\Core\Importer\Utils\LogHandler;
+use Templately\Core\Importer\Utils\SessionData;
 use Templately\Core\Importer\Utils\Utils;
 use Templately\Utils\Helper;
 
@@ -103,7 +104,8 @@ trait LogHelper {
 	 * @return void
 	 */
 	public function sse_log_file( $log ){
-        $request_params = Utils::get_session_data_by_id();
+        $session_id = SessionData::get_session_id();
+        $request_params = $session_id ? SessionData::get_data($session_id) : [];
 
         if (is_array($log)) {
             $log['timestamp'] = date('Y-m-d H:i:s');

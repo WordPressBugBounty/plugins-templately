@@ -18,6 +18,10 @@ class Login extends API {
             return true;
         }
 
+        if ( '/templately/v1/google-auth-url' === $_route ) {
+            return true;
+        }
+
         return parent::permission_check( $request );
     }
 
@@ -26,6 +30,18 @@ class Login extends API {
         $this->post( 'logout', [$this, 'logout'] );
         $this->get( 'is-signed', [$this, 'is_signed'] );
         $this->get( 'pricing', [$this, 'pricing'] );
+        $this->get( 'google-auth-url', [$this, 'google_auth_url'] );
+    }
+
+    public function google_auth_url() {
+        // Get redirect_to parameter from request if provided
+        $redirect_to = $this->get_param( 'redirect-to', '' );
+
+        $url = $this->http()->google_auth_url( $redirect_to );
+        return [
+            'status' => 'success',
+            'url' => $url
+        ];
     }
 
 	public function pricing(){
@@ -99,6 +115,10 @@ class Login extends API {
             return $response;
         }
 
+        if ( empty( $response['user']['api_key'] ) ) {
+            return $this->error( 'login_error', $response['message'] ?? __('Invalid API key.', 'templately'), 'login', 400 );
+        }
+
         if ( $global_signin && ! Login::is_globally_signed() ) {
             Options::set_global_login();
         }
@@ -136,7 +156,14 @@ class Login extends API {
 			$meta['reviews'] = $_reviews;
 		}
 
-        // No longer need to manage is_live_api state - API selection is now handled by TEMPLATELY_DEV_API constant
+        if(Helper::is_dev_api()){
+            $response['user']['is_dev_api'] = true;
+        }
+
+        if(! empty( $response['user'] ) && is_array($response['user'])){
+            $response['user']['ip']       = $_ip;
+            $response['user']['site_url'] = base64_encode( $_site_url );
+        }
 
         $this->utils( 'options' )->set( 'user', $response['user'] );
         $response['user']['meta'] = $this->user_meta( $meta );

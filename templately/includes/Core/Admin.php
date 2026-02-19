@@ -264,6 +264,7 @@ class Admin extends Base {
 			'wp_user_avatar'          => get_avatar_url( get_current_user_id(), [ 'size' => 96 ] ),
 			'allowed_mime_types'      => get_allowed_mime_types(),
 			'is_free_user'            => $global_user === false || isset( $global_user['plan'] ) && $global_user['plan'] == 'free',
+			'is_disconnected'         => ! empty( $global_user['is_disconnected'] ),
 		], $templately );
 
 		// Apply filter to allow network admin modifications
@@ -298,7 +299,7 @@ class Admin extends Base {
 	 */
 	public function notices() {
 		$notices = new Notices( [
-			// 'dev_mode'       => true,
+			// 'dev_mode'       => true, // also need to clear templately_notices from option/site meta table.
 			'id'             => 'templately',
 			'storage_key'    => 'notices',
 			'lifetime'       => 3,
@@ -399,7 +400,7 @@ class Admin extends Base {
 			// 	]
 			// ] );
 
-			$notice_text  = '<p style="margin-top: 0; margin-bottom: 0px; text-transform: capitalize;"><strong>Season’s Best Deal:</strong> Smarter & faster web design with 6,500+ AI-powered Elementor & Gutenberg templates – now <strong>up to 60% OFF!</strong> ⚡</p>';
+			$notice_text  = '<p style="margin-top: 0; margin-bottom: 0px;">Smarter & Faster Web Design With 6,500+ AI-Powered Elementor & Gutenberg Templates – Now <strong>Up To 50% OFF!</strong> 🎁</p>';
 
 			$_black_friday = [
 				'thumbnail' => templately()->assets->icon( 'logos/logo-full.svg' ),
@@ -423,12 +424,12 @@ class Admin extends Base {
 				],
 			];
 
-			$notices->add( 'holiday_2025', $_black_friday, [
-				'start'       => $notices->strtotime('00:00:01AM 15th December, 2025'),
+			$notices->add( 'holiday_2026_feb', $_black_friday, [
+				'start'       => $notices->strtotime('00:00:01AM 10th February, 2026'),
 				'recurrence'  => false,
 				'dismissible' => true,
 				'refresh'     => TEMPLATELY_VERSION,
-				"expire"      => strtotime( '11:59:59pm 7th January, 2026' ),
+				"expire"      => strtotime( '11:59:59pm 8th March, 2026' ),
 				'display_if'  => !wp_is_mobile(),
 				'screens'     => [
 					'dashboard',

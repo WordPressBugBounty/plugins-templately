@@ -65,6 +65,11 @@ class Profile extends API {
 			$meta['reviews'] = $_reviews;
 		}
 
+		if ( ! empty( $response['user'] ) && is_array( $response['user'] ) ) {
+			$response['user']['site_url'] = base64_encode( home_url( '/' ) );
+			$response['user']['ip']       = Helper::get_ip();
+		}
+
 		$this->utils( 'options' )->set( 'user', $response['user'] );
 		$response['user']['meta'] = Login::get_instance()->user_meta( $meta );
 

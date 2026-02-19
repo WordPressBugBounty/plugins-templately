@@ -38,7 +38,7 @@ class Form {
 		try {
 			$results = null;
 			switch ( $this->plugin ) {
-				case 'fluent-forms' && is_plugin_active( 'fluentform/fluentform.php' ) :
+				case 'fluent-forms' && is_plugin_active( 'fluentform/fluentform.php' ) && class_exists( File::class ) && class_exists( TransferService::class ):
 					$fileObject = new File( $this->file, '' );
 					$importer   = new TransferService();
 					$inserted   = $importer->importForms( $fileObject );

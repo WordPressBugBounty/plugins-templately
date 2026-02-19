@@ -25,8 +25,8 @@ class TemplateLoader {
 		add_action( 'elementor/document/wrapper_attributes', [ $this, 'wrapper_attributes' ], 10, 2 );
 		add_action( 'template_redirect', array( $this, 'set_global_product' ) );
 
-		add_action( 'templately_builder_header_after', [ $this, 'print_style_tags' ], 0 );
-		add_action( 'templately_builder_footer_before', [ $this, 'print_style_tags' ], 0 );
+		add_action( 'templately_builder_header_after', [ self::class, 'print_style_tags' ], 0 );
+		add_action( 'templately_builder_footer_before', [ self::class, 'print_style_tags' ], 0 );
 		/**
 		 * Only for Development Mode.
 		 */
@@ -144,7 +144,7 @@ class TemplateLoader {
 	/**
 	 * Print remaining enqueued styles with error handling.
 	 */
-	public function print_style_tags() {
+	public static function print_style_tags() {
 		try {
 			$wp_styles = wp_styles();
 

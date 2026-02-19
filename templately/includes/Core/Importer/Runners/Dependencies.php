@@ -7,6 +7,7 @@ use Templately\Core\Importer\Exception\NonRetirableErrorException;
 use Templately\Core\Importer\Form;
 use Templately\Core\Importer\Runners\BaseRunner;
 use Templately\Core\Importer\Utils\Utils;
+use Templately\Core\Importer\Utils\SessionData;
 use Templately\Utils\Helper;
 use Templately\Utils\Installer;
 
@@ -52,10 +53,7 @@ class Dependencies extends BaseRunner {
 		 */
 		if ( empty( $progress['plugins_installed'] ) ) {
 			// Mark plugins as installed
-			$progress['plugins_installed'] = true;
-			$this->update_session_data( [
-				'progress' => $progress,
-			] );
+			SessionData::mark_step_complete($this->session_id, 'plugins_installed');
 
 			// Exit current request and continue in new AJAX call where WordPress has loaded the plugins
 			$this->sse_message( [

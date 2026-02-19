@@ -44,8 +44,14 @@ class LocationManager {
 		 * Priority is 7,
 		 * Because it should run before elementor
 		 */
-		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_styles' ], 7 );
-		add_action( 'wp_enqueue_scripts', [$this, 'enqueue_template_assets'], 8 );
+		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_elementor_styles' ], 7 );
+		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_template_assets' ], 8 );
+		add_action( 'wp_enqueue_scripts', [ $this, 'preload_gutenberg_template_styles' ], 9 );
+
+		// Cache clearing hooks
+		add_action( 'save_post', [ $this, 'clear_header_styles_cache' ] );
+		add_action( 'delete_post', [ $this, 'clear_header_styles_cache' ] );
+		add_action( 'trash_post', [ $this, 'clear_header_styles_cache' ] );
 	}
 
 	private function set_locations() {
@@ -288,18 +294,29 @@ class LocationManager {
 					continue;
 				}
 			}
+
+			// Fire before printing to allow style preparation
+			do_action("templately_printed_location", $template_id, $location, $template);
+
 			$template->print_content();
 			$this->did_locations[] = $location;
 
 			$this->set_is_printed( $location, $template_id );
-
-			do_action("templately_printed_location", $template_id, $location, $template);
 		}
 
 		return true;
 	}
 
-	public function enqueue_styles() {
+	/**
+	 * Enqueue CSS styles for Elementor-based templates.
+	 *
+	 * Uses Elementor's Post_CSS class to enqueue styles for all locations
+	 * (header, footer, archive, single). Only runs for Elementor platform.
+	 *
+	 * @since 3.0.0
+	 * @return void
+	 */
+	public function enqueue_elementor_styles() {
 
 		if (
 			$this->get_platform(get_the_ID()) !== 'elementor' ||
@@ -361,6 +378,21 @@ class LocationManager {
 		}
 	}
 
+	/**
+	 * Fire action for Essential Blocks to write CSS files.
+	 *
+	 * Iterates all Gutenberg template locations and fires the
+	 * templately_printed_location action.
+	 *
+	 * Note: This action only triggers Essential Blocks to generate the CSS file
+	 * and add the template ID to its processing list. It does NOT enqueue the
+	 * CSS file immediately. The actual enqueue happens later in Essential Blocks'
+	 * `enqueue_frontend_assets` method (hooked to wp_enqueue_scripts at priority 10),
+	 * which relies on this action having already fired (at priority 8).
+	 *
+	 * @since 3.0.0
+	 * @return void
+	 */
 	public function enqueue_template_assets() {
 		$using_templately_builder = get_query_var( 'using_templately_template' );
 		if ( ($using_templately_builder || TemplateLoader::is_header_footer()) && function_exists( 'templately' ) ) {
@@ -378,6 +410,123 @@ class LocationManager {
 			}
 		}
 	}
+
+	/**
+	 * Pre-parse Gutenberg template blocks to enqueue styles in head.
+	 *
+	 * Iterates all template locations, parses block content, and triggers
+	 * block style registration BEFORE wp_head() outputs styles. This ensures
+	 * all block styles are properly enqueued rather than printed inline.
+	 *
+	 * @since 3.0.0
+	 * @return void
+	 */
+	public function preload_gutenberg_template_styles() {
+		if ( ! function_exists( 'templately' ) || ! function_exists( 'parse_blocks' ) ) {
+			return;
+		}
+
+		$template_locations = [ 'header' ];
+
+		foreach ( $template_locations as $location ) {
+			$templates = templately()->theme_builder::$conditions_manager->get_templates_by_location( $location );
+
+			if ( empty( $templates ) ) {
+				continue;
+			}
+
+			foreach ( $templates as $template ) {
+				if ( $template->platform !== 'gutenberg' ) {
+					continue;
+				}
+
+				$post_id = $template->get_main_id();
+				$post    = get_post( $post_id );
+
+				if ( ! $post ) {
+					continue;
+				}
+
+				// Check for cached styles
+				$transient_key = 'templately_header_styles_' . $post_id;
+				$style_handles = get_transient( $transient_key );
+
+				if ( false === $style_handles ) {
+					if ( empty( $post->post_content ) ) {
+						continue;
+					}
+
+					// Parse blocks and extract styles
+					$blocks        = parse_blocks( $post->post_content );
+					$style_handles = [];
+					$this->get_block_styles_recursive( $blocks, $style_handles );
+
+					// Cache the handles for a long time (e.g., 1 month)
+					set_transient( $transient_key, $style_handles, MONTH_IN_SECONDS );
+				}
+
+				// Enqueue the styles
+				if ( ! empty( $style_handles ) ) {
+					foreach ( $style_handles as $handle ) {
+						wp_enqueue_style( $handle );
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Recursively extract style handles for all blocks.
+	 *
+	 * @since 3.0.0
+	 * @param array $blocks Parsed blocks array.
+	 * @param array $handles Reference to array of handles to populate.
+	 * @return void
+	 */
+	private function get_block_styles_recursive( array $blocks, array &$handles ) {
+		if ( ! class_exists( 'WP_Block_Type_Registry' ) ) {
+			return;
+		}
+
+		foreach ( $blocks as $block ) {
+			if ( ! empty( $block['blockName'] ) ) {
+				// Get registered block type
+				$block_type = \WP_Block_Type_Registry::get_instance()->get_registered( $block['blockName'] );
+
+				if ( $block_type ) {
+					// Enqueue style handles (WP 5.9+)
+					if ( ! empty( $block_type->style_handles ) ) {
+						foreach ( $block_type->style_handles as $handle ) {
+							if ( ! in_array( $handle, $handles ) ) {
+								$handles[] = $handle;
+							}
+						}
+					}
+					// Legacy style property support
+					if ( ! empty( $block_type->style ) ) {
+						$styles = is_array( $block_type->style ) ? $block_type->style : [ $block_type->style ];
+						foreach ( $styles as $style ) {
+							if ( ! in_array( $style, $handles ) ) {
+								$handles[] = $style;
+							}
+						}
+					}
+				}
+			}
+
+			// Process inner blocks recursively
+			if ( ! empty( $block['innerBlocks'] ) ) {
+				$this->get_block_styles_recursive( $block['innerBlocks'], $handles );
+			}
+		}
+	}
+
+	/**
+	 * Deprecated wrapper for backward compatibility if needed,
+	 * or we can just remove it since it was private.
+	 * But for safety, I'll remove the old method and rely on the new flow.
+	 * The previous method was private, so removal is safe within this class.
+	 */
 
 	/**
 	 * @param string  $location
@@ -420,5 +569,18 @@ class LocationManager {
 
 		$this->locations_printed[ $location ][ $template_id ] = $template_id;
 		$this->remove_template_from_location( $location, $template_id );
+	}
+
+	/**
+	 * Clear the header styles cache for a specific post.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return void
+	 */
+	public function clear_header_styles_cache( $post_id ) {
+		// Only clear if it might be a header template.
+		// Since we don't strictly know if it IS a header without checking metadata (which might be what's changing),
+		// we just clear the specific transient for this ID. It's harmless if the transient doesn't exist.
+		delete_transient( 'templately_header_styles_' . $post_id );
 	}
 }

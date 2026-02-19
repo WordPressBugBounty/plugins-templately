@@ -22,6 +22,7 @@ use Templately\Core\Importer\Exception\UnknownErrorException;
 use Templately\Core\Importer\Runners\Finalizer;
 use Templately\Core\Importer\Utils\LogHandler;
 use Templately\Core\Importer\Utils\Utils;
+use Templately\Core\Importer\Utils\SessionData;
 use Templately\Core\Importer\Utils\AIUtils;
 use Templately\Utils\Base;
 use Templately\Utils\Helper;
@@ -131,7 +132,7 @@ class FullSiteImport extends Base {
 				wp_send_json_error(['message' => $session_id->get_error_message()]);
 				return;
 			}
-			$session_data = Utils::get_session_data($session_id);
+			$session_data = SessionData::get_data($session_id);
 			$data = array_merge($session_data, $data);
 		}
 		else {
@@ -157,7 +158,7 @@ class FullSiteImport extends Base {
 			}
 		}
 
-		Utils::update_session_data($session_id, $data);
+		SessionData::save($session_id, $data);
 
 
 		//clear previous revert backup
@@ -207,7 +208,7 @@ class FullSiteImport extends Base {
 			}
 		}
 
-		Utils::update_session_data($session_id, $data);
+		SessionData::save($session_id, $data);
 
 
 		return $data;
@@ -239,10 +240,7 @@ class FullSiteImport extends Base {
 				// Create Log Directory and if fail then chose option method
 				LogHandler::create_log_dir();
 
-				$progress['create_log_dir'] = true;
-				$this->update_session_data( [
-					'progress' => $progress,
-				] );
+				SessionData::mark_step_complete($this->session_id, 'create_log_dir');
 			}
 
 			$_id = isset($this->request_params['id']) ? (int) $this->request_params['id'] : null;
@@ -261,10 +259,7 @@ class FullSiteImport extends Base {
 				 */
 				$this->download_zip( $_id, true );
 
-				$progress['download_zip'] = true;
-				$this->update_session_data( [
-					'progress' => $progress,
-				] );
+				SessionData::mark_step_complete($this->session_id, 'download_zip');
 			}
 
 			/**
@@ -368,14 +363,20 @@ class FullSiteImport extends Base {
 		wp_send_json_success($result);
 	}
 
-    // Modified get_session_data to use the static version
+    // Modified get_session_data to use SessionData
     public function get_session_data() {
-        return Utils::get_session_data_by_id();
+        if ($session_id = SessionData::get_session_id()) {
+            return SessionData::get_data($session_id);
+        }
+        return [];
     }
 
-    // Modified update_session_data to use the static version
+    // Modified update_session_data to use SessionData
     public function update_session_data($data) {
-        return Utils::update_session_data_by_id($data);
+        if ($session_id = SessionData::get_session_id()) {
+            return SessionData::save($session_id, array_merge($this->get_session_data(), $data));
+        }
+        return false;
     }
 
 	public function initialize_props() {
@@ -495,6 +496,11 @@ class FullSiteImport extends Base {
 			// Trigger action hook for network admin multisite handling
 			do_action( 'templately_fsi_before_import', $this, $this->request_params );
 
+			// Filter Child Type for Elementor Pro Promotion Widget
+			if ( class_exists( '\Elementor\Plugin' ) ) {
+				add_filter( 'elementor/element/get_child_type', [ '\Templately\Core\Platform\Elementor', 'filter_child_type' ], 10, 3 );
+			}
+
 			// Refresh progress after potential multisite creation
 			$progress = $this->request_params['progress'] ?? [];
 
@@ -502,10 +508,7 @@ class FullSiteImport extends Base {
 				// Create Log Directory and if fail then chose option method
 				LogHandler::create_log_dir();
 
-				$progress['create_log_dir'] = true;
-				$this->update_session_data( [
-					'progress' => $progress,
-				] );
+				SessionData::mark_step_complete($this->session_id, 'create_log_dir');
 				$this->sse_message( [
 					'type'    => 'eventLog',
 					'action'  => 'eventLog',
@@ -532,10 +535,7 @@ class FullSiteImport extends Base {
 				 */
 				$this->check_writing_permission();
 
-				$progress['check_writing_permission'] = true;
-				$this->update_session_data( [
-					'progress' => $progress,
-				] );
+				SessionData::mark_step_complete($this->session_id, 'check_writing_permission');
 			}
 
 			if(empty($progress['download_zip'])){
@@ -545,10 +545,7 @@ class FullSiteImport extends Base {
 				 */
 				$this->download_zip( $_id );
 
-				$progress['download_zip'] = true;
-				$this->update_session_data( [
-					'progress' => $progress,
-				] );
+				SessionData::mark_step_complete($this->session_id, 'download_zip');
 				$this->sse_message( [
 					'type'    => 'continue',
 					'action'  => 'continue',
@@ -739,9 +736,13 @@ class FullSiteImport extends Base {
 
 		$this->sse_log('download', __('Downloading Template Pack', 'templately'), 57);
 
-		$this->update_session_data([
-			'download_key' => $this->download_key,
-		]);
+		SessionData::set($this->session_id, 'download_key', $this->download_key);
+
+		// Security: Validate file path is within WordPress upload directory before writing
+		$validation = AIUtils::validate_file_path($this->filePath);
+		if (is_wp_error($validation)) {
+			$this->throw($validation->get_error_message());
+		}
 
 		// Security: Validate file path is within WordPress upload directory before writing
 		$validation = AIUtils::validate_file_path($this->filePath);
@@ -972,6 +973,12 @@ class FullSiteImport extends Base {
 			);
 		}
 
+		// Get skipped items if skip feature was enabled
+		$skipped_items = SessionData::get_skipped_items($this->session_id);
+		if (!empty($skipped_items)) {
+			$normalized_data['skipped_items'] = $skipped_items;
+		}
+
 		$this->sse_message([
 			'type'    => 'complete',
 			'action'  => 'complete',
@@ -987,7 +994,7 @@ class FullSiteImport extends Base {
 		}
 
 		do_action('templately_fsi_import_complete', $normalized_data);
-		// $this->clear_data_file($request_params);
+		$this->clear_data_file($request_params);
 	}
 
 	private function clear_data_file($request_params){
@@ -1009,10 +1016,16 @@ class FullSiteImport extends Base {
 
 		$processed_data = AIUtils::get_ai_process_data_by_session_id($session_id);
 
-		// Clean up WordPress options data and corresponding directories
 		if (!empty($pack_id) && !empty($session_id)) {
 			// Clean session data - keep only current session, remove others with same pack_id
-			$removed_session_ids = Utils::clean_session_data_by_pack_id($pack_id, $session_id);
+			// Modified to use SessionData directly
+			$removed_session_ids = SessionData::clean_by_pack_id($pack_id, $session_id);
+		}
+
+		// Also run general expiration cleanup (7 days default)
+		// Modified to use SessionData directly
+		if (mt_rand(1, 100) <= 5) { // 5% chance to run on any import finish
+			$expired_cleanup = SessionData::cleanup_expired(7);
 
 			// Clean AI process data - keep only current process, remove others with same pack_id
 			$current_process_id = !empty($processed_data['process_id']) ? $processed_data['process_id'] : null;
@@ -1051,7 +1064,7 @@ class FullSiteImport extends Base {
 
 		try {
 			// Get all session data to check pack_id associations
-			$all_session_data = Utils::get_all_session_data();
+			$all_session_data = SessionData::get_all_data();
 
 			// Scan the actual directories in the filesystem
 			$directories = scandir($root_dir);
@@ -1337,9 +1350,7 @@ class FullSiteImport extends Base {
 			Helper::log($response->get_error_message());
 		} else {
 
-			$this->update_session_data([
-				'is_import_status_handled' => $this->is_import_status_handled,
-			]);
+			SessionData::set($this->session_id, 'is_import_status_handled', $this->is_import_status_handled);
 			// Handle success
 			$body = wp_remote_retrieve_body($response);
 			$data = json_decode($body, true);
@@ -1428,7 +1439,7 @@ class FullSiteImport extends Base {
 
 				// Get session data to retrieve dir_path
 				if ($session_id) {
-					$session_data = Utils::get_session_data($session_id);
+					$session_data = SessionData::get_data($session_id);
 					$dir_path = $session_data['dir_path'] ?? null;
 				}
 

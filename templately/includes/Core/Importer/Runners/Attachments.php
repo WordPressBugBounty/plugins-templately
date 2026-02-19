@@ -61,14 +61,24 @@ class Attachments extends WPContent {
 	}
 
 	/**
-	 * Clear old elementor cache
-	 * so that our second image hash for original_attachment_url don't
-	 * pick up attachment from previous import
+	 * Clear old Elementor cache and image hash metadata
+	 *
+	 * This method removes cached Elementor image hash data from previous imports to prevent
+	 * the second image hash check (for original_attachment_url) from picking up attachments
+	 * from previous imports. This ensures clean attachment mapping for each import session.
+	 *
+	 * Process:
+	 * 1. Checks if cache has already been cleared for this session (via loop result)
+	 * 2. Retrieves all meta_ids stored in '_templately_image_hash_meta_id' meta keys
+	 * 3. Deletes the actual hash metadata entries referenced by those meta_ids
+	 * 4. Removes the tracking meta_keys themselves
+	 *
+	 * @return void
 	 */
 	public function clear_old_el_cache() {
 		global $wpdb;
 
-		$has_processed = $this->get_progress(false, 'attachments-cleared-old-el-cache', false);
+		$has_processed = $this->get_loop_result(false, 'attachments-cleared-old-el-cache', false);
 		if($has_processed){
 			return;
 		}
@@ -109,6 +119,9 @@ class Attachments extends WPContent {
 				error_log('MySQL Error during image hash cleanup: ' . $wpdb->last_error);
 			}
 		}
+
+		// Mark this operation as complete to prevent redundant execution
+		$this->set_loop_result(true, 'attachments-cleared-old-el-cache');
 	}
 
 	protected function import_actions($remove = false) {

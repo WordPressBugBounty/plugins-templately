@@ -3,11 +3,11 @@
         'name' => 'templately/templately',
         'pretty_version' => 'dev-latest',
         'version' => 'dev-latest',
-        'reference' => 'd9da1b5ffafef1c6a1074438bb784c1f014a6323',
+        'reference' => '724f0e1597daecf1e69fca59ed96e81eb019a701',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'dev' => true,
+        'dev' => false,
     ),
     'versions' => array(
         'priyomukul/wp-notice' => array(
@@ -22,7 +22,7 @@
         'templately/templately' => array(
             'pretty_version' => 'dev-latest',
             'version' => 'dev-latest',
-            'reference' => 'd9da1b5ffafef1c6a1074438bb784c1f014a6323',
+            'reference' => '724f0e1597daecf1e69fca59ed96e81eb019a701',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

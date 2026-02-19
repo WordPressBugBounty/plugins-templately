@@ -231,9 +231,17 @@ class Utils extends Base {
 	 * Handles MIME type detection and proper file extension assignment
 	 *
 	 * @param string $base64 Base64 encoded image data (with or without data URI scheme)
-	 * @return int|WP_Error Attachment ID on success, WP_Error on failure
+	 * @return int|\WP_Error Attachment ID on success, WP_Error on failure
 	 */
 	public static function upload_base64_image($base64) {
+		// Strip data URL prefix if present (e.g., "data:image/png;base64,")
+		if (strpos($base64, 'data:image/') === 0) {
+			$base64_parts = explode(',', $base64, 2);
+			if (isset($base64_parts[1])) {
+				$base64 = $base64_parts[1];
+			}
+		}
+
 		// Decode base64 string
 		$decoded_image = base64_decode($base64, true);
 		if ($decoded_image === false) {
@@ -429,56 +437,44 @@ class Utils extends Base {
 		return $post_data;
 	}
 
-    // Static version of get_session_data
-    public static function get_all_session_data(): array {
-        $data = get_option(FullSiteImport::SESSION_OPTION_KEY, []);
-        return $data ?? [];
-    }
+	// ============================================================================
+	// Session Data Functions - DEPRECATED: Use SessionData class instead
+	// ============================================================================
 
-    // Static version of get_session_data
-    public static function get_session_data($session_id): array {
-        $data = get_option(FullSiteImport::SESSION_OPTION_KEY, []);
-        return $data[$session_id] ?? [];
-    }
-
-    // Static version of update_session_data
-    public static function update_session_data($session_id, $data): bool {
-        $old_data = get_option(FullSiteImport::SESSION_OPTION_KEY, []);
-        return update_option(FullSiteImport::SESSION_OPTION_KEY, Helper::recursive_wp_parse_args([$session_id => $data], $old_data));
-    }
-
-    // Delete specific session data by ID
-    public static function delete_session_data($session_id): bool {
-        $all_data = get_option(FullSiteImport::SESSION_OPTION_KEY, []);
-
-        if (!isset($all_data[$session_id])) {
-            return false; // Session ID doesn't exist
-        }
-
-        unset($all_data[$session_id]);
-        return update_option(FullSiteImport::SESSION_OPTION_KEY, $all_data);
-    }
-
+	/**
+	 * @deprecated 3.4.7 Use SessionData::get_session_id() instead
+	 */
 	public static function get_session_id(){
-		$session_id = null;
-		if(!empty($_REQUEST['session_id'])){
-			$session_id = sanitize_text_field($_REQUEST['session_id']);
-		}
-		return $session_id;
+		_deprecated_function(__METHOD__, '3.4.7', 'SessionData::get_session_id()');
+		return SessionData::get_session_id();
 	}
 
-	public static function get_session_data_by_id(): array {
-		if($session_id = self::get_session_id()){
-			return self::get_session_data($session_id);
-		}
-		throw new Exception(__('Invalid Session ID.', 'templately'));
-	}
-
+	/**
+	 * @deprecated 3.4.7 Use SessionData::save() or SessionData::set() instead
+	 */
 	public static function update_session_data_by_id($data): bool {
-		if($session_id = self::get_session_id()){
-			return self::update_session_data($session_id, $data);
+		_deprecated_function(__METHOD__, '3.4.7', 'SessionData::save() or SessionData::set()');
+		if($session_id = SessionData::get_session_id()){
+			$existing = SessionData::get_data($session_id);
+			return SessionData::save($session_id, array_merge($existing, $data));
 		}
-		throw new Exception(__('Invalid Session ID.', 'templately'));
+		return false;
+	}
+
+	/**
+	 * @deprecated 3.4.7 Use SessionData::clean_by_pack_id() instead
+	 */
+	public static function clean_session_data_by_pack_id($pack_id, $current_session_id) {
+		_deprecated_function(__METHOD__, '3.4.7', 'SessionData::clean_by_pack_id()');
+		return SessionData::clean_by_pack_id($pack_id, $current_session_id);
+	}
+
+	/**
+	 * @deprecated 3.4.7 Use SessionData::cleanup_expired() instead
+	 */
+	public static function cleanup_expired_sessions($max_age_days = 7) {
+		_deprecated_function(__METHOD__, '3.4.7', 'SessionData::cleanup_expired()');
+		return SessionData::cleanup_expired($max_age_days);
 	}
 
 
@@ -512,53 +508,5 @@ class Utils extends Base {
 			return false;
 		}
 	}
-
-
-
-
-
-
-
-
-
-	/**
-	 * Clean session data by pack ID, keeping only the current session
-	 * Removes all session entries with the same pack_id except the current session
-	 *
-	 * @param string $pack_id The pack ID to match for cleanup
-	 * @param string $current_session_id The current session ID to preserve
-	 * @return array Array of removed session IDs
-	 */
-	public static function clean_session_data_by_pack_id($pack_id, $current_session_id) {
-		if (empty($pack_id) || empty($current_session_id)) {
-			return [];
-		}
-
-		$all_session_data = self::get_all_session_data();
-		$removed_session_ids = [];
-
-
-		foreach ($all_session_data as $session_id => $session_data) {
-			// Skip the current session
-			if ($session_id === $current_session_id) {
-				continue;
-			}
-
-			// Remove sessions that have the same pack_id
-			if (isset($session_data['id']) && $session_data['id'] === $pack_id) {
-				unset($all_session_data[$session_id]);
-				$removed_session_ids[] = $session_id;
-			}
-		}
-
-		// Update the option with cleaned data if any sessions were removed
-		if (!empty($removed_session_ids)) {
-			update_option(FullSiteImport::SESSION_OPTION_KEY, $all_session_data);
-		}
-
-		return $removed_session_ids;
-	}
-
-
 
 }

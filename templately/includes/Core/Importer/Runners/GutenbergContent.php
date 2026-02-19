@@ -39,15 +39,13 @@ class GutenbergContent extends BaseRunner {
 	public function import( $data, $imported_data ): array {
 		$contents = $this->manifest['content'];
 
-		$processed_templates = $this->get_progress();
-
-		if(empty($processed_templates)){
+		// Log start of import
+		if(!$this->is_key_processed('started', 'import')){
 			$this->log( 0 );
-			$processed_templates = ["__started__"];
-			$this->update_progress( $processed_templates);
+			$this->mark_key_processed('started', 'import');
 		}
 
-		if(isset($this->manifest['has_settings']) && $this->manifest['has_settings'] && !in_array("global_colors", $processed_templates)){
+		if(isset($this->manifest['has_settings']) && $this->manifest['has_settings'] && !$this->is_key_processed('global_colors', 'settings')){
 			$file     = $this->dir_path . "settings.json";
 			$settings = Utils::read_json_file( $file );
 
@@ -70,6 +68,16 @@ class GutenbergContent extends BaseRunner {
 				Utils::update_option( 'site_logo', $site_logo_id );
 				$this->origin->update_imported_list('attachment', $data['logo']['id']);
 			}
+			else if (!empty($data['logo']['url']) && strpos($data['logo']['url'], 'data:image/') === 0) {
+				// Upload base64 data URL
+				$site_logo = Utils::upload_logo_base64($data['logo']['url'], $this->session_id);
+
+				if(!empty($site_logo['id'])){
+					$settings['site_logo'] = $site_logo['id'];
+					Utils::update_option( 'site_logo', $site_logo['id'] );
+					$this->origin->update_imported_list('attachment', $site_logo['id']);
+				}
+			}
 			else if(!empty($data['logo']) && empty(get_option('site_logo'))){
 				// demo logo
 				$site_logo = Utils::upload_logo($data['logo'], $this->session_id);
@@ -90,8 +98,7 @@ class GutenbergContent extends BaseRunner {
 			// Save the settings to the 'eb_global_styles' option
 			Utils::update_option('eb_global_styles', $settings);
 
-			$processed_templates[] = "global_colors";
-			$this->update_progress( $processed_templates);
+			$this->mark_key_processed('global_colors', 'settings');
 		}
 
 		$processed = 0;
@@ -100,7 +107,8 @@ class GutenbergContent extends BaseRunner {
 		}, 0);
 
 		$results = $this->loop( $contents, function($type, $posts, $results ) use($total) {
-			return $this->loop( $posts, function($id, $settings, $result ) use($type, $total, $results) {
+			// Inner loop accumulates results for this type
+			$inner_result = $this->loop( $posts, function($id, $settings, $result ) use($type, $results, $total) {
 				$path     = $this->dir_path . 'content' . DIRECTORY_SEPARATOR;
 
 				$import = $this->import_page_content( $id, $type, $path, $settings );
@@ -112,19 +120,25 @@ class GutenbergContent extends BaseRunner {
 					$result[ $type ]['succeed'][ $id ] = $import['id'];
 				}
 
-				// Broadcast Log
+				// Broadcast Log - merge with outer results for accurate counting
+				$merged = array_merge($results, $result);
 				$processed = 0;
-				$results   = Helper::recursive_wp_parse_args($result, $results);
-				array_walk_recursive($results, function($item) use (&$processed) {
-					$processed++;
-				});
-				$progress   = floor( ( 100 * $processed ) / $total );
+				foreach ($merged as $t => $data) {
+					if (is_array($data) && $t !== '__attachments') {
+						$processed += count($data['succeed'] ?? []) + count($data['failed'] ?? []);
+					}
+				}
+				$progress = $total > 0 ? floor( ( 100 * $processed ) / $total ) : 100;
 				$this->log( $progress );
 
 				$result['__attachments'][$type][ $id ] = isset($import['__attachments']) ? $import['__attachments'] : [];
 
 				return $result;
 			}, $type);
+
+			// Non-recursive merge of inner result with outer results
+			$results = array_merge($results, $inner_result);
+			return $results;
 		});
 
 		return [ 'content' => $results ];

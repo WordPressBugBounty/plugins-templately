@@ -82,6 +82,11 @@ class SignUp extends API {
 			unset( $response['user']['api_key'] );
 		}
 
+		if ( ! empty( $response['user'] ) && is_array( $response['user'] ) ) {
+			$response['user']['site_url'] = base64_encode( $_site_url );
+			$response['user']['ip']       = $_ip;
+		}
+
 		$this->utils('options')->set( 'user', $response['user'] );
 
 		return $response;

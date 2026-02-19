@@ -89,8 +89,7 @@ class AIContent extends API {
 		$this->post($this->endpoint . '/modify-content', [$this, 'modify_content']);
 		$this->post($this->endpoint . '/ai-update', [$this, 'ai_update']);
 		$this->post($this->endpoint . '/ai-update-preview', [$this, 'ai_update_preview']);
-		$this->post($this->endpoint . '/generate-logo', [$this, 'generate_logo']);
-		$this->post($this->endpoint . '/generate-meta', [$this, 'generate_meta']);
+		$this->post($this->endpoint . '/generate-tagline', [$this, 'generate_tagline']);
 		$this->get($this->endpoint . '/attachments', [$this, 'get_attachments'], [
 			'type' => [
 				'default' => 'pack',
@@ -181,7 +180,7 @@ class AIContent extends API {
 
 		// return $response;
 		if (is_wp_error($response)) {
-			return $this->error('request_failed', __('Request failed.', 'templately'), 'calculate_credit', 500, $response);
+			return $this->error('request_failed', __('Request failed.', 'templately'), 'calculate_credit', 500, ['error_detail' => $response->get_error_message()]);
 		}
 
 		$body = wp_remote_retrieve_body($response);
@@ -217,7 +216,7 @@ class AIContent extends API {
 		$preview_pages       = $this->get_param('preview_pages', [], null);
 		$image_replace       = $this->get_param('imageReplace', [], null);
 		$platform            = $this->get_param('platform');
-		$language            = $this->get_param('language', 'English');
+		$language            = $this->get_param('language', null);
 
 		// ai content fields
 		$name               = $this->get_param('name');
@@ -266,6 +265,15 @@ class AIContent extends API {
 			'language'        => $language,
 			'callback'        => defined('TEMPLATELY_CALLBACK') ? TEMPLATELY_CALLBACK . '/wp-json/templately/v1/ai-content/ai-update' : rest_url('templately/v1/ai-content/ai-update'),
 		];
+		/**
+		 * Filter body data before making API request to modify-content endpoint
+		 *
+		 * @since 3.5.0
+		 * @param array $body_data The request body data
+		 * @param WP_REST_Request $request The REST request object
+		 */
+		$body_data = apply_filters( 'templately_ai_modify_content_body_data', $body_data, $this->request );
+
 		$response = Helper::make_api_post_request('v2/ai/modify-content/pack', $body_data, $extra_headers, 15 * MINUTE_IN_SECONDS);
 
 		// 	set_transient( '__templately_ai_process_id', $response, 60 * 60 * 24 * 30 );
@@ -280,14 +288,14 @@ class AIContent extends API {
 		// return $response;
 		if (is_wp_error($response)) {
 			error_log(print_r($response, true));
-			return $this->error('request_failed', __('Request failed.', 'templately'), 'modify_content', 500, $response->get_error_data());
+			return $this->error('request_failed', __('Request failed.', 'templately'), 'modify_content', 500, ['error_data' => $response->get_error_data()]);
 		}
 
 		$body = wp_remote_retrieve_body($response);
 		$data = json_decode($body, true);
 		// error status is ok, if status is error then return as is
 		if (! is_array($data) || ! isset($data['status'])) {
-			return $this->error('invalid_response', __('Invalid response.', 'templately'), 'modify_content', 500, $data);
+			return $this->error('invalid_response', __('Invalid response.', 'templately'), 'modify_content', 500, ['data' => $data]);
 		}
 
 		// "{"status":"success","message":"The content is being generated in the queue","process_id":"01JRQQD39GNWTNF18EWF8YH0BG-271838-pack-408"}"
@@ -494,10 +502,12 @@ class AIContent extends API {
 		];
 	}
 
+
+
 	/**
 	 * Get attachments from API endpoint
 	 *
-	 * @return array
+	 * @return array|\WP_Error
 	 */
 	public function get_attachments() {
 		// Get parameters from request
@@ -521,7 +531,7 @@ class AIContent extends API {
 
 			// Check for HTTP errors
 			if (is_wp_error($response)) {
-				return $this->error('api_request_failed', __('Failed to fetch attachments from API.', 'templately'), 'get_attachments', 500, $response->get_error_message());
+				return $this->error('api_request_failed', __('Failed to fetch attachments from API.', 'templately'), 'get_attachments', 500, ['error_detail' => $response->get_error_message()]);
 			}
 
 			$response_code = wp_remote_retrieve_response_code($response);
@@ -546,7 +556,7 @@ class AIContent extends API {
 			$parsed_data = $this->parse_xml_content($xml_content);
 
 			if (is_wp_error($parsed_data)) {
-				return $this->error('xml_parse_error', __('Failed to parse XML content.', 'templately'), 'get_attachments', 500, $parsed_data->get_error_message());
+				return $this->error('xml_parse_error', __('Failed to parse XML content.', 'templately'), 'get_attachments', 500, ['error_detail' => $parsed_data->get_error_message()]);
 			}
 
 			// Extract attachments from parsed data
@@ -559,7 +569,7 @@ class AIContent extends API {
 			];
 
 		} catch (Exception $e) {
-			return $this->error('exception', __('An unexpected error occurred while fetching attachments.', 'templately'), 'get_attachments', 500, $e->getMessage());
+			return $this->error('exception', __('An unexpected error occurred while fetching attachments.', 'templately'), 'get_attachments', 500, ['error_detail' => $e->getMessage()]);
 		}
 	}
 
@@ -569,7 +579,7 @@ class AIContent extends API {
 	 * Parse XML content string using WXR Parser
 	 *
 	 * @param string $xml_content XML content string
-	 * @return array|WP_Error Parsed data or error
+	 * @return array|\WP_Error Parsed data or error
 	 */
 	private function parse_xml_content($xml_content) {
 		// Ensure WordPress filesystem functions are available
@@ -825,42 +835,31 @@ class AIContent extends API {
 		]);
 	}
 
+
+
 	/**
-	 * Generate logo using AI
+	 * Generate tagline using AI
 	 *
 	 * @return array|WP_Error
 	 */
-	public function generate_logo() {
+	public function generate_tagline() {
 		// Get parameters
-		$business_name = $this->get_param('business_name', '');
-		$description = $this->get_param('description');
-		$logo_type = $this->get_param('logo_type');
+		$prompt = $this->get_param('prompt');
 		$requested_platform = $this->get_param('requested_platform', 'templately');
 
 		// Validate required parameters
-		if (empty($description)) {
+		if (empty($prompt)) {
 			return $this->error(
-				'missing_description',
-				__('Description is required for logo generation.', 'templately'),
-				'generate_logo',
-				400
-			);
-		}
-
-		if (empty($logo_type)) {
-			return $this->error(
-				'missing_logo_type',
-				__('Logo type is required.', 'templately'),
-				'generate_logo',
+				'missing_prompt',
+				__('Prompt is required for tagline generation.', 'templately'),
+				'generate_tagline',
 				400
 			);
 		}
 
 		// Prepare request body
 		$body_data = [
-			'business_name' => $business_name,
-			'description' => $description,
-			'logo_type' => $logo_type,
+			'prompt' => $prompt,
 		];
 
 		// Make API request
@@ -869,16 +868,16 @@ class AIContent extends API {
 			'x-templately-requested-platform' => $requested_platform,
 		];
 
-		$response = Helper::make_api_post_request('v2/generate-logo', $body_data, $extra_headers, 60);
+		$response = Helper::make_api_post_request('v2/generate-tagline', $body_data, $extra_headers, 30);
 
 		// Handle API response errors
 		if (is_wp_error($response)) {
 			return $this->error(
 				'api_request_failed',
-				__('Something went wrong. Please try again or contact support.', 'templately'),
-				'generate_logo',
+				__('Failed to generate tagline.', 'templately'),
+				'generate_tagline',
 				500,
-				$response->get_error_message()
+				['error_detail' => $response->get_error_message()]
 			);
 		}
 
@@ -895,7 +894,7 @@ class AIContent extends API {
 				return $this->error(
 					'api_response_error',
 					$error_message,
-					'generate_logo',
+					'generate_tagline',
 					$response_code
 				);
 			}
@@ -904,7 +903,7 @@ class AIContent extends API {
 			return $this->error(
 				'api_response_error',
 				__('Something went wrong. Please try again or contact support.', 'templately'),
-				'generate_logo',
+				'generate_tagline',
 				$response_code
 			);
 		}
@@ -915,7 +914,7 @@ class AIContent extends API {
 			return $this->error(
 				'invalid_response',
 				__('Invalid response from API.', 'templately'),
-				'generate_logo',
+				'generate_tagline',
 				500
 			);
 		}
@@ -925,143 +924,7 @@ class AIContent extends API {
 			return $this->error(
 				'api_response_error',
 				__('API returned an unexpected response.', 'templately'),
-				'generate_logo',
-				500
-			);
-		}
-
-		// Extract image_base64 from nested data field if present
-		$image_base64 = null;
-		if (isset($data['data']['image_base64'])) {
-			$image_base64 = $data['data']['image_base64'];
-		} elseif (isset($data['image_base64'])) {
-			// Fallback for legacy response format
-			$image_base64 = $data['image_base64'];
-		}
-
-		// Upload base64 image to media library if provided
-		if (!empty($image_base64)) {
-			$upload_result = Utils::upload_logo_base64($image_base64);
-
-			if (is_array($upload_result) && isset($upload_result['error'])) {
-				// Log error but don't fail the entire response
-				error_log('Logo upload error: ' . $upload_result['error']);
-			} else if (is_array($upload_result) && isset($upload_result['id'])) {
-				// Return clean response with only essential uploaded logo information
-				// Overwrite the data field to remove base64 image data and return only ID and URL
-				return [
-					'status' => 'success',
-					'data' => [
-						'id' => $upload_result['id'],
-						'url' => $upload_result['url'],
-					],
-				];
-			}
-		}
-
-		// Return the original response if no logo was uploaded
-		return $data;
-	}
-
-	/**
-	 * Generate meta (title or tagline) using AI
-	 *
-	 * @return array|WP_Error
-	 */
-	public function generate_meta() {
-		// Get parameters
-		$field = $this->get_param('field');
-		$text = $this->get_param('text');
-		$requested_platform = $this->get_param('requested_platform', 'templately');
-
-		// Validate required parameters
-		if (empty($field)) {
-			return $this->error(
-				'missing_field',
-				__('Field is required.', 'templately'),
-				'generate_meta',
-				400
-			);
-		}
-
-		if (empty($text)) {
-			return $this->error(
-				'missing_text',
-				__('Text is required for meta generation.', 'templately'),
-				'generate_meta',
-				400
-			);
-		}
-
-		// Prepare request body
-		$body_data = [
-			'field' => $field,
-			'text' => $text,
-		];
-
-		// Make API request
-		$extra_headers = [
-			'Content-Type' => 'application/json',
-			'x-templately-requested-platform' => $requested_platform,
-		];
-
-		$response = Helper::make_api_post_request('v2/generate-meta', $body_data, $extra_headers, 30);
-
-		// Handle API response errors
-		if (is_wp_error($response)) {
-			return $this->error(
-				'api_request_failed',
-				__('Failed to generate meta.', 'templately'),
-				'generate_meta',
-				500,
-				$response->get_error_message()
-			);
-		}
-
-		$response_code = wp_remote_retrieve_response_code($response);
-		$response_body = wp_remote_retrieve_body($response);
-
-		if ($response_code !== 200) {
-			// Try to parse the response body as JSON to get specific error details
-			$data = json_decode($response_body, true);
-
-			// If valid JSON, extract error message and return with proper status code
-			if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
-				$error_message = isset($data['message']) ? $data['message'] : __('Something went wrong. Please try again or contact support.', 'templately');
-				return $this->error(
-					'api_response_error',
-					$error_message,
-					'generate_meta',
-					$response_code
-				);
-			}
-
-			// Otherwise, return generic error
-			return $this->error(
-				'api_response_error',
-				__('Something went wrong. Please try again or contact support.', 'templately'),
-				'generate_meta',
-				$response_code
-			);
-		}
-
-		// Parse and validate response
-		$data = json_decode($response_body, true);
-		if (json_last_error() !== JSON_ERROR_NONE) {
-			return $this->error(
-				'invalid_response',
-				__('Invalid response from API.', 'templately'),
-				'generate_meta',
-				500
-			);
-		}
-
-		// Check if the response has the expected structure
-		if (!isset($data['status'])) {
-			return $this->error(
-				'api_response_error',
-				__('API returned an unexpected response.', 'templately'),
-				'generate_meta',
+				'generate_tagline',
 				500
 			);
 		}

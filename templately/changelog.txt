@@ -1,4 +1,11 @@
 == Changelog ==
+= 3.5.1 - 19-02-2026 =
+Added: Google social login.
+Added: Site Logo Generate using AI.
+Fixed: Header menu breaking issue when previewing templates.
+Fixed: Platform switch resetting on page refresh in Templately Cloud.
+Few minor bug fixes and improvements.
+
 = 3.5.0 - 15-01-2026 =
 Added: Responsive mode controller in Live Demo page with a top bar.
 Improved: Template pack details page UI.

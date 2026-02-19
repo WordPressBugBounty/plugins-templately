@@ -144,7 +144,7 @@ class Finalizer extends BaseRunner {
 
 	private function finalize_imports( $templates, $type, $post_type = null ) {
 		// used for counting
-		$processed = $this->get_progress([], 'finalized_imports', false);
+		$processed = $this->get_loop_result([], 'finalized_imports', false);
 		$path      = $this->dir_path . $this->type . DIRECTORY_SEPARATOR;
 
 		if ( ! empty( $this->sub_type ) ) {
@@ -198,7 +198,7 @@ class Finalizer extends BaseRunner {
 
 				$processed[] = $old_template_id;
 				// Add the template to the processed templates and update the session data
-				$this->update_progress( $processed, null, 'finalized_imports', false);
+				$this->set_loop_result( $processed, 'finalized_imports');
 				// Broadcast Log
 				$progress = floor( ( 100 * count($processed) ) / $this->total_counts );
 				if(empty($progress)){

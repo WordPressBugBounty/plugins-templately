@@ -40,8 +40,8 @@ class Http extends Base {
      *
      * @return string
      */
-    public function url($is_live_api = false) {
-        if ( !$is_live_api && Helper::is_dev_api() ) {
+    public function url() {
+        if ( Helper::is_dev_api() ) {
             $this->url = 'https://app.templately.dev/api/plugin';
         }
 
@@ -57,18 +57,39 @@ class Http extends Base {
     }
 
     /**
-     * Preparing query arguments.
-     * Unknown.
-     *
-     * @return string
-     */
-    public static function prepare( $query, ...$args ) {
-        return sprintf( $query, ...$args );
+ * Generate Google OAuth authentication URL
+ *
+ * @param string $redirect_to Optional redirect path after authentication
+ * @return string The Google auth URL with query parameters
+ */
+public function google_auth_url($redirect_to = '') {
+    $base_url = $this->url();
+    // Replace /api/plugin with /api/auth/plugin/google
+    $auth_url = str_replace('/api/plugin', '/api/auth/plugin/google', $base_url);
+
+    // Build the site_url with admin-ajax path
+    $admin_url = admin_url('admin-ajax.php');
+    $admin_params = [
+        'action' => 'templately_google_login',
+    ];
+
+    // Add redirect-to parameter if provided
+    if (!empty($redirect_to)) {
+        $admin_params['redirect-to'] = $redirect_to;
     }
 
-    /**
-     * Preparing query arguments
-     *
+    $site_url_with_params = add_query_arg($admin_params, $admin_url);
+
+    $query_params = [
+        'site_url' => urlencode($site_url_with_params),
+        'site_ip' => Helper::get_ip(),
+        'state' => wp_generate_password(32, false) // Add unique random state for cache busting
+    ];
+
+    return add_query_arg($query_params, $auth_url);
+}
+
+/**
      * @param  array $args
      * @return string
      */
@@ -147,7 +168,6 @@ class Http extends Base {
             $query = $this->query;
         }
 
-        $is_live_api = null;
         $headers = [
             'Content-Type'         => 'application/json',
             'x-templately-ip'      => Helper::get_ip(),
@@ -158,11 +178,6 @@ class Http extends Base {
         if ( ! empty( $args['headers'] ) ) {
             $headers = wp_parse_args( $args['headers'], $headers );
             unset( $args['headers'] );
-        }
-
-        if ( ! empty( $args['is_live_api'] ) ) {
-            $is_live_api = $args['is_live_api'];
-            unset( $args['is_live_api'] );
         }
 
         if ( defined( 'TEMPLATELY_DEBUG_LOG' ) && TEMPLATELY_DEBUG_LOG ) {
@@ -182,7 +197,7 @@ class Http extends Base {
         $maxRetries = defined('TEMPLATELY_HTTP_RETRY') ? TEMPLATELY_HTTP_RETRY : 3;
         $args       = wp_parse_args( $args, $_default_args );
         do {
-            $response = wp_remote_post( $this->url($is_live_api), $args );
+            $response = wp_remote_post( $this->url(), $args );
             $retryCount++;
         } while ( is_wp_error( $response ) && $retryCount < $maxRetries );
 
@@ -210,6 +225,7 @@ class Http extends Base {
 
         // Check for verification header before processing response body
         Helper::check_verification_header( $response );
+        Helper::check_site_disconnection( $response );
 
         $response_code    = wp_remote_retrieve_response_code( $response );
         $response_message = wp_remote_retrieve_response_message( $response );
@@ -267,9 +283,29 @@ class Http extends Base {
 
                 return $wp_error;
             }
+        } elseif ( ! empty( $response['status'] ) && $response['status'] === 'error' ) {
+
+            if ( defined( 'TEMPLATELY_DEBUG_LOG' ) && TEMPLATELY_DEBUG_LOG ) {
+                Helper::log( 'ERROR: ' );
+                Helper::log( $response );
+                Helper::log( 'END ERROR' );
+            }
+
+            $error_data = [];
+            if ( ! empty( $response['statusText'] ) ) {
+                $error_data['statusText'] = $response['statusText'];
+            }
+
+            $error_message = ! empty( $response['message'] ) ? $response['message'] : __( 'Unknown error occurred', 'templately' );
+
+            return new WP_Error( 'templately_api_error', $error_message, $error_data );
         }
 
         $_response = isset( $response['data'][$this->endpoint] ) ? $response['data'][$this->endpoint] : [];
+        // {"data":{"connectWithApiKey":{"status":"error","message":"Invalid API key.","user":null}}}
+        if ( ! empty( $response['status'] ) && $response['status'] === 'error' ) {
+
+        }
 
         if ( defined( 'TEMPLATELY_DEBUG_LOG' ) && TEMPLATELY_DEBUG_LOG ) {
             Helper::log( 'RESPONSE: ' );

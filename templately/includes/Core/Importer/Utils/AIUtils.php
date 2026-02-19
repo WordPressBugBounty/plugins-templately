@@ -16,7 +16,7 @@ class AIUtils {
 	 *
 	 * @param mixed $value The value to sanitize (string or numeric)
 	 * @param string $type Type for error message ('session_id', 'content_id', 'path_key')
-	 * @return string|WP_Error Sanitized value or error if invalid
+	 * @return string|\WP_Error Sanitized value or error if invalid
 	 */
 	public static function sanitize_path_component($value, $type = 'path_component') {
 		// Convert numeric values to string (content IDs like 136 are valid)
@@ -139,7 +139,7 @@ class AIUtils {
 		}
 
 		// Get timeout tracking data from session
-		$session_data = Utils::get_session_data($session_id);
+		$session_data = SessionData::get_data($session_id);
 		$progress_data = $session_data['progress'][$progress_id] ?? [];
 		$last_progress = $progress_data['last_progress'] ?? 0;
 		$last_time = $progress_data['last_time'] ?? 0;
@@ -193,7 +193,7 @@ class AIUtils {
 					'last_progress' => $progress_percentage,
 					'last_time' => $current_time,
 				];
-				Utils::update_session_data($session_id, ['progress' => $updated_progress]);
+				SessionData::set($session_id, 'progress', $updated_progress);
 			}
 
 			// Prepare SSE message data
@@ -224,6 +224,61 @@ class AIUtils {
 
 		// Continue processing if timeout exceeded (current behavior)
 		return true;
+	}
+
+	/**
+	 * Poll for logo generation status on local sites
+	 * Makes GET request to API endpoint and returns logo generation data
+	 *
+	 * @param string $process_id The logo generation process ID
+	 * @return array|WP_Error Logo generation data (images, credit_cost) or error
+	 */
+	public static function poll_for_logo_generation($process_id) {
+		if (empty($process_id)) {
+			return Helper::error(
+				'invalid_process_id',
+				__('Process ID is required for logo polling.', 'templately'),
+				'poll_for_logo_generation',
+				400
+			);
+		}
+
+		// Make GET request to API endpoint
+		$response = Helper::make_api_get_request("v2/get-generated-logo/{$process_id}", [], [], 30);
+
+		if (is_wp_error($response)) {
+			return $response;
+		}
+
+		$response_code = wp_remote_retrieve_response_code($response);
+		if ($response_code !== 200) {
+			return Helper::error(
+				'api_error',
+				sprintf(__('API returned HTTP %d error.', 'templately'), $response_code),
+				'poll_for_logo_generation',
+				$response_code
+			);
+		}
+
+		$body = wp_remote_retrieve_body($response);
+		$api_data = json_decode($body, true);
+
+		if (!isset($api_data['status']) || $api_data['status'] !== 'success') {
+			return Helper::error(
+				'api_response_error',
+				__('API returned an error response.', 'templately'),
+				'poll_for_logo_generation',
+				400
+			);
+		}
+
+		$response_data = $api_data['data'] ?? [];
+
+		// Return the logo generation data (images array, credit_cost, etc.)
+		return [
+			'status' => 'success',
+			'data' => $response_data,
+		];
 	}
 
 	/**
@@ -610,6 +665,8 @@ class AIUtils {
 	 * Get matched session data by process ID
 	 *
 	 * Helper function to retrieve session data for a given process ID
+	 * Optimized to use AI process data which already contains session_id,
+	 * avoiding the need to load all session data.
 	 *
 	 * @param string $process_id The process ID to match
 	 * @return array|false Returns matched data array or false if not found
@@ -619,20 +676,12 @@ class AIUtils {
 			return false;
 		}
 
-		$all_data = Utils::get_all_session_data();
+		// Get AI process data which contains the session_id
+		$process_data = self::get_ai_process_data_by_process_id($process_id);
 
-		if (empty($all_data) || ! is_array($all_data)) {
-			return false;
-		}
-
-		// INSERT_YOUR_CODE
-		if (is_array($all_data)) {
-			$all_data = array_reverse($all_data);
-		}
-		foreach ($all_data as $data) {
-			if (isset($data['process_id']) && ($data['process_id'] === $process_id)) {
-				return $data;
-			}
+		if (!empty($process_data['session_id'])) {
+		// Direct lookup using session_id - no loading all sessions
+			return SessionData::get_data($process_data['session_id']);
 		}
 
 		return false;

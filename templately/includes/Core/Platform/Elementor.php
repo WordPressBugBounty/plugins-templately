@@ -330,4 +330,32 @@ class Elementor extends Platform {
 
 		return $importer->get_data( $data );
 	}
+
+	/**
+	 * Filter Child Type
+	 *
+	 * @param $child_type
+	 * @param $element_data
+	 * @param $element
+	 *
+	 * @return mixed
+	 */
+	public static function filter_child_type( $child_type, $element_data, $element ) {
+		// Fix for Elementor Pro Promotion Widget
+		if ( is_a( $element, 'Elementor\Modules\Promotions\Widgets\Pro_Widget_Promotion' ) || ( is_object( $element ) && 'pro-promotion' === $element->get_name() ) ) {
+			$el_types = array_keys( Plugin::$instance->elements_manager->get_element_types() );
+
+			if ( isset( $element_data['elType'] ) && in_array( $element_data['elType'], $el_types, true ) ) {
+				return Plugin::$instance->elements_manager->get_element_types( $element_data['elType'] );
+			}
+
+			if ( ! isset( $element_data['widgetType'] ) ) {
+				return null;
+			}
+
+			return Plugin::$instance->widgets_manager->get_widget_types( $element_data['widgetType'] );
+		}
+
+		return $child_type;
+	}
 }

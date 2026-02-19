@@ -128,7 +128,7 @@ class ElementorContent extends BaseRunner {
 		$results  = $data["imported_data"]["content"] ?? [];
 		$contents = $this->manifest['content'];
 		$path     = $this->dir_path . 'content' . DIRECTORY_SEPARATOR;
-		$processed_templates = $this->get_progress();
+
 
 		// $total     = array_reduce( $contents, function ( $carry, $item ) {
 		// 	return $carry + count( $item );
@@ -146,7 +146,7 @@ class ElementorContent extends BaseRunner {
 		$kit        = $this->get_kit_with_fallback( $kits_manager, $active_kit );
 		$old_logo   = $kit->get_settings('site_logo');
 
-		if(isset($this->manifest['has_settings']) && $this->manifest['has_settings'] && !in_array("global_colors", $processed_templates)){
+		if(isset($this->manifest['has_settings']) && $this->manifest['has_settings'] && !$this->is_key_processed('global_colors', 'settings')){
 			// backing up the active kit id before updating the new one
 			if(!get_option("__templately_" . $kits_manager::OPTION_ACTIVE)){
 				add_option("__templately_" . $kits_manager::OPTION_ACTIVE, $active_kit, '', 'no');
@@ -198,11 +198,21 @@ class ElementorContent extends BaseRunner {
 				$settings['site_logo'] = $data['logo'];
 				Utils::backup_option_value( 'site_logo' );
 				$this->origin->update_imported_list('attachment', $data['logo']['id']);
+			} elseif (!empty($data['logo']['url']) && strpos($data['logo']['url'], 'data:image/') === 0) {
+				// Upload base64 data URL
+				$site_logo = Utils::upload_logo_base64($data['logo']['url'], $this->session_id);
+
+				if(!empty($site_logo['id'])){
+					$settings['site_logo'] = $site_logo;
+					Utils::backup_option_value( 'site_logo' );
+					$this->origin->update_imported_list('attachment', $site_logo['id']);
+				}
 			} elseif (!empty($data['logo'])) {
 				$settings['site_logo'] = $old_logo;
 
 				// If there's no old logo id, try to upload a new logo
 				if (empty($old_logo['id'])) {
+					// Upload regular URL
 					$site_logo = Utils::upload_logo($data['logo'], $this->session_id);
 
 					// If the upload was successful, use the new logo, otherwise use the old one
@@ -229,8 +239,7 @@ class ElementorContent extends BaseRunner {
 			// Update the post
 			wp_update_post( $post_data );
 
-			$processed_templates[] = "global_colors";
-			$this->update_progress( $processed_templates);
+			$this->mark_key_processed('global_colors', 'settings');
 		}
 
 		$active_kit = $kits_manager->get_active_id();
@@ -248,7 +257,8 @@ class ElementorContent extends BaseRunner {
 		}, 0);
 
 		$results = $this->loop( $contents, function($post_type, $post, $results ) use($path, $imported_data, $total) {
-			return $this->loop( $post, function($id, $content_settings, $result ) use ($post_type, $results, $path, $imported_data, $total) {
+			// Inner loop accumulates results for this post_type
+			$inner_result = $this->loop( $post, function($id, $content_settings, $result ) use ($post_type, $results, $path, $imported_data, $total) {
 				if ( post_type_exists( $post_type ) ) {
 
 					$import = $this->import_post_type_content( $id, $post_type, $path, $imported_data, $content_settings );
@@ -260,18 +270,24 @@ class ElementorContent extends BaseRunner {
 						$result[ $post_type ]['succeed'][ $id ] = $import;
 					}
 
-					// Broadcast Log
+					// Broadcast Log - merge with outer results for accurate counting
+					$merged = array_merge($results, $result);
 					$processed = 0;
-					$results = Helper::recursive_wp_parse_args($result, $results);
-					array_walk_recursive($results, function($item) use (&$processed) {
-						$processed++;
-					});
-					$progress   = floor( ( 100 * $processed ) / $total );
+					foreach ($merged as $type => $data) {
+						if (is_array($data)) {
+							$processed += count($data['succeed'] ?? []) + count($data['failed'] ?? []);
+						}
+					}
+					$progress = $total > 0 ? floor( ( 100 * $processed ) / $total ) : 100;
 					$this->log( $progress );
 				}
 
 				return $result;
-			}, $post_type); //, true
+			}, $post_type);
+
+			// Non-recursive merge of inner result with outer results
+			$results = array_merge($results, $inner_result);
+			return $results;
 		});
 
 		return [ 'content' => $results ];

@@ -88,6 +88,16 @@ class WPImport extends WP_Importer {
 	 */
 	private $id;
 
+	/**
+	 * @var mixed
+	 */
+	private $json;
+
+	/**
+	 * @var string
+	 */
+	private $session_id;
+
 	// Information to import from WXR file.
 	private $version;
 	private $authors       = [];
@@ -386,7 +396,7 @@ class WPImport extends WP_Importer {
 		}
 
 
-		$processed_templates = $this->get_progress([], $this->import_data_key);
+		$processed_templates = $this->get_loop_result([], $this->import_data_key);
 		if (!empty($processed_templates)) {
 			return;
 		}
@@ -448,7 +458,7 @@ class WPImport extends WP_Importer {
 			}
 		}
 
-		$this->update_progress( true, null, $this->import_data_key );
+		$this->set_loop_result( true, $this->import_data_key );
 	}
 
 	/**
@@ -464,9 +474,9 @@ class WPImport extends WP_Importer {
 			'failed'  => [],
 		];
 
-		$processed_templates = $this->get_progress([], "wp_import_terms_" . $this->import_data_key);
+		$processed_templates = $this->get_loop_result([], "wp_import_terms_" . $this->import_data_key);
 		if (!empty($processed_templates)) {
-			$result = $this->get_result([], "wp_import_terms_" . $this->import_data_key);
+			$result = $this->get_loop_result([], "wp_import_terms_" . $this->import_data_key);
 			return $result;
 		}
 
@@ -552,7 +562,7 @@ class WPImport extends WP_Importer {
 		unset( $this->terms );
 
 		// Add the template to the processed templates and update the session data
-		$this->update_progress( true, $result, "wp_import_terms_" . $this->import_data_key);
+		$this->set_loop_result( $result, "wp_import_terms_" . $this->import_data_key);
 		return $result;
 	}
 

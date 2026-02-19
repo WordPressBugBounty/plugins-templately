@@ -13,6 +13,7 @@ namespace Templately;
 use Templately\Admin\API\Settings as APISettings;
 use Templately\Admin\Settings;
 use Templately\API\AIContent;
+use Templately\API\LogoGeneration;
 use Templately\API\Conditions;
 use Templately\API\ThemeBuilderApi;
 use Templately\Builder\ThemeBuilder;
@@ -35,13 +36,14 @@ use Templately\API\Categories;
 use Templately\API\Dependencies;
 use Templately\API\TemplateTypes;
 use Templately\API\SavedTemplates;
+use Templately\API\Sites;
 use Templately\Core\Maintenance;
 use Templately\Core\Migrator;
 use Templately\Core\Platform\Gutenberg;
 use Templately\Core\Platform\Elementor;
 
 final class Plugin extends Base {
-    public $version = '3.5.0';
+    public $version = '3.5.1';
 
 	public $admin;
 	public $settings;
@@ -83,6 +85,10 @@ final class Plugin extends Base {
 
 		add_action( 'plugins_loaded', [ $this, 'plugins_loaded' ] );
 		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
+
+		add_action( 'wp_ajax_templately_google_login', [ $this, 'google_login_handler' ] );
+		add_action( 'wp_ajax_nopriv_templately_google_login', [ $this, 'google_login_handler' ] );
+
 		/**
 		 * Initialize.
 		 */
@@ -180,6 +186,7 @@ final class Plugin extends Base {
 		ThemeBuilderApi::get_instance();
 
 		AIContent::get_instance();
+		LogoGeneration::get_instance();
 		Items::get_instance();
 		SavedTemplates::get_instance();
 
@@ -189,6 +196,7 @@ final class Plugin extends Base {
 		Profile::get_instance();
 		MyClouds::get_instance();
 		WorkSpaces::get_instance();
+		Sites::get_instance();
 
 		APISettings::get_instance();
 		// Note: DeveloperSettings::get_instance() is called in Developer::init_modules() when developer functionality is available and enabled
@@ -252,5 +260,47 @@ final class Plugin extends Base {
 	 */
 	public function load_textdomain() {
 		load_plugin_textdomain( 'templately', false, dirname( TEMPLATELY_PLUGIN_BASENAME ) . '/languages' );
+	}
+
+	public function google_login_handler() {
+		$redirect_url = admin_url( 'admin.php?page=templately' );
+
+		if ( ! empty( $_GET['error'] ) ) {
+			$error_message = sanitize_text_field( $_GET['error'] );
+		} elseif ( ! empty( $_GET['api_key'] ) ) {
+			$request = new \WP_REST_Request( 'POST', '/templately/v1/login' );
+			$request->set_param( 'viaAPI', true );
+			$request->set_param( 'api_key', sanitize_text_field( $_GET['api_key'] ) );
+
+			/**
+			 * @var Login $login
+			 */
+			$login = Login::get_instance();
+			$login->permission_check( $request );
+			$response = $login->login();
+
+			if ( ! is_wp_error( $response ) && ! empty( $response['user'] ) ) {
+				$redirect_path = ! empty( $_GET['redirect-to'] ) ? sanitize_text_field( $_GET['redirect-to'] ) : '';
+
+				if ( ! empty( $redirect_path ) ) {
+					$redirect_url = add_query_arg( 'path', $redirect_path, $redirect_url );
+				}
+
+				wp_safe_redirect( $redirect_url );
+				exit;
+			} else {
+				$error_message = ( is_wp_error( $response ) ) ? $response->get_error_message() : __( 'Login failed.', 'templately' );
+			}
+		} else {
+			$error_message = __( 'Missing API Key.', 'templately' );
+		}
+
+		$redirect_url = add_query_arg( [
+			'path'          => 'sign-in',
+			'error_message' => $error_message,
+		], $redirect_url );
+
+		wp_safe_redirect( $redirect_url );
+		exit;
 	}
 }

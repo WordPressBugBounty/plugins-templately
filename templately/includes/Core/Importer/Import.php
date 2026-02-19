@@ -77,14 +77,12 @@ class Import {
 
 			try{
 				if ( $runner->should_run( $data, $imported_data ) ) {
-					$progress = $this->get_progress();
-					if(!in_array($runner->get_name(), $progress)){
+					if (!$this->is_key_processed($runner->get_name(), 'runner_start')) {
 						$runner->log( 0 );
-						$progress[] = $runner->get_name();
-						$this->update_progress( $progress);
+						$this->mark_key_processed($runner->get_name(), 'runner_start');
 					}
 					$import        = $runner->import( $data, $imported_data );
-					$imported_data = array_merge_recursive( $imported_data, $import );
+					$imported_data = array_merge( $imported_data, $import );
 
 					if( $runner->get_name() != 'finalize' ) {
 						$runner->log( 100 );

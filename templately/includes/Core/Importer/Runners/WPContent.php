@@ -40,8 +40,8 @@ class WPContent extends BaseRunner {
 
 		$this->import_actions();
 
-		$contents        = $this->get_progress($this->manifest['wp-content'], 'wp-content_manifest_content', false);
-		$this->processed = $this->get_progress([], 'wp-content_processed', false);
+		$contents        = $this->get_loop_result($this->manifest['wp-content'], 'wp-content_manifest_content', false);
+		$this->processed = $this->get_loop_result([], 'wp-content_processed', false);
 		$this->total     = array_reduce( $contents, function ( $carry, $item ) {
 			return $carry + count( $item );
 		}, 0 );
@@ -175,7 +175,7 @@ class WPContent extends BaseRunner {
 			$type  = $post['post_type'];
 			$title = $post['post_title'];
 
-			$this->update_progress( $this->processed, null, 'wp-content_processed', false);
+			$this->set_loop_result( $this->processed, 'wp-content_processed');
 		} elseif ( isset( $post['term_id'] ) ) {
 			/**
 			 * FIXME: We should fix it later, with a proper count of terms and make a total with post itself.
@@ -202,7 +202,7 @@ class WPContent extends BaseRunner {
 	}
 
 	public function update_total( $WPImport ) {
-		$contents     = $this->get_progress([], 'wp-content_manifest_content', false);
+		$contents     = $this->get_loop_result([], 'wp-content_manifest_content', false);
 
 		foreach ($WPImport->posts as $key => $post) {
 			$postType = $post['post_type'];
@@ -217,6 +217,6 @@ class WPContent extends BaseRunner {
 			return $carry + count( $item );
 		}, 0 );
 
-		$this->update_progress( $contents, null, 'wp-content_manifest_content', false);
+		$this->set_loop_result( $contents, 'wp-content_manifest_content');
 	}
 }

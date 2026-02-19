@@ -2,8 +2,11 @@
 
 namespace Templately\Core\Importer\Runners;
 
+use Exception;
+use Templately\Core\Importer\Exception\SkippableErrorException;
 use Templately\Core\Importer\FullSiteImport;
 use Templately\Core\Importer\LogHelper;
+use Templately\Core\Importer\Utils\SessionData;
 use Templately\Core\Importer\Utils\Utils;
 use Templately\Utils\Helper;
 
@@ -12,6 +15,9 @@ use Templately\Utils\Helper;
  * @method void sse_message(array $data)
  */
 trait Loop {
+
+	public static $max_error_attempts = 2;
+	public static $max_consecutive_skips = 5;
 
 	/**
 	 * Undocumented function
@@ -31,9 +37,7 @@ trait Loop {
 			throw new \Exception('The items should be an array');
 		}
 
-		$results  = $this->_get_result([], $unique_id);
-		$progress = $this->_get_progress([], $unique_id);
-
+		$results = $this->_get_loop_result([], $unique_id);
 
 		if(!empty($this->backup_attributes)){
 			$this->_retrieve_attributes($this->backup_attributes, $unique_id);
@@ -41,21 +45,57 @@ trait Loop {
 
 		foreach ($items as $key => $item) {
 			// If the template has been processed, skip it
-			if (in_array("key_$key", $progress, true)) {
+			if ($this->_is_key_processed($key, $unique_id)) {
 				continue;
 			}
 
-			$result  = $callback($key, $item, $results);
-			if($result === 'continue'){
-				// If the callback returns 'continue', skip to the next iteration
-				continue;
+			// Skip-on-error: Check if feature is enabled and item should be skipped
+			if ($this->_is_skip_feature_enabled()) {
+				$calling_class = SessionData::get_calling_identifier($unique_id, true, false);
+				$error_attempts = SessionData::get_error_attempts($this->session_id, $calling_class, $key);
+
+				// Skip if error attempts >= MAX_ERROR_ATTEMPTS
+				if ($error_attempts >= self::$max_error_attempts) {
+					$this->_mark_key_skipped($key, $unique_id, 'Max error attempts reached');
+					$this->_increment_consecutive_skips();
+					continue;
+				}
 			}
-			$results = Helper::recursive_wp_parse_args($result, $results);
 
+			// Wrap callback in try-catch for skip-on-error handling
+			try {
+				$result  = $callback($key, $item, $results);
+				if($result === 'continue'){
+					// If the callback returns 'continue', skip to the next iteration
+					continue;
+				}
+				$results = $result;
 
-			// Add the template to the processed templates and update the session data
-			$progress[] = "key_$key";
-			$this->_update_progress( $progress, $result, $unique_id);
+				// Success - reset consecutive skip counter
+				if ($this->_is_skip_feature_enabled()) {
+					$this->_reset_consecutive_skips();
+				}
+			} catch (SkippableErrorException $e) {
+				// Catchable skip error - increment attempts and mark as skipped
+				if ($this->_is_skip_feature_enabled()) {
+					$this->_increment_error_attempts($key, $unique_id);
+					$this->_mark_key_skipped($key, $unique_id, $e->getMessage());
+					continue;
+				} else {
+					// Feature disabled - throw as normal exception
+					throw new Exception($e->getMessage(), $e->getCode(), $e);
+				}
+			} catch (Exception $e) {
+				// Other exceptions - increment error attempts then re-throw
+				if ($this->_is_skip_feature_enabled()) {
+					$this->_increment_error_attempts($key, $unique_id);
+				}
+				throw $e;
+			}
+
+			// Mark as processed and save result
+			$this->_mark_key_processed($key, $unique_id);
+			$this->_set_loop_result($results, $unique_id);
 
 			// If it's not the last item, send the SSE message and exit
 
@@ -70,7 +110,7 @@ trait Loop {
 					'action'  => 'continue',
 					'name'    => method_exists($this, 'get_name') ? $this->get_name() : '',
 					'index'   => $key,
-					'results' => (function() use ($unique_id) {$this->CallingFunctionName($unique_id);})(),
+					'results' => SessionData::get_calling_identifier($unique_id, true, false, 3),
 				] );
 				exit;
 			}
@@ -78,124 +118,96 @@ trait Loop {
 		return $results;
 	}
 
-	private function CallingFunctionName($id = null, $function = true, $line = false, $level = 3) {
-		$return = 'unknown';
-		$trace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, ($level + 1));
-
-		// Check if the trace has at least three elements
-		if (isset($trace[$level])) {
-			$final_call = $trace[$level];
-			$return = '';
-
-			if (isset($final_call['object'])) {
-				$return .= get_class($final_call['object']);
-			} elseif (isset($final_call['class'])) {
-				$return .= $final_call['class'];
-			}
-
-			if ($function && isset($final_call['function'])) {
-				$return .= ($return ? '::' : '') . $final_call['function'];
-			}
-
-			if ($line && isset($final_call['line'])) {
-				$return .= ($return ? '::' : '') . $final_call['line'];
-			}
-
-			if (!empty($id)) {
-				$return .= ($return ? '::' : '') . $id;
-			}
-
-			if (!$return) {
-				$return = 'unknown';
-			}
-		}
-		// error_log($return . PHP_EOL, 3, ABSPATH . 'wp-content/debug.log');
-
-		return $return;
+	/**
+	 * Check if a key has been processed (internal)
+	 *
+	 * @param mixed $key The item key
+	 * @param string|null $unique_id Optional unique identifier
+	 * @return bool True if processed
+	 */
+	private function _is_key_processed($key, $unique_id = null): bool {
+		$calling_class = SessionData::get_calling_identifier($unique_id, true, false);
+		return SessionData::is_key_processed($this->session_id, $calling_class, $key);
 	}
 
-	private function _get_progress($defaults = [], $unique_id = null, $function = true) {
-		$data = $this->get_session_data();
-		$calling_class = $this->CallingFunctionName($unique_id, $function);
-		if(isset($data['loop']['progress'][$calling_class])){
-			return $data['loop']['progress'][$calling_class];
-		}
-		else if(!empty($defaults)){
-			$this->_update_progress($defaults, null, $unique_id, $function);
-		}
-		return $defaults;
+	/**
+	 * Check if a key has been processed (public wrapper)
+	 */
+	public function is_key_processed($key, $unique_id = null): bool {
+		return $this->_is_key_processed($key, $unique_id);
 	}
 
-
-	public function get_progress($defaults = [], $unique_id = null, $function = true) {
-		return $this->_get_progress($defaults, $unique_id, $function);
+	/**
+	 * Mark a key as processed (internal)
+	 *
+	 * @param mixed $key The item key
+	 * @param string|null $unique_id Optional unique identifier
+	 * @return bool Success status
+	 */
+	private function _mark_key_processed($key, $unique_id = null): bool {
+		$calling_class = SessionData::get_calling_identifier($unique_id, true, false);
+		return SessionData::mark_key_processed($this->session_id, $calling_class, $key);
 	}
 
-
-	private function _get_result($defaults = [], $unique_id = null, $function = true) {
-		$data = $this->get_session_data();
-		$calling_class = $this->CallingFunctionName($unique_id, $function);
-		if(isset($data['loop']['result'][$calling_class])){
-			return $data['loop']['result'][$calling_class];
-		}
-		return $defaults;
+	/**
+	 * Mark a key as processed (public wrapper)
+	 */
+	public function mark_key_processed($key, $unique_id = null): bool {
+		return $this->_mark_key_processed($key, $unique_id);
 	}
 
-	public function get_result($defaults = [], $unique_id = null, $function = true) {
-		return $this->_get_result($defaults, $unique_id, $function);
+	/**
+	 * Set loop result (internal)
+	 *
+	 * @param array $result The result data
+	 * @param string|null $unique_id Optional unique identifier
+	 * @return bool Success status
+	 */
+	private function _set_loop_result($result, $unique_id = null): bool {
+		$calling_class = SessionData::get_calling_identifier($unique_id, true, false);
+		return SessionData::set_loop_result($this->session_id, $calling_class, $result);
 	}
 
-
-	private function _update_progress( $progress, $imported_data = null, $unique_id = null, $function = true ): bool {
-		$calling_class = $this->CallingFunctionName($unique_id, $function);
-		$old_data = $this->get_session_data();
-
-		$new_data = [];
-
-		if($progress !== null){
-			$new_data['loop']['progress'] = [$calling_class => $progress];
-		}
-		if($imported_data !== null){
-			$new_data['loop']['result']   = [$calling_class => $imported_data];
-		}
-
-		$new_data = Helper::recursive_wp_parse_args( $new_data, $old_data );
-		return $this->update_session_data( $new_data );
+	/**
+	 * Set loop result (public wrapper)
+	 */
+	public function set_loop_result($result, $unique_id = null): bool {
+		return $this->_set_loop_result($result, $unique_id);
 	}
 
-	public function update_progress( $progress, $imported_data = null, $unique_id = null, $function = true ): bool {
-		return $this->_update_progress( $progress, $imported_data, $unique_id, $function );
+	private function _get_loop_result($defaults = [], $unique_id = null, $function = true) {
+		$calling_class = SessionData::get_calling_identifier($unique_id, $function, false);
+		return SessionData::get_loop_result($this->session_id, $calling_class, $defaults);
 	}
 
-	// Modified get_session_data to use the static version
+	public function get_loop_result($defaults = [], $unique_id = null, $function = true) {
+		return $this->_get_loop_result($defaults, $unique_id, $function);
+	}
+
+	// Modified get_session_data to use SessionData
 	protected function get_session_data(): array {
-		return Utils::get_session_data($this->session_id);
+		return SessionData::get_data($this->session_id);
 	}
 
-	// Modified update_session_data to use the static version
+	// Modified update_session_data to use SessionData (deprecated - use specific methods)
 	protected function update_session_data($data): bool {
-		return Utils::update_session_data($this->session_id, $data);
+		$existing = SessionData::get_data($this->session_id);
+		return SessionData::save($this->session_id, array_merge($existing, $data));
 	}
 
 	private function _retrieve_attributes($attributes, $unique_id){
-		$calling_class = $this->CallingFunctionName($unique_id, false);
+		$calling_class = SessionData::get_calling_identifier($unique_id, false, false, 4);
+		$attr_values = SessionData::get($this->session_id, "loop.backup_attributes.{$calling_class}", []);
 
-		$data = $this->get_session_data();
-		if(isset($data['loop']['backup_attributes'][$calling_class])){
-			$attr_values = $data['loop']['backup_attributes'][$calling_class];
-			foreach ($attributes as $attribute) {
-				if(isset($attr_values[$attribute])){
-					$this->$attribute = $attr_values[$attribute];
-				}
+		foreach ($attributes as $attribute) {
+			if(isset($attr_values[$attribute])){
+				$this->$attribute = $attr_values[$attribute];
 			}
 		}
 	}
 
 	private function _backup_attributes($attributes, $unique_id){
-		$calling_class = $this->CallingFunctionName($unique_id, false);
-		$old_data = $this->get_session_data();
-
-		$new_data    = [];
+		$calling_class = SessionData::get_calling_identifier($unique_id, false, false, 4);
 		$attr_values = [];
 
 		foreach ($attributes as $attribute) {
@@ -204,12 +216,84 @@ trait Loop {
 			}
 		}
 
-		$new_data['loop']['backup_attributes'] = [$calling_class => $attr_values];
+		return SessionData::set($this->session_id, "loop.backup_attributes.{$calling_class}", $attr_values);
+	}
 
+	// ============================================================================
+	// Skip-on-Error Helper Methods
+	// ============================================================================
 
-		// @todo: not sure if we need this.
-		$new_data = Helper::recursive_wp_parse_args( $new_data, $old_data );
-		return $this->update_session_data( $new_data );
+	/**
+	 * Check if skip-on-error feature is enabled
+	 *
+	 * @return bool True if enabled
+	 */
+	protected function _is_skip_feature_enabled(): bool {
+		return (bool) get_option('templately_enable_fsi_skip_on_error', false);
+	}
+
+	/**
+	 * Increment error attempts for a loop item
+	 *
+	 * @param mixed $key The item key
+	 * @param string|null $unique_id Optional unique identifier
+	 * @return int New error attempt count
+	 */
+	private function _increment_error_attempts($key, $unique_id = null): int {
+		$calling_class = SessionData::get_calling_identifier($unique_id, true, false);
+		return SessionData::increment_error_attempts($this->session_id, $calling_class, $key);
+	}
+
+	/**
+	 * Get error attempts for a loop item
+	 *
+	 * @param mixed $key The item key
+	 * @param string|null $unique_id Optional unique identifier
+	 * @return int Error attempt count
+	 */
+	private function _get_error_attempts($key, $unique_id = null): int {
+		$calling_class = SessionData::get_calling_identifier($unique_id, true, false);
+		return SessionData::get_error_attempts($this->session_id, $calling_class, $key);
+	}
+
+	/**
+	 * Mark a loop item as skipped
+	 *
+	 * @param mixed $key The item key
+	 * @param string|null $unique_id Optional unique identifier
+	 * @param string $reason The reason for skipping
+	 * @return bool Success status
+	 */
+	private function _mark_key_skipped($key, $unique_id = null, $reason = ''): bool {
+		$calling_class = SessionData::get_calling_identifier($unique_id, true, false);
+		return SessionData::mark_key_skipped($this->session_id, $calling_class, $key, $reason);
+	}
+
+	/**
+	 * Increment consecutive skip counter
+	 *
+	 * @return int New consecutive skip count
+	 */
+	private function _increment_consecutive_skips(): int {
+		return SessionData::increment_consecutive_skips($this->session_id);
+	}
+
+	/**
+	 * Reset consecutive skip counter
+	 *
+	 * @return bool Success status
+	 */
+	private function _reset_consecutive_skips(): bool {
+		return SessionData::reset_consecutive_skips($this->session_id);
+	}
+
+	/**
+	 * Get consecutive skip count
+	 *
+	 * @return int Consecutive skip count
+	 */
+	private function _get_consecutive_skips(): int {
+		return SessionData::get_consecutive_skips($this->session_id);
 	}
 
 }
