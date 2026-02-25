@@ -47,8 +47,7 @@ class WPContent extends BaseRunner {
 		}, 0 );
 
 
-		$results = $this->loop( $post_types, function($key, $type ) use($path, $imported_data, $data) {
-			$results = [];
+		$results = $this->loop( $post_types, function($key, $type, $results ) use($path, $imported_data, $data) {
 			if(empty($data['import_demo_content']) && !in_array($type, ['wp_navigation', 'nav_menu_item'])) {
 				return $results;
 			}

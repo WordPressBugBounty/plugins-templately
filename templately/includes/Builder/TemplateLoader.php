@@ -147,7 +147,8 @@ class TemplateLoader {
 	public static function print_style_tags() {
 		try {
 			$wp_styles = wp_styles();
-
+			// handles dependencies
+			$wp_styles->do_items();
 			if ( is_object( $wp_styles ) && is_array( $wp_styles->queue ?? null ) ) {
 				foreach ( $wp_styles->queue as $style ) {
 					if ( is_string( $style ) && ! $wp_styles->query( $style, 'done' ) ) {

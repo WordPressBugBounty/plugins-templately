@@ -248,8 +248,7 @@ class Dependencies extends BaseRunner {
 		}
 			// $this->before_install_hook();
 
-		$results = $this->loop($themes, function($key, $theme) {
-			$result = [];
+		$results = $this->loop($themes, function($key, $theme, $results) {
 			if (isset($theme['stylesheet'])) {
 				$stylesheet = get_option('stylesheet');
 
@@ -269,7 +268,7 @@ class Dependencies extends BaseRunner {
 						'type'     => "theme",
 						'progress' => 0
 					]);
-					$result = [
+					$results = [
 						'success' => false,
 						'name'    => $theme['name'],
 						'slug'    => $theme['stylesheet'],
@@ -285,7 +284,7 @@ class Dependencies extends BaseRunner {
 						'type'     => "theme",
 						'progress' => 100
 					]);
-					$result = [
+					$results = [
 						'success' => true,
 						'name'    => $theme['name'],
 						'slug'    => $theme['stylesheet'],
@@ -295,7 +294,7 @@ class Dependencies extends BaseRunner {
 				}
 
 			}
-			return $result;
+			return $results;
 		});
 
 

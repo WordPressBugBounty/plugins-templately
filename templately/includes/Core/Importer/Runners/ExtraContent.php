@@ -37,8 +37,7 @@ class ExtraContent extends BaseRunner {
 	public function import( $data, $imported_data ): array {
 		$contents      = $this->manifest['extra-content'] ?? [];
 
-		$extra_content = $this->loop( $contents, function($type, $content ) {
-			$extra_content = [];
+		$extra_content = $this->loop( $contents, function($type, $content, $extra_content ) {
 			switch ( $type ) {
 				case 'form':
 					$import                = $this->import_form( $content );
