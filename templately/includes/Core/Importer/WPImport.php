@@ -1143,7 +1143,7 @@ class WPImport extends WP_Importer {
 		if($saved_image = $this->get_saved_image($url)){
 			// $this->url_remap[ $url ] = wp_get_attachment_url( $saved_image );
 			// $this->url_remap[ $this->remove_extension($url) ] = $this->remove_extension(wp_get_attachment_url( $saved_image ));
-			$upload_url = wp_get_attachment_url( $saved_image );
+			$upload_url = set_url_scheme( wp_get_attachment_url( $saved_image ) );
 			$this->set_url_map($url, $upload_url, true);
 
 			if(!empty($post['original_attachment_url']) && !$this->get_saved_image($post['original_attachment_url'])){
@@ -1185,6 +1185,11 @@ class WPImport extends WP_Importer {
 		$upload = apply_filters( 'templately_import_copy_attachment', null, $original_post_id, $dest_file, $upload_dir );
 		if ( null === $upload ) {
 			$upload    = $this->fetch_remote_file( $url, $dest_file, $upload_dir );
+		}
+
+		// Normalize URL scheme to match the current site scheme (fixes HTTP URLs on HTTPS multisites).
+		if ( ! is_wp_error( $upload ) && ! empty( $upload['url'] ) ) {
+			$upload['url'] = set_url_scheme( $upload['url'] );
 		}
 
 		$end       = microtime(true);

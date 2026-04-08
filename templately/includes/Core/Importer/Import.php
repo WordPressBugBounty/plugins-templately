@@ -61,6 +61,8 @@ class Import {
 			// new AIContent( $this->request_params ),
 			new Finalizer( $this->request_params )
 		];
+
+		$this->runners = apply_filters( 'templately_import_runners', $this->runners, $this->request_params );
 	}
 
 	public function run( $callable = null ): array {

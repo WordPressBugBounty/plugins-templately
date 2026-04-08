@@ -6,6 +6,7 @@ use Elementor\Plugin;
 use Elementor\Core\Experiments\Manager as Experiments_Manager;
 use Templately\Core\Platform\Elementor;
 use Templately\Core\Platform\Gutenberg;
+use Templately\Core\Importer\Utils\Utils;
 use Templately\Utils\Helper;
 
 /**
@@ -40,6 +41,7 @@ class Import extends API {
         }
 
         @set_time_limit( 0 ); // Unlimited execution time for this request.
+        Utils::add_gd_editor_filter();
 
         switch ( $origin ) {
             case 'cloud':
@@ -159,6 +161,7 @@ class Import extends API {
     public function import_in_library(){
         $platform = $this->get_param( 'platform', 'elementor' );
         $id       = $this->get_param( 'id', 0, 'intval' );
+        $settings = $this->get_param( 'settings', [], null );
 
         if( $id == 0 ) {
             return $this->error('invalid_item_id', __( 'Invalid ID is provided.', 'templately' ), 'import/page', 404 );
@@ -174,14 +177,16 @@ class Import extends API {
         }
 
         @set_time_limit( 0 ); // Unlimited execution time for this request.
+        Utils::add_gd_editor_filter();
 
-        return $this->platform( $platform )->import_in_library( $id, $this );
+        return $this->platform( $platform )->import_in_library( $id, $this, $settings );
     }
 
     public function import_as_page(){
         $platform = $this->get_param( 'platform', 'elementor' );
         $id       = $this->get_param( 'id', 0, 'intval' );
         $title    = $this->get_param( 'title' );
+        $settings = $this->get_param( 'settings', [] );
 
         if( $id == 0 ) {
             return $this->error('invalid_item_id', __( 'Invalid ID is provided.', 'templately' ), 'import/page', 404 );
@@ -197,7 +202,8 @@ class Import extends API {
         }
 
         @set_time_limit( 0 ); // Unlimited execution time for this request.
+        Utils::add_gd_editor_filter();
 
-        return $this->platform( $platform )->create_page( $id, $title, $this );
+        return $this->platform( $platform )->create_page( $id, $title, $this, $settings );
     }
 }

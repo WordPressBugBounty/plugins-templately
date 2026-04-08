@@ -344,7 +344,7 @@ class Admin extends Base {
 						]
 					],
 					'support'          => [
-						'link'       => 'https://wpdeveloper.com/support',
+						'link'       => 'https://templately.com?support=open',
 						'attributes' => [
 							'target' => '_blank'
 						],

@@ -91,8 +91,8 @@ class DownloadZip extends BaseRunner {
 				// If the response body is JSON and it contains an error, throw an exception with the error message
 				if (isset($response_body['status']) && $response_body['status'] === 'error') {
 					$support_message = '';
-					if(strpos($response_body['message'], 'https://wpdeveloper.com/support') === false){
-						$support_message = sprintf(__(" Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://wpdeveloper.com/support');
+					if(strpos($response_body['message'], 'https://templately.com?support=open') === false){
+						$support_message = sprintf(__(" Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://templately.com?support=open');
 					}
 					$this->throw_non_retryable($response_body['message'] . $support_message);
 				}

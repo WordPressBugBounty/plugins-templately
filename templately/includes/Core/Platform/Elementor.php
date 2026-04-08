@@ -241,11 +241,15 @@ class Elementor extends Platform {
 	 *
 	 * @return array|WP_Error array on success, WP_Error on failure.
 	 */
-	public function create_page( $id, $title, $importer = null ) {
+	public function create_page( $id, $title, $importer = null, $settings = [] ) {
 		$template_data = $importer->get_content( $id );
 
 		if ( is_wp_error( $template_data ) ) {
 			return $template_data;
+		}
+
+		if ( ! empty( $settings ) && ! empty( $template_data['content'] ) && is_array( $template_data['content'] ) ) {
+			$template_data['content'] = \Templately\Core\Importer\Utils\ElementorSettingsMerger::merge( $template_data['content'], $settings );
 		}
 
 		$importer      = new ElementorImporter;
@@ -282,11 +286,15 @@ class Elementor extends Platform {
 		];
 	}
 
-	public function import_in_library( $id, $importer = null ) {
+	public function import_in_library( $id, $importer = null, $settings = [] ) {
 		$template_data = $importer->get_content( $id, 'elementor', 'remote' );
 
 		if ( is_wp_error( $template_data ) ) {
 			return $template_data;
+		}
+
+		if ( ! empty( $settings ) && ! empty( $template_data['content'] ) && is_array( $template_data['content'] ) ) {
+			$template_data['content'] = \Templately\Core\Importer\Utils\ElementorSettingsMerger::merge( $template_data['content'], $settings );
 		}
 
 		$importer          = new ElementorImporter;

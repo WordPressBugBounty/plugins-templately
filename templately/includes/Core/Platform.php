@@ -12,5 +12,5 @@ abstract class Platform extends Base {
 
     // abstract public function get_saved_templates( $params = [] );
     // abstract public function delete( $params = [] );
-    abstract public function create_page( $id, $title, $importer = null );
+    abstract public function create_page( $id, $title, $importer = null, $settings = [] );
 }

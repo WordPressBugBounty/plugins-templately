@@ -37,7 +37,10 @@ class Login extends API {
         // Get redirect_to parameter from request if provided
         $redirect_to = $this->get_param( 'redirect-to', '' );
 
-        $url = $this->http()->google_auth_url( $redirect_to );
+        // Use client-provided current_url instead of HTTP_REFERER for reliability
+        $current_url = $this->get_param( 'current_url', '' );
+
+        $url = $this->http()->google_auth_url( $redirect_to, $current_url );
         return [
             'status' => 'success',
             'url' => $url

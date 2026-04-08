@@ -43,7 +43,7 @@ use Templately\Core\Platform\Gutenberg;
 use Templately\Core\Platform\Elementor;
 
 final class Plugin extends Base {
-    public $version = '3.5.2';
+    public $version = '3.5.3';
 
 	public $admin;
 	public $settings;
@@ -86,8 +86,7 @@ final class Plugin extends Base {
 		add_action( 'plugins_loaded', [ $this, 'plugins_loaded' ] );
 		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
 
-		add_action( 'wp_ajax_templately_google_login', [ $this, 'google_login_handler' ] );
-		add_action( 'wp_ajax_nopriv_templately_google_login', [ $this, 'google_login_handler' ] );
+		add_action( 'init', [ $this, 'google_login_handler' ] );
 
 		/**
 		 * Initialize.
@@ -263,7 +262,12 @@ final class Plugin extends Base {
 	}
 
 	public function google_login_handler() {
-		$redirect_url = admin_url( 'admin.php?page=templately' );
+		// Stop if not a templately google login request
+		if ( empty( $_GET['templately_google_login'] ) ) {
+			return;
+		}
+
+		$redirect_url = remove_query_arg( [ 'templately_google_login', 'api_key', 'error', 'state', 'redirect-to' ] );
 
 		if ( ! empty( $_GET['error'] ) ) {
 			$error_message = sanitize_text_field( $_GET['error'] );
@@ -280,10 +284,25 @@ final class Plugin extends Base {
 			$response = $login->login();
 
 			if ( ! is_wp_error( $response ) && ! empty( $response['user'] ) ) {
-				$redirect_path = ! empty( $_GET['redirect-to'] ) ? sanitize_text_field( $_GET['redirect-to'] ) : '';
-
+				$redirect_path = ! empty( $_GET['redirect-to'] ) ? sanitize_text_field( wp_unslash( $_GET['redirect-to'] ) ) : '';
 				if ( ! empty( $redirect_path ) ) {
-					$redirect_url = add_query_arg( 'path', $redirect_path, $redirect_url );
+					if ( filter_var( $redirect_path, FILTER_VALIDATE_URL ) ) {
+						$redirect_url = $redirect_path;
+					} else {
+						$is_templately = strpos( $redirect_url, 'page=templately' ) !== false;
+						$is_elementor  = strpos( $redirect_url, 'action=elementor' ) !== false;
+						// Gutenberg editor usually has action=edit or is a block editor page
+						$is_gutenberg  = ( strpos( $redirect_url, 'action=edit' ) !== false || strpos( $redirect_url, 'post_type=' ) !== false ) && ! $is_elementor;
+
+						if ( $is_templately || $is_elementor || $is_gutenberg ) {
+							$redirect_url = add_query_arg( 'path', ltrim( $redirect_path, '/' ), $redirect_url );
+
+							// Always open the modal in editors after google login
+							if ( $is_elementor || $is_gutenberg ) {
+								$redirect_url = add_query_arg( 'templately_open_modal', '1', $redirect_url );
+							}
+						}
+					}
 				}
 
 				wp_safe_redirect( $redirect_url );
@@ -296,8 +315,8 @@ final class Plugin extends Base {
 		}
 
 		$redirect_url = add_query_arg( [
-			'path'          => 'sign-in',
-			'error_message' => $error_message,
+			'templately_error' => 'login_failed',
+			'error_message'    => urlencode( $error_message ),
 		], $redirect_url );
 
 		wp_safe_redirect( $redirect_url );

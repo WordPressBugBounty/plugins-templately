@@ -24,6 +24,8 @@ use Templately\Core\Importer\Utils\LogHandler;
 use Templately\Core\Importer\Utils\Utils;
 use Templately\Core\Importer\Utils\SessionData;
 use Templately\Core\Importer\Utils\AIUtils;
+use Templately\Core\Importer\Utils\ElementorSettingsMerger;
+use Templately\Core\Importer\Utils\GutenbergSettingsMerger;
 use Templately\Utils\Base;
 use Templately\Utils\Helper;
 use Templately\Utils\Installer;
@@ -63,11 +65,13 @@ class FullSiteImport extends Base {
 		$this->add_ajax_action('import', $this);
 		$this->add_ajax_action('import_revert', $this);
 		$this->add_ajax_action('import_info', $this);
+		$this->add_ajax_action('import_global_settings', $this);
 		$this->add_ajax_action('import_close_feedback_modal', $this);
 		$this->add_ajax_action('feedback_form', $this);
 		$this->add_ajax_action('google_font', $this);
 		$this->add_ajax_action('ai_get_json', $this);
 		$this->add_ajax_action('ai_poll_template', $this);
+		$this->add_ajax_action('merge_settings_with_template', $this);
 
 		add_action('admin_init', [$this, 'admin_init']);
 		// add_action('admin_notices', [$this, 'add_revert_button']);
@@ -120,6 +124,12 @@ class FullSiteImport extends Base {
 	}
 
 	public function import_settings() {
+		$user = Options::get_instance()->get('user');
+		if (!empty($user['is_disconnected'])) {
+			wp_send_json_error(['message' => __('Your site connection is disconnected. Please migrate your connection first.', 'templately')]);
+			return;
+		}
+
 		$data = wp_unslash($_POST);
 
 		$upload_dir  = wp_upload_dir();
@@ -219,7 +229,7 @@ class FullSiteImport extends Base {
 			exit;
 		}
 
-		add_filter( 'wp_image_editors', [ $this, 'wp_image_editors' ], 10, 1 );
+		Utils::add_gd_editor_filter();
 
 		define('TEMPLATELY_START_TIME', microtime(true));
 
@@ -462,7 +472,7 @@ class FullSiteImport extends Base {
 			exit;
 		}
 
-		add_filter( 'wp_image_editors', [ $this, 'wp_image_editors' ], 10, 1 );
+		Utils::add_gd_editor_filter();
 
 
 		define('TEMPLATELY_START_TIME', microtime(true));
@@ -474,7 +484,11 @@ class FullSiteImport extends Base {
 		$this->finishRequestHeaders();
 
 		try {
-			// TODO: Need to check if user is connected or not
+			$user = Options::get_instance()->get('user');
+			if (!empty($user['is_disconnected'])) {
+				$this->throw(__('Your site connection is disconnected. Please migrate your connection first.', 'templately'));
+			}
+
 			if(!empty($_GET['session_id'])){
 				// Security: Sanitize session_id from user input
 				$session_id = AIUtils::sanitize_path_component(sanitize_text_field($_GET['session_id']), 'session_id');
@@ -615,14 +629,6 @@ class FullSiteImport extends Base {
 	}
 
 
-	public function wp_image_editors( $editors ) {
-		// If GD is available, use only GD. Otherwise, fallback to all available editors.
-		if ( is_callable( [ 'WP_Image_Editor_GD', 'test' ] ) && call_user_func( [ 'WP_Image_Editor_GD', 'test' ] ) ) {
-			return [ 'WP_Image_Editor_GD' ];
-		}
-		return $editors;
-	}
-
 	// Updated import_status method
 	public function import_status() {
 		$request_params = $this->get_session_data();
@@ -725,8 +731,8 @@ class FullSiteImport extends Base {
 				// If the response body is JSON and it contains an error, throw an exception with the error message
 				if (isset($response_body['status']) && $response_body['status'] === 'error') {
 					$support_message = '';
-					if(strpos($response_body['message'], 'https://wpdeveloper.com/support') === false){
-						$support_message = sprintf(__(" Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://wpdeveloper.com/support');
+					if(strpos($response_body['message'], 'https://templately.com?support=open') === false){
+						$support_message = sprintf(__(" Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://templately.com?support=open');
 					}
 					$this->throw_non_retryable($response_body['message'] . $support_message);
 				}
@@ -810,7 +816,7 @@ class FullSiteImport extends Base {
 			if (empty($error)) {
 				// Generic error message
 				Helper::log($unzip);
-				$error_message = sprintf(__("It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://wpdeveloper.com/support');
+				$error_message = sprintf(__("It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://templately.com?support=open');
 				$this->throw($error_message);
 			} else {
 				$this->throw($unzip->get_error_message());
@@ -1277,7 +1283,7 @@ class FullSiteImport extends Base {
 				$sse_message = str_replace(ABSPATH, 'ABSPATH/', $sse_message);
 			} else {
 				// Generic error message
-				$import_status_message = sprintf(__("It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://wpdeveloper.com/support');
+				$import_status_message = sprintf(__("It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://templately.com?support=open');
 				$sse_message = $import_status_message;
 			}
 
@@ -1389,28 +1395,9 @@ class FullSiteImport extends Base {
 		$id       = isset($_GET['id']) ? intval($_GET['id']) : 0;
 		$isAi     = isset($_GET['isAi']) ? $_GET['isAi'] : false;
 
-		$extra_headers = [
-			'x-templately-is-ai' => $isAi,
-		];
-		$response = Helper::make_api_get_request("v2/import/info/pack/$id", [], $extra_headers, 30);
-
-		if (is_wp_error($response)) {
-			wp_send_json_error($response->get_error_message());
-			return;
-		}
-		// If the response code is not 200, return the error message
-		if (wp_remote_retrieve_response_code($response) != 200) {
-			$error_message = $this->extract_error_from_response($response);
-			wp_send_json_error($error_message, wp_remote_retrieve_response_code($response));
-			return;
-		}
-		// If the response body is JSON and it contains an error, return the error message
-		// Retrieve Data from Response Body.
-		$body = wp_remote_retrieve_body($response);
-		$data = json_decode($body, true);
-
-		if (isset($data['error'])) {
-			wp_send_json_error($data['error']);
+		$data = $this->fetch_pack_info_from_api($id, $isAi);
+		if (is_wp_error($data)) {
+			wp_send_json_error($data->get_error_message());
 			return;
 		}
 
@@ -1454,6 +1441,49 @@ class FullSiteImport extends Base {
 
 		// Return the response body
 		wp_send_json($data);
+	}
+
+	private function fetch_pack_info_from_api($id, $isAi) {
+		$extra_headers = [
+			'x-templately-is-ai' => $isAi,
+		];
+		$response = Helper::make_api_get_request("v2/import/info/pack/$id", [], $extra_headers, 30);
+
+		if (is_wp_error($response)) {
+			return new \WP_Error('api_error', $response->get_error_message());
+		}
+		// If the response code is not 200, return the error message
+		if (wp_remote_retrieve_response_code($response) != 200) {
+			$error_message = $this->extract_error_from_response($response);
+			return new \WP_Error('api_error', $error_message);
+		}
+		// Retrieve Data from Response Body.
+		$body = wp_remote_retrieve_body($response);
+		$data = json_decode($body, true);
+
+		if (isset($data['error'])) {
+			return new \WP_Error('api_error', $data['error']);
+		}
+
+		return $data;
+	}
+
+	public function import_global_settings() {
+		$id   = isset($_GET['id']) ? intval($_GET['id']) : 0;
+		$isAi = isset($_GET['isAi']) ? $_GET['isAi'] : false;
+
+		$data = $this->fetch_pack_info_from_api($id, $isAi);
+		if (is_wp_error($data)) {
+			wp_send_json_error($data->get_error_message());
+			return;
+		}
+
+		$settings = [];
+		if (isset($data['data']['settings'])) {
+			$settings = json_decode($data['data']['settings'], true);
+		}
+
+		wp_send_json_success(['settings' => $settings]);
 	}
 
 	public function update_imported_list($type, $id) {
@@ -1660,6 +1690,55 @@ class FullSiteImport extends Base {
 		}
 
 		wp_send_json_success($result);
+	}
+
+	/**
+	 * AJAX handler: merge global kit settings into template content.
+	 *
+	 * Accepts (via POST JSON body):
+	 *   platform  - 'elementor' | 'gutenberg'
+	 *   template  - the template data array returned by /v1/insert
+	 *   settings  - the kit settings array from import_info
+	 *
+	 * Returns the template data with globals resolved, or an error.
+	 * The JS side should fall back to the unmerged template on any error.
+	 */
+	public function merge_settings_with_template() {
+		$body     = file_get_contents( 'php://input' );
+		$data     = json_decode( $body, true );
+
+		$platform = isset( $data['platform'] ) ? sanitize_text_field( $data['platform'] ) : 'elementor';
+		$template = $data['template'] ?? null;
+		$settings = $data['settings'] ?? null;
+
+		if ( empty( $template ) || ! is_array( $template ) ) {
+			wp_send_json_error( 'Invalid template data.' );
+			return;
+		}
+
+		if ( empty( $settings ) || ! is_array( $settings ) ) {
+			// No settings to merge – return template unchanged.
+			wp_send_json_success( $template );
+			return;
+		}
+
+		try {
+			if ( $platform === 'elementor' ) {
+				if ( ! empty( $template['content'] ) && is_array( $template['content'] ) ) {
+					$template['content'] = ElementorSettingsMerger::merge( $template['content'], $settings );
+				}
+			} elseif ( $platform === 'gutenberg' ) {
+				if ( ! empty( $template['content'] ) && is_string( $template['content'] ) ) {
+					$template['content'] = GutenbergSettingsMerger::merge( $template['content'], $settings );
+				}
+			}
+
+			wp_send_json_success( $template );
+		} catch ( \Exception $e ) {
+			Helper::log( 'merge_settings_with_template error: ' . $e->getMessage() );
+			// Return error so JS can fall back to unmerged template.
+			wp_send_json_error( 'Settings merge failed: ' . $e->getMessage() );
+		}
 	}
 
 	public function ai_get_json() {

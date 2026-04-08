@@ -115,20 +115,29 @@ class GutenbergHelper extends ImportHelper {
 			if ( ! empty( $block['innerBlocks'] ) ) {
 				$this->replace( $block['innerBlocks'], $request_params );
 			}
-			else if(!empty($request_params['logo']['id']) && isset($request_params['logo_size']) && $request_params['logo_size'] && $block['blockName'] === "essential-blocks/advanced-image" && $block["attrs"]["imgSource"] === "site-logo"){
+			else if(!empty($request_params['logo']) && isset($request_params['logo_size']) && $request_params['logo_size'] && $block['blockName'] === "essential-blocks/advanced-image" && $block["attrs"]["imgSource"] === "site-logo"){
 				$block["attrs"]["widthRange"]    = $request_params['logo_size'];
 				unset($block["attrs"]["widthUnit"]);
 				if (isset($block['attrs']['blockMeta']['desktop']) && is_string($block['attrs']['blockMeta']['desktop'])) {
 					$meta = $block['attrs']['blockMeta']['desktop'];
-					$regex = '/\.image-wrapper\s*{\s*width:\s*(\d+)px;/';
+					$size = $request_params['logo_size'];
 
-					if (preg_match($regex, $meta, $matches)) {
-						$replaced = preg_replace($regex, '.image-wrapper { width:' . $request_params['logo_size'] . 'px;', $meta);
+					// Update width inside .image-wrapper { ... } (old EB format)
+					// and .image-wrapper img { ... } (new EB format) — both must be handled
+					$meta = preg_replace(
+						'/(\.image-wrapper(?:\s+img)?\s*\{[^}]*)width\s*:\s*\d+px\s*;/',
+						'${1}width:' . $size . 'px;',
+						$meta
+					);
 
-						if ($replaced) {
-							$block['attrs']['blockMeta']['desktop'] = $replaced;
-						}
-					}
+					// Update width inside .eb-image-wrapper-inner { ... }
+					$meta = preg_replace(
+						'/(\.eb-image-wrapper-inner\s*\{[^}]*)width\s*:\s*\d+px\s*;/',
+						'${1}width:' . $size . 'px;',
+						$meta
+					);
+
+					$block['attrs']['blockMeta']['desktop'] = $meta;
 				}
 
 				$this->sse_log('prepare', 'Updated Site Logo', 1, 'eventLog');

@@ -10,6 +10,23 @@ use Templately\Utils\Helper;
 
 class Utils extends Base {
 
+	/**
+	 * Filter callback to prefer the GD image editor over Imagick during imports.
+	 * Imagick can fail on certain server configurations; GD is more reliable for
+	 * the resize/crop operations triggered by wp_generate_attachment_metadata().
+	 */
+	public static function prefer_gd_editor( $editors ) {
+		if ( is_callable( [ 'WP_Image_Editor_GD', 'test' ] ) && call_user_func( [ 'WP_Image_Editor_GD', 'test' ] ) ) {
+			return [ 'WP_Image_Editor_GD' ];
+		}
+		return $editors;
+	}
+
+	public static function add_gd_editor_filter() {
+		if ( ! has_filter( 'wp_image_editors', [ self::class, 'prefer_gd_editor' ] ) ) {
+			add_filter( 'wp_image_editors', [ self::class, 'prefer_gd_editor' ] );
+		}
+	}
 
 	/**
 	 * @throws Exception

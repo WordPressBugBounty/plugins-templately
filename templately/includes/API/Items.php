@@ -137,7 +137,7 @@ class Items extends API {
 
 		$query = 'total_page, current_page, data { id, fullsite_import, name, price, rating, downloads, type, template_type{ slug }, slug, favourite_count, thumbnail, thumbnail2, thumbnail3 }';
 		if( $type !== 'packs' ) {
-			$query = 'total_page, current_page, data { id, name, price, rating, downloads, type, template_type{ slug }, slug, favourite_count, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link }, thumbnail }';
+			$query = 'total_page, current_page, data { id, name, price, rating, downloads, type, template_type{ slug }, slug, favourite_count, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link }, thumbnail, pack { id, has_settings } }';
 		}
 
 		if( $type === false ) {
@@ -169,7 +169,7 @@ class Items extends API {
 			return $this->error( 'invalid_type_call', __( 'Invalid Type Call', 'templately' ) );
 		}
 
-		$items_params = 'id, name, rating, type, description, slug, price, features, favourite_count, is_favourite, is_reviewed, thumbnail, downloads, categories{ id, name, slug }, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link }, tags{ name, id }, categories{ name, id }, screenshots{ url }, banner, published_at, updated_at, is_trending, badges, pack{ id, name, slug, items{ id, price, name, type, slug, thumbnail } }, live_url, template_type{ id, name, slug }';
+		$items_params = 'id, name, rating, type, description, slug, price, features, favourite_count, is_favourite, is_reviewed, thumbnail, downloads, categories{ id, name, slug }, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link }, tags{ name, id }, categories{ name, id }, screenshots{ url }, banner, published_at, updated_at, is_trending, badges, pack{ id, name, slug, items{ id, price, name, type, slug, thumbnail }, has_settings }, live_url, template_type{ id, name, slug }';
 		$params       = 'data { ' . $items_params . ', variations { name, slug, type, platform } }';
 
 		if ( $type == 'packs' ) {
@@ -219,7 +219,7 @@ class Items extends API {
 			return $this->error( 'invalid_type_call', __( 'Invalid Type Call', 'templately' ) );
 		}
 
-		$items_params = 'id, name, rating, type, description, slug, price, features, favourite_count, is_favourite, is_reviewed, thumbnail, downloads, categories{ id, name, slug }, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link }, tags{ name, id }, categories{ name, id }, screenshots{ url }, banner, published_at, updated_at, is_trending, badges, pack{ id, name, slug, items{ id, price, name, type, slug, thumbnail } }, live_url, template_type{ id, name, slug }';
+		$items_params = 'id, name, rating, type, description, slug, price, features, favourite_count, is_favourite, is_reviewed, thumbnail, downloads, categories{ id, name, slug }, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link }, tags{ name, id }, categories{ name, id }, screenshots{ url }, banner, published_at, updated_at, is_trending, badges, pack{ id, name, slug, items{ id, price, name, type, slug, thumbnail }, has_settings }, live_url, template_type{ id, name, slug }';
 		$params       = 'data { ' . $items_params . ', variations { name, slug, type, platform } }';
 
 		if ( $type == 'packs' ) {

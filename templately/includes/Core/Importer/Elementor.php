@@ -9,6 +9,7 @@ use Elementor\Core\Settings\Page\Model;
 
 use Elementor\Plugin as ElementorPlugin;
 use Elementor\TemplateLibrary\Source_Local as ElementorLocal;
+use Templately\Core\Importer\Utils\Utils;
 
 class Elementor extends ElementorLocal {
 	/**
@@ -21,6 +22,7 @@ class Elementor extends ElementorLocal {
 	 * @return array Remote Template data.
 	 */
 	public function get_data( array $args ) {
+		Utils::add_gd_editor_filter();
 		ElementorPlugin::$instance->editor->set_edit_mode( true );
 
 		$args['content'] = $this->replace_elements_ids( $args['content'] );

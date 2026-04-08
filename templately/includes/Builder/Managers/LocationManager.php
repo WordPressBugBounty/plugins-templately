@@ -11,8 +11,9 @@ use Templately\Builder\Types\BaseTemplate;
 use Templately\Builder\Types\ThemeTemplate;
 use ElementorPro\Modules\ThemeBuilder\Module;
 use Elementor\Core\Files\CSS\Post as Post_CSS;
-use ElementorPro\Plugin;
+use Elementor\Plugin;
 use Templately\Builder\TemplateLoader;
+use Elementor\Core\Base\Elements_Iteration_Actions\Assets as Assets_Iteration_Action;
 
 class LocationManager {
 	/**
@@ -317,18 +318,12 @@ class LocationManager {
 	 * @return void
 	 */
 	public function enqueue_elementor_styles() {
-
 		if (
-			$this->get_platform(get_the_ID()) !== 'elementor' ||
-			(
-				class_exists('ElementorPro\Modules\ThemeBuilder\Module') &&
-				Module::is_preview()
-			)
+			class_exists('ElementorPro\Modules\ThemeBuilder\Module') &&
+			Module::is_preview()
 		) {
 			return;
 		}
-
-
 
 		$locations = $this->get_locations();
 
@@ -336,46 +331,75 @@ class LocationManager {
 			return;
 		}
 
-		// if ( ! empty( $this->current_page_template ) ) {
-		// 	$locations = $this->filter_page_template_locations( $locations );
-		// }
-
 		if(class_exists('Elementor\Core\Files\CSS\Post')){
 			$current_post_id = get_the_ID();
-
-			/** @var Post_CSS[] $css_files */
-			$css_files = [];
 
 			foreach ( $locations as $location => $settings ) {
 				$templates_for_location = $this->builder::$conditions_manager->get_templates_by_location( $location );
 
-				foreach ( $templates_for_location as $document ) {
-					$post_id = $document->get_main_id();
-					// Don't enqueue current post here (let the  preview/frontend components to handle it)
+				foreach ( $templates_for_location as $template ) {
+					if ( ! $template->is_elementor_template() ) {
+						continue;
+					}
+
+					$this->iterate_elements($template->get_main_id());
+
+					$post_id = $template->get_main_id();
+
+					// Don't enqueue current post here (let the preview/frontend components to handle it)
 					if ( $current_post_id !== $post_id ) {
 						$css_file = new Post_CSS( $post_id );
-						$css_files[] = $css_file;
+						$css_file->enqueue();
 					}
 				}
 			}
 
-			if ( ! empty( $css_files ) ) {
-				// Enqueue the frontend styles manually also for pages that don't built with Elementor.
-				// Plugin::elementor()->frontend->enqueue_styles();
-
-				// Enqueue after the frontend styles to override them.
-				foreach ( $css_files as $css_file ) {
-					$css_file->enqueue();
-				}
-
-				if(class_exists('ElementorPro\Plugin')){
-					/** @var \ElementorPro\Modules\ThemeBuilder\Module $theme_builder */
-					$theme_builder    = Plugin::instance()->modules_manager->get_modules( 'theme-builder' );
-					$location_manager = $theme_builder->get_locations_manager();
-					remove_action( 'wp_enqueue_scripts', [ $location_manager, 'enqueue_styles' ] );
-				}
-			}
 		}
+	}
+
+	private function iterate_elements( $post_id ) {
+		if ( ! class_exists( 'Elementor\Plugin' ) || ! class_exists( Assets_Iteration_Action::class ) ) {
+			return;
+		}
+
+		$plugin = Plugin::instance();
+		if ( ! $plugin || ! isset( $plugin->documents ) || ! isset( $plugin->db ) || ! isset( $plugin->elements_manager ) ) {
+			return;
+		}
+
+		$document = $plugin->documents->get( $post_id );
+		if ( ! $document ) {
+			return;
+		}
+
+		$elements = $document->get_elements_data();
+		if ( empty( $elements ) ) {
+			return;
+		}
+
+		$unique_page_elements      = [];
+		$elements_iteration_action = new Assets_Iteration_Action( $document );
+		$elements_iteration_action->set_mode( 'render' );
+
+		$plugin->db->iterate_data( $elements, function( array $element_data ) use ( &$unique_page_elements, $elements_iteration_action, $plugin ) {
+			$element_type = 'widget' === $element_data['elType'] ? $element_data['widgetType'] : $element_data['elType'];
+
+			$element = $plugin->elements_manager->create_element_instance( $element_data );
+
+			if ( $element ) {
+				if ( ! in_array( $element_type, $unique_page_elements, true ) ) {
+					$unique_page_elements[] = $element_type;
+
+					$elements_iteration_action->unique_element_action( $element );
+				}
+
+				$elements_iteration_action->element_action( $element );
+			}
+
+			return $element_data;
+		} );
+
+		$elements_iteration_action->after_elements_iteration();
 	}
 
 	/**
@@ -521,12 +545,6 @@ class LocationManager {
 		}
 	}
 
-	/**
-	 * Deprecated wrapper for backward compatibility if needed,
-	 * or we can just remove it since it was private.
-	 * But for safety, I'll remove the old method and rely on the new flow.
-	 * The previous method was private, so removal is safe within this class.
-	 */
 
 	/**
 	 * @param string  $location

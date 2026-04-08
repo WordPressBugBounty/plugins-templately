@@ -62,23 +62,34 @@ class Http extends Base {
  * @param string $redirect_to Optional redirect path after authentication
  * @return string The Google auth URL with query parameters
  */
-public function google_auth_url($redirect_to = '') {
+public function google_auth_url($redirect_to = '', $current_url = '') {
     $base_url = $this->url();
     // Replace /api/plugin with /api/auth/plugin/google
     $auth_url = str_replace('/api/plugin', '/api/auth/plugin/google', $base_url);
 
-    // Build the site_url with admin-ajax path
-    $admin_url = admin_url('admin-ajax.php');
-    $admin_params = [
-        'action' => 'templately_google_login',
+    // Get the referer to return to the exact same page we initiated login from securely
+    if ( ! empty( $current_url ) ) {
+        $referer = esc_url_raw( $current_url );
+    } else {
+        $referer = isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '';
+    }
+
+    $return_url = wp_validate_redirect( $referer, '' );
+
+    if ( empty( $return_url ) ) {
+        $return_url = admin_url( 'admin.php?page=templately' );
+    }
+
+    $return_params = [
+        'templately_google_login' => '1',
     ];
 
     // Add redirect-to parameter if provided
     if (!empty($redirect_to)) {
-        $admin_params['redirect-to'] = $redirect_to;
+        $return_params['redirect-to'] = $redirect_to;
     }
 
-    $site_url_with_params = add_query_arg($admin_params, $admin_url);
+    $site_url_with_params = add_query_arg($return_params, $return_url);
 
     $query_params = [
         'site_url' => urlencode($site_url_with_params),

@@ -1,4 +1,13 @@
 == Changelog ==
+= 3.5.3 - 08-04-2026 =
+Fixed: Logo width changing unexpectedly after import.
+Fixed: Header displaying incorrectly after import.
+Fixed: Single page designs not applying properly after import.
+Fixed: Templately library not loading in the Gutenberg Editor when the Gutenberg plugin is active.
+Fixed: Design inconsistencies occurring during site migration.
+Improved: Single template import process for a smoother experience.
+Few minor bug fixes and improvements.
+
 = 3.5.2 - 25-02-2026 =
 Improved: AI logo generation experience.
 Fixed: Header menu not assigned properly after pack import.
