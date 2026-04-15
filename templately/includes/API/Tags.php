@@ -15,6 +15,7 @@ class Tags extends API {
 
 	public function register_routes() {
 		$this->get($this->endpoint, [$this, 'tags']);
+		$this->get('popular-tags', [$this, 'popular_tags']);
 	}
 
 	public function tags() {
@@ -39,6 +40,23 @@ class Tags extends API {
 
 			Database::set_transient( $this->endpoint, $_tags );
 			return $_tags;
+		}
+
+		return $response;
+	}
+
+	public function popular_tags() {
+		$popular_tags = Database::get_transient( 'popular-tags' );
+
+		if( $popular_tags ){
+			return $this->success( $popular_tags );
+		}
+
+		$response = $this->http()->query( 'popularTags', 'id, name, slug' )->post();
+
+		if( ! is_wp_error( $response ) ) {
+			Database::set_transient( 'popular-tags', $response );
+			return $response;
 		}
 
 		return $response;

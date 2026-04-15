@@ -33,6 +33,7 @@ return array(
     'Templately\\API\\Tags' => $baseDir . '/includes/API/Tags.php',
     'Templately\\API\\TemplateTypes' => $baseDir . '/includes/API/TemplateTypes.php',
     'Templately\\API\\ThemeBuilderApi' => $baseDir . '/includes/API/ThemeBuilderApi.php',
+    'Templately\\API\\Tour' => $baseDir . '/includes/API/Tour.php',
     'Templately\\API\\WorkSpaces' => $baseDir . '/includes/API/WorkSpaces.php',
     'Templately\\Admin\\API\\BaseAPI' => $baseDir . '/includes/Admin/API/BaseAPI.php',
     'Templately\\Admin\\API\\Settings' => $baseDir . '/includes/Admin/API/Settings.php',

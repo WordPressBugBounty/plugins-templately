@@ -23,7 +23,7 @@ class Enqueue extends Base {
 	}
 
     public function localize( $handle, $name, $args ){
-        wp_localize_script( $handle, $name, $args );
+        wp_add_inline_script( $handle, 'var ' . $name . ' = ' . wp_json_encode( $args ) . ';', 'before' );
     }
 
     private function call_wp_func( $action, $handle, $config ) {
@@ -41,6 +41,14 @@ class Enqueue extends Base {
 		$version           = $this->version;
 		$asset_config_path = $this->dist_path( $basename . '.asset.php' );
 
+		if ( ! $is_js && ! file_exists( $asset_config_path ) ) {
+			$js_basename = str_replace( 'css/', 'js/', $basename );
+			$js_asset_path = $this->dist_path( $js_basename . '.asset.php' );
+			if ( file_exists( $js_asset_path ) ) {
+				$asset_config_path = $js_asset_path;
+			}
+		}
+
 		if ( file_exists( $asset_config_path ) ) {
 			$asset_config = require $asset_config_path;
 
@@ -50,7 +58,7 @@ class Enqueue extends Base {
 			$version = $asset_config['version'];
 		}
 		else if ((defined('TEMPLATELY_DEV') && TEMPLATELY_DEV) || (defined('WP_DEBUG') && WP_DEBUG)){
-			$version = time() ?? $version;
+			$version = time();
 		}
 
 		return [

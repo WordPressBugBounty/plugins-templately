@@ -223,6 +223,44 @@ class Helper extends Base {
 	}
 
 	/**
+	 * Escape a string for safe embedding inside a GraphQL or JSON string literal.
+	 *
+	 * GraphQL string escaping rules are identical to JSON string escaping (per the
+	 * GraphQL spec), so wp_json_encode() is the authoritative escaper. We strip the
+	 * outer quotes it adds and return only the escaped inner content, ready to be
+	 * wrapped in your own quote pair.
+	 *
+	 * Handles pre-encoded JSON: when the caller has already run json_encode() +
+	 * wp_slash() on a value (e.g. categories, dependencies in Items.php), the
+	 * quotes are already escaped as \" and the string is ready to embed. Calling
+	 * wp_json_encode() again would double-escape those backslashes. We detect this
+	 * case by checking whether wp_unslash() produces valid JSON, and if so, return
+	 * the value directly without further encoding.
+	 *
+	 * @param  string $value Raw string or wp_slash(json_encode()) output.
+	 * @return string Escaped string, safe to place between double quotes in GraphQL/JSON.
+	 */
+	public static function esc_json_string( $value ) {
+		$value = (string) $value;
+
+		// If wp_slash() was applied to a JSON string upstream, the quotes are
+		// already escaped (e.g. {\"key\":\"val\"}). Detect this by unslashing and
+		// checking for valid JSON — if it matches, the value is already suitable
+		// for embedding in a string literal; return it as-is to avoid doubling backslashes.
+		$unslashed = wp_unslash( $value );
+		if ( $unslashed !== $value ) {
+			$decoded = json_decode( $unslashed, true );
+			if ( json_last_error() === JSON_ERROR_NONE && null !== $decoded ) {
+				return $value;
+			}
+		}
+
+		$encoded = wp_json_encode( $value );
+		// wp_json_encode wraps the value in "...", strip those outer quotes.
+		return substr( $encoded, 1, -1 );
+	}
+
+	/**
 	 * Check for X-Templately-Verified header and update user verification status
 	 *
 	 * @param array|WP_Error $response The HTTP response array from wp_remote_get/wp_remote_post

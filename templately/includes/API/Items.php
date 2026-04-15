@@ -36,6 +36,13 @@ class Items extends API {
 				'default'  => 40,
 				'required' => false
 			],
+			'sort_by' => [
+				'default'  => 'latest',
+				'required' => false,
+				'validate_callback' => function( $param, $request, $key ){
+					return empty( $param ) || in_array( $param, [ 'latest', 'rating', 'download' ], true );
+				}
+			],
 		] );
 
 		// only number
@@ -99,7 +106,8 @@ class Items extends API {
 		$page             = $this->get_param( 'page', 1, 'intval' );
 		$per_page         = $this->get_param( 'per_page', 40, 'intval' );
 		$template_type_id = $this->get_param( 'template_type_id', 0, 'intval' );
-		$category_id      = $this->get_param( 'category_id', 0, 'intval' );
+		$categories_raw = $this->get_param( 'categories' );
+		$sort_by          = $this->get_param( 'sort_by', 'latest' );
 
 		$dependencies     = $request->get_param( 'dependencies' );
 		$tags             = $request->get_param( 'tags' );
@@ -108,14 +116,18 @@ class Items extends API {
 			'page'     => $page,
 			'per_page' => $per_page,
 			'platform' => $platform,
+			'sort_by'  => $sort_by,
 		];
 
 		if ( $plan_type > 1 ) {
 			$funcArgs['plan_type'] = $plan_type;
 		}
 
-		if ( $category_id ) {
-			$funcArgs['category_id'] = $category_id;
+		if ( ! empty( $categories_raw ) ) {
+			$decoded = json_decode( $categories_raw, true );
+			if ( is_array( $decoded ) && ! empty( $decoded ) ) {
+				$funcArgs['categories'] = wp_slash( json_encode( array_values( array_filter( array_map( 'intval', $decoded ) ) ) ) );
+			}
 		}
 		if ( $template_type_id > 0 ) {
 			$funcArgs['template_type_id'] = $template_type_id;
@@ -135,20 +147,31 @@ class Items extends API {
 			$funcArgs['include_search'] = $include_search;
 		}
 
-		$query = 'total_page, current_page, data { id, fullsite_import, name, price, rating, downloads, type, template_type{ slug }, slug, favourite_count, thumbnail, thumbnail2, thumbnail3 }';
+		$query = 'total_page, current_page, data { id, fullsite_import, name, price, rating, downloads, type, template_type{ slug }, slug, favourite_count, thumbnail, thumbnail2, thumbnail3, badges }';
 		if( $type !== 'packs' ) {
-			$query = 'total_page, current_page, data { id, name, price, rating, downloads, type, template_type{ slug }, slug, favourite_count, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link }, thumbnail, pack { id, has_settings } }';
+			$query = 'total_page, current_page, data { id, name, price, rating, downloads, type, template_type{ slug }, slug, favourite_count, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link }, thumbnail, pack { id, has_settings }, badges }';
 		}
 
 		if( $type === false ) {
 			return $this->error( 'invalid_type_call', __( 'Invalid Type Call', 'templately' ) );
 		}
 
-		return $this->http()->query(
-			$type,
-			$query,
-			$funcArgs
-		)->post();
+		$transient_key = "_templately_items_" . md5(json_encode([$type, $query, $funcArgs]));
+		$response      = false;
+
+		if ( defined( 'TEMPLATELY_ITEMS_TRANSIENT' ) && constant( 'TEMPLATELY_ITEMS_TRANSIENT' ) ) {
+			$response = Database::get_transient( $transient_key );
+		}
+
+		if ( empty( $response ) ) {
+			$response = $this->http()->query( $type, $query, $funcArgs )->post();
+
+			if ( ! empty( $response ) && ! is_wp_error( $response ) && defined( 'TEMPLATELY_ITEMS_TRANSIENT' ) && constant( 'TEMPLATELY_ITEMS_TRANSIENT' ) ) {
+				Database::set_transient( $transient_key, $response );
+			}
+		}
+
+		return $response;
 	}
 
 	public function get_item() {
@@ -169,7 +192,7 @@ class Items extends API {
 			return $this->error( 'invalid_type_call', __( 'Invalid Type Call', 'templately' ) );
 		}
 
-		$items_params = 'id, name, rating, type, description, slug, price, features, favourite_count, is_favourite, is_reviewed, thumbnail, downloads, categories{ id, name, slug }, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link }, tags{ name, id }, categories{ name, id }, screenshots{ url }, banner, published_at, updated_at, is_trending, badges, pack{ id, name, slug, items{ id, price, name, type, slug, thumbnail }, has_settings }, live_url, template_type{ id, name, slug }';
+		$items_params = 'id, name, rating, type, description, slug, price, features, favourite_count, is_favourite, is_reviewed, thumbnail, downloads, categories{ id, name, slug }, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link }, tags{ name, id }, categories{ name, id }, screenshots{ url }, banner, published_at, updated_at, is_trending, badges, pack{ id, name, slug, items{ id, price, name, type, slug, thumbnail, badges }, has_settings }, live_url, template_type{ id, name, slug }';
 		$params       = 'data { ' . $items_params . ', variations { name, slug, type, platform } }';
 
 		if ( $type == 'packs' ) {
@@ -183,7 +206,20 @@ class Items extends API {
 			$args['api_key'] = $this->api_key;
 		}
 
-		$response = $this->http()->query( $type, $params, $args )->post();
+		$transient_key = "_templately_items_" . md5(json_encode([$type, $params, $args]));
+		$response      = false;
+
+		if ( defined( 'TEMPLATELY_ITEMS_TRANSIENT' ) && constant( 'TEMPLATELY_ITEMS_TRANSIENT' ) ) {
+			$response = Database::get_transient( $transient_key );
+		}
+
+		if ( empty( $response ) ) {
+			$response = $this->http()->query( $type, $params, $args )->post();
+
+			if ( ! empty( $response ) && ! is_wp_error( $response ) && defined( 'TEMPLATELY_ITEMS_TRANSIENT' ) && constant( 'TEMPLATELY_ITEMS_TRANSIENT' ) ) {
+				Database::set_transient( $transient_key, $response );
+			}
+		}
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -219,7 +255,7 @@ class Items extends API {
 			return $this->error( 'invalid_type_call', __( 'Invalid Type Call', 'templately' ) );
 		}
 
-		$items_params = 'id, name, rating, type, description, slug, price, features, favourite_count, is_favourite, is_reviewed, thumbnail, downloads, categories{ id, name, slug }, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link }, tags{ name, id }, categories{ name, id }, screenshots{ url }, banner, published_at, updated_at, is_trending, badges, pack{ id, name, slug, items{ id, price, name, type, slug, thumbnail }, has_settings }, live_url, template_type{ id, name, slug }';
+		$items_params = 'id, name, rating, type, description, slug, price, features, favourite_count, is_favourite, is_reviewed, thumbnail, downloads, categories{ id, name, slug }, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link }, tags{ name, id }, categories{ name, id }, screenshots{ url }, banner, published_at, updated_at, is_trending, badges, pack{ id, name, slug, items{ id, price, name, type, slug, thumbnail, badges }, has_settings }, live_url, template_type{ id, name, slug }';
 		$params       = 'data { ' . $items_params . ', variations { name, slug, type, platform } }';
 
 		if ( $type == 'packs' ) {

@@ -48,6 +48,7 @@ class Elementor extends Platform {
 	 */
 	public function styles() {
 		templately()->assets->enqueue( 'templately-elementor-preview', 'css/elementor.css' );
+		templately()->assets->enqueue( 'templately-tailwind', 'css/tailwind.css', ['templately-elementor-preview'] );
 	}
 
 	/**
@@ -56,6 +57,7 @@ class Elementor extends Platform {
 	 */
 	public function scripts() {
 		templately()->assets->enqueue( 'templately-elementor', 'css/elementor.css' );
+		templately()->assets->enqueue( 'templately-tailwind', 'css/tailwind.css', ['templately-elementor'] );
 		templately()->assets->enqueue( 'templately-elementor', 'js/elementor.js', [ 'jquery' ], true );
 		templately()->admin->scripts( 'elementor' );
 	}

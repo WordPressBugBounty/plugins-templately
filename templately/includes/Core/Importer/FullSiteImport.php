@@ -731,8 +731,8 @@ class FullSiteImport extends Base {
 				// If the response body is JSON and it contains an error, throw an exception with the error message
 				if (isset($response_body['status']) && $response_body['status'] === 'error') {
 					$support_message = '';
-					if(strpos($response_body['message'], 'https://templately.com?support=open') === false){
-						$support_message = sprintf(__(" Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://templately.com?support=open');
+					if(strpos($response_body['message'], 'https://templately.com/?support=open') === false){
+						$support_message = sprintf(__(" Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://templately.com/?support=open');
 					}
 					$this->throw_non_retryable($response_body['message'] . $support_message);
 				}
@@ -816,7 +816,7 @@ class FullSiteImport extends Base {
 			if (empty($error)) {
 				// Generic error message
 				Helper::log($unzip);
-				$error_message = sprintf(__("It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://templately.com?support=open');
+				$error_message = sprintf(__("It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://templately.com/?support=open');
 				$this->throw($error_message);
 			} else {
 				$this->throw($unzip->get_error_message());
@@ -1283,7 +1283,7 @@ class FullSiteImport extends Base {
 				$sse_message = str_replace(ABSPATH, 'ABSPATH/', $sse_message);
 			} else {
 				// Generic error message
-				$import_status_message = sprintf(__("It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://templately.com?support=open');
+				$import_status_message = sprintf(__("It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://templately.com/?support=open');
 				$sse_message = $import_status_message;
 			}
 

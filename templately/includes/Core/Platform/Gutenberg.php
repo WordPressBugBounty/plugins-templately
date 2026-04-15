@@ -57,6 +57,7 @@ class Gutenberg extends Platform {
     public function scripts(){
         $this->is_gutenberg_active = true;
         templately()->assets->enqueue( 'templately-gutenberg', 'css/gutenberg.css' );
+        templately()->assets->enqueue( 'templately-tailwind', 'css/tailwind.css', ['templately-gutenberg'] );
         templately()->assets->enqueue( 'templately-gutenberg', 'js/gutenberg.js' );
         templately()->admin->scripts( 'gutenberg' );
     }

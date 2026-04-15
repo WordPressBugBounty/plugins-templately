@@ -1,4 +1,8 @@
 == Changelog ==
+= 3.6.0 - 15-04-2026 =
+Revamped: Entire Template Library experience
+Few minor bug fixes and improvements
+
 = 3.5.3 - 08-04-2026 =
 Fixed: Logo width changing unexpectedly after import.
 Fixed: Header displaying incorrectly after import.

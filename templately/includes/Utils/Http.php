@@ -114,7 +114,7 @@ public function google_auth_url($redirect_to = '', $current_url = '') {
                     $prepareArgs .= "$key:" . $value . ",";
                     break;
                 default:
-                    $prepareArgs .= "$key:" . '"' . $value . '"' . ",";
+                    $prepareArgs .= "$key:" . '"' . Helper::esc_json_string( $value ) . '"' . ",";
                     break;
             }
         }
@@ -197,7 +197,7 @@ public function google_auth_url($redirect_to = '', $current_url = '') {
         }
 
         $_default_args = [
-            'timeout' => $this->dev_mode ? 40 : 30,
+            'timeout' => $this->dev_mode ? 120 : 30,
             'headers' => $headers,
             'body'    => wp_json_encode( [
                 'query' => $query

@@ -1,0 +1,201 @@
+@wordpress/vips@1.0.1-next.v.202602200903.0+06edfb869 overridden
+node_modules/@wordpress/vips
+  overridden @wordpress/vips@"1.0.1-next.v.202602200903.0" (was "^1.0.0") from @wordpress/upload-media@0.25.1
+  node_modules/@wordpress/upload-media
+    dev @wordpress/upload-media@"^0.25.0" from the root project
+    @wordpress/upload-media@"^0.25.1" from @wordpress/block-library@9.40.1
+    node_modules/@wordpress/block-library
+      @wordpress/block-library@"^9.40.1" from @wordpress/edit-post@8.40.1
+      node_modules/@wordpress/edit-post
+        dev @wordpress/edit-post@"^8.40.0" from the root project
+    @wordpress/upload-media@"^0.25.1" from @wordpress/block-editor@15.13.1
+    node_modules/@wordpress/block-editor
+      dev @wordpress/block-editor@"^15.13.0" from the root project
+      @wordpress/block-editor@"^15.13.1" from @wordpress/block-library@9.40.1
+      node_modules/@wordpress/block-library
+        @wordpress/block-library@"^9.40.1" from @wordpress/edit-post@8.40.1
+        node_modules/@wordpress/edit-post
+          dev @wordpress/edit-post@"^8.40.0" from the root project
+      @wordpress/block-editor@"^15.13.1" from @wordpress/core-data@7.40.1
+      node_modules/@wordpress/core-data
+        @wordpress/core-data@"^7.40.1" from @wordpress/block-library@9.40.1
+        node_modules/@wordpress/block-library
+          @wordpress/block-library@"^9.40.1" from @wordpress/edit-post@8.40.1
+          node_modules/@wordpress/edit-post
+            dev @wordpress/edit-post@"^8.40.0" from the root project
+        @wordpress/core-data@"^7.40.1" from @wordpress/editor@14.40.1
+        node_modules/@wordpress/editor
+          dev @wordpress/editor@"^14.40.0" from the root project
+          @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+          node_modules/@wordpress/edit-post
+            dev @wordpress/edit-post@"^8.40.0" from the root project
+        @wordpress/core-data@"^7.40.1" from @wordpress/edit-post@8.40.1
+        node_modules/@wordpress/edit-post
+          dev @wordpress/edit-post@"^8.40.0" from the root project
+        @wordpress/core-data@"^7.40.1" from @wordpress/fields@0.32.1
+        node_modules/@wordpress/fields
+          @wordpress/fields@"^0.32.1" from @wordpress/editor@14.40.1
+          node_modules/@wordpress/editor
+            dev @wordpress/editor@"^14.40.0" from the root project
+            @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+            node_modules/@wordpress/edit-post
+              dev @wordpress/edit-post@"^8.40.0" from the root project
+        @wordpress/core-data@"^7.40.1" from @wordpress/global-styles-ui@1.7.1
+        node_modules/@wordpress/global-styles-ui
+          @wordpress/global-styles-ui@"^1.7.1" from @wordpress/editor@14.40.1
+          node_modules/@wordpress/editor
+            dev @wordpress/editor@"^14.40.0" from the root project
+            @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+            node_modules/@wordpress/edit-post
+              dev @wordpress/edit-post@"^8.40.0" from the root project
+        @wordpress/core-data@"^7.40.1" from @wordpress/media-fields@0.5.1
+        node_modules/@wordpress/media-fields
+          @wordpress/media-fields@"^0.5.1" from @wordpress/editor@14.40.1
+          node_modules/@wordpress/editor
+            dev @wordpress/editor@"^14.40.0" from the root project
+            @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+            node_modules/@wordpress/edit-post
+              dev @wordpress/edit-post@"^8.40.0" from the root project
+          @wordpress/media-fields@"^0.5.1" from @wordpress/media-utils@5.40.1
+          node_modules/@wordpress/media-utils
+            @wordpress/media-utils@"^5.40.0" from the root project
+            @wordpress/media-utils@"^5.40.1" from @wordpress/editor@14.40.1
+            node_modules/@wordpress/editor
+              dev @wordpress/editor@"^14.40.0" from the root project
+              @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+              node_modules/@wordpress/edit-post
+                dev @wordpress/edit-post@"^8.40.0" from the root project
+            @wordpress/media-utils@"^5.40.1" from @wordpress/fields@0.32.1
+            node_modules/@wordpress/fields
+              @wordpress/fields@"^0.32.1" from @wordpress/editor@14.40.1
+              node_modules/@wordpress/editor
+                dev @wordpress/editor@"^14.40.0" from the root project
+                @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+                node_modules/@wordpress/edit-post
+                  dev @wordpress/edit-post@"^8.40.0" from the root project
+        @wordpress/core-data@"^7.40.1" from @wordpress/media-utils@5.40.1
+        node_modules/@wordpress/media-utils
+          @wordpress/media-utils@"^5.40.0" from the root project
+          @wordpress/media-utils@"^5.40.1" from @wordpress/editor@14.40.1
+          node_modules/@wordpress/editor
+            dev @wordpress/editor@"^14.40.0" from the root project
+            @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+            node_modules/@wordpress/edit-post
+              dev @wordpress/edit-post@"^8.40.0" from the root project
+          @wordpress/media-utils@"^5.40.1" from @wordpress/fields@0.32.1
+          node_modules/@wordpress/fields
+            @wordpress/fields@"^0.32.1" from @wordpress/editor@14.40.1
+            node_modules/@wordpress/editor
+              dev @wordpress/editor@"^14.40.0" from the root project
+              @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+              node_modules/@wordpress/edit-post
+                dev @wordpress/edit-post@"^8.40.0" from the root project
+        @wordpress/core-data@"^7.40.1" from @wordpress/patterns@2.40.1
+        node_modules/@wordpress/patterns
+          @wordpress/patterns@"^2.40.1" from @wordpress/block-library@9.40.1
+          node_modules/@wordpress/block-library
+            @wordpress/block-library@"^9.40.1" from @wordpress/edit-post@8.40.1
+            node_modules/@wordpress/edit-post
+              dev @wordpress/edit-post@"^8.40.0" from the root project
+          @wordpress/patterns@"^2.40.1" from @wordpress/editor@14.40.1
+          node_modules/@wordpress/editor
+            dev @wordpress/editor@"^14.40.0" from the root project
+            @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+            node_modules/@wordpress/edit-post
+              dev @wordpress/edit-post@"^8.40.0" from the root project
+          @wordpress/patterns@"^2.40.1" from @wordpress/fields@0.32.1
+          node_modules/@wordpress/fields
+            @wordpress/fields@"^0.32.1" from @wordpress/editor@14.40.1
+            node_modules/@wordpress/editor
+              dev @wordpress/editor@"^14.40.0" from the root project
+              @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+              node_modules/@wordpress/edit-post
+                dev @wordpress/edit-post@"^8.40.0" from the root project
+        @wordpress/core-data@"^7.40.1" from @wordpress/reusable-blocks@5.40.1
+        node_modules/@wordpress/reusable-blocks
+          @wordpress/reusable-blocks@"^5.40.1" from @wordpress/block-library@9.40.1
+          node_modules/@wordpress/block-library
+            @wordpress/block-library@"^9.40.1" from @wordpress/edit-post@8.40.1
+            node_modules/@wordpress/edit-post
+              dev @wordpress/edit-post@"^8.40.0" from the root project
+          @wordpress/reusable-blocks@"^5.40.1" from @wordpress/editor@14.40.1
+          node_modules/@wordpress/editor
+            dev @wordpress/editor@"^14.40.0" from the root project
+            @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+            node_modules/@wordpress/edit-post
+              dev @wordpress/edit-post@"^8.40.0" from the root project
+        @wordpress/core-data@"^7.40.1" from @wordpress/widgets@4.40.1
+        node_modules/@wordpress/widgets
+          @wordpress/widgets@"^4.40.1" from @wordpress/edit-post@8.40.1
+          node_modules/@wordpress/edit-post
+            dev @wordpress/edit-post@"^8.40.0" from the root project
+      @wordpress/block-editor@"^15.13.1" from @wordpress/editor@14.40.1
+      node_modules/@wordpress/editor
+        dev @wordpress/editor@"^14.40.0" from the root project
+        @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+        node_modules/@wordpress/edit-post
+          dev @wordpress/edit-post@"^8.40.0" from the root project
+      @wordpress/block-editor@"^15.13.1" from @wordpress/edit-post@8.40.1
+      node_modules/@wordpress/edit-post
+        dev @wordpress/edit-post@"^8.40.0" from the root project
+      @wordpress/block-editor@"^15.13.1" from @wordpress/fields@0.32.1
+      node_modules/@wordpress/fields
+        @wordpress/fields@"^0.32.1" from @wordpress/editor@14.40.1
+        node_modules/@wordpress/editor
+          dev @wordpress/editor@"^14.40.0" from the root project
+          @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+          node_modules/@wordpress/edit-post
+            dev @wordpress/edit-post@"^8.40.0" from the root project
+      @wordpress/block-editor@"^15.13.1" from @wordpress/global-styles-ui@1.7.1
+      node_modules/@wordpress/global-styles-ui
+        @wordpress/global-styles-ui@"^1.7.1" from @wordpress/editor@14.40.1
+        node_modules/@wordpress/editor
+          dev @wordpress/editor@"^14.40.0" from the root project
+          @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+          node_modules/@wordpress/edit-post
+            dev @wordpress/edit-post@"^8.40.0" from the root project
+      @wordpress/block-editor@"^15.13.1" from @wordpress/patterns@2.40.1
+      node_modules/@wordpress/patterns
+        @wordpress/patterns@"^2.40.1" from @wordpress/block-library@9.40.1
+        node_modules/@wordpress/block-library
+          @wordpress/block-library@"^9.40.1" from @wordpress/edit-post@8.40.1
+          node_modules/@wordpress/edit-post
+            dev @wordpress/edit-post@"^8.40.0" from the root project
+        @wordpress/patterns@"^2.40.1" from @wordpress/editor@14.40.1
+        node_modules/@wordpress/editor
+          dev @wordpress/editor@"^14.40.0" from the root project
+          @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+          node_modules/@wordpress/edit-post
+            dev @wordpress/edit-post@"^8.40.0" from the root project
+        @wordpress/patterns@"^2.40.1" from @wordpress/fields@0.32.1
+        node_modules/@wordpress/fields
+          @wordpress/fields@"^0.32.1" from @wordpress/editor@14.40.1
+          node_modules/@wordpress/editor
+            dev @wordpress/editor@"^14.40.0" from the root project
+            @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+            node_modules/@wordpress/edit-post
+              dev @wordpress/edit-post@"^8.40.0" from the root project
+      @wordpress/block-editor@"^15.13.1" from @wordpress/reusable-blocks@5.40.1
+      node_modules/@wordpress/reusable-blocks
+        @wordpress/reusable-blocks@"^5.40.1" from @wordpress/block-library@9.40.1
+        node_modules/@wordpress/block-library
+          @wordpress/block-library@"^9.40.1" from @wordpress/edit-post@8.40.1
+          node_modules/@wordpress/edit-post
+            dev @wordpress/edit-post@"^8.40.0" from the root project
+        @wordpress/reusable-blocks@"^5.40.1" from @wordpress/editor@14.40.1
+        node_modules/@wordpress/editor
+          dev @wordpress/editor@"^14.40.0" from the root project
+          @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+          node_modules/@wordpress/edit-post
+            dev @wordpress/edit-post@"^8.40.0" from the root project
+      @wordpress/block-editor@"^15.13.1" from @wordpress/widgets@4.40.1
+      node_modules/@wordpress/widgets
+        @wordpress/widgets@"^4.40.1" from @wordpress/edit-post@8.40.1
+        node_modules/@wordpress/edit-post
+          dev @wordpress/edit-post@"^8.40.0" from the root project
+    @wordpress/upload-media@"^0.25.1" from @wordpress/editor@14.40.1
+    node_modules/@wordpress/editor
+      dev @wordpress/editor@"^14.40.0" from the root project
+      @wordpress/editor@"^14.40.1" from @wordpress/edit-post@8.40.1
+      node_modules/@wordpress/edit-post
+        dev @wordpress/edit-post@"^8.40.0" from the root project

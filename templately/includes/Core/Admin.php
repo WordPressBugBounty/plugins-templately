@@ -203,21 +203,43 @@ class Admin extends Base {
 			$script_dependencies[] = $_localize_handle;
 		}
 
+		if ( 'templately_page_templately_settings' === $hook ) {
+			templately()->assets->register( 'settings-vendor', 'js/chunks/settings-vendor.js', [], true );
+			$script_dependencies[] = 'settings-vendor';
+		}
+
 		if ( $hook === 'toplevel_page_templately' || $hook == 'edit.php' || 'templately_page_templately_settings' === $hook ) {
 			templately()->assets->enqueue( 'templately-admin', 'css/admin.css', [ 'templately' ] );
 		}
 
-		// Google Font Enqueueing
+		// Google Fonts Enqueueing
+		// DM Sans - Used in general UI
 		templately()->assets->enqueue(
 			'templately-dmsans',
 			set_url_scheme( '//fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap' )
+		);
+
+		// Inter - Used in Tailwind components and various UI elements
+		templately()->assets->enqueue(
+			'templately-inter',
+			set_url_scheme( '//fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap' )
+		);
+
+		// DM Mono - Used in settings and code-related UI
+		templately()->assets->enqueue(
+			'templately-dmmono',
+			set_url_scheme( '//fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap' )
 		);
 
 		wp_enqueue_style('wp-components');
 
 		wp_enqueue_media();
 		templately()->assets->enqueue( 'templately', 'js/templately.js', $script_dependencies, true );
-		templately()->assets->enqueue( 'templately', 'css/templately.css', ['templately-dmsans'] );
+		templately()->assets->enqueue( 'templately', 'css/templately.css', ['templately-dmsans', 'templately-inter'] );
+		$tailwind_hooks = apply_filters( 'templately_tailwind_hooks', [ 'toplevel_page_templately', 'elementor', 'gutenberg', 'templately_page_templately_settings' ] );
+		if ( in_array( $hook, $tailwind_hooks, true ) ) {
+			templately()->assets->enqueue( 'templately-tailwind', 'css/tailwind.css', ['templately', 'templately-inter'] );
+		}
 
 		/**
 		 * @var Elementor|Gutenberg $platform
@@ -249,6 +271,7 @@ class Admin extends Base {
 			'no_items'                => templately()->assets->icon( 'no-items.png' ),
 			'loadingImage'            => templately()->assets->icon( 'logos/loading-logo.gif' ),
 			'current_url'             => admin_url( 'admin.php?page=templately' ),
+			'wp_dashboard_url'        => admin_url( 'index.php' ),
 			'is_signed'               => Login::is_signed(),
 			'is_globally_signed'      => Login::is_globally_signed(),
 			'signed_as_global'        => Login::signed_as_global(),
@@ -265,6 +288,7 @@ class Admin extends Base {
 			'allowed_mime_types'      => get_allowed_mime_types(),
 			'is_free_user'            => $global_user === false || isset( $global_user['plan'] ) && $global_user['plan'] == 'free',
 			'is_disconnected'         => ! empty( $global_user['is_disconnected'] ),
+			'tour_status'             => Options::get_instance()->get( 'tour_status', [] ),
 		], $templately );
 
 		// Apply filter to allow network admin modifications
@@ -344,7 +368,7 @@ class Admin extends Base {
 						]
 					],
 					'support'          => [
-						'link'       => 'https://templately.com?support=open',
+						'link'       => 'https://templately.com/?support=open',
 						'attributes' => [
 							'target' => '_blank'
 						],
@@ -400,36 +424,37 @@ class Admin extends Base {
 			// 	]
 			// ] );
 
-			$notice_text  = '<p style="margin-top: 0; margin-bottom: 0px;">Smarter & Faster Web Design With 6,500+ AI-Powered Elementor & Gutenberg Templates – Now <strong>Up To 50% OFF!</strong> 🎁</p>';
+			// spring_savings_2026 notice
+			$_notice_text_spring_savings_2026 = '<p style="margin-top: 0; margin-bottom: 0px;">🌸 Spring Savings: Design Website Quickly With 6,500+ Elementor & Gutenberg Templates, Including AI-Powered Features ⚡️ – Now <strong>Flat 50% OFF!</strong></p>';
 
-			$_black_friday = [
+			$_spring_savings_2026 = [
 				'thumbnail' => templately()->assets->icon( 'logos/logo-full.svg' ),
-				'html'      => $notice_text,
+				'html'      => $_notice_text_spring_savings_2026,
 				'links'     => [
-					'later'            => [
+					'later'     => [
 						'link'       => 'https://templately.com/#pricing',
 						'target'     => '_blank',
-						'label'      => __( 'Upgrade To PRO', 'templately' ),
+						'label'      => __( 'Upgrade To Pro Now', 'templately' ),
 						'attributes' => [
 							'class' => 'button button-primary',
 						]
 					],
 					'never_show_again' => [
-						'label'      => __( 'I’ll Grab It Later', 'templately' ),
+						'label'      => __( 'Maybe Later', 'templately' ),
 						'attributes' => [
 							'data-dismiss' => true,
 							'class'        => 'button button-link dismiss-btn',
 						]
-					]
+					],
 				],
 			];
 
-			$notices->add( 'holiday_2026_feb', $_black_friday, [
-				'start'       => $notices->strtotime('00:00:01AM 10th February, 2026'),
+			$notices->add( 'spring_savings_2026', $_spring_savings_2026, [
+				'start'       => $notices->strtotime('00:00:01AM 8th April, 2026'),
 				'recurrence'  => false,
 				'dismissible' => true,
 				'refresh'     => TEMPLATELY_VERSION,
-				"expire"      => strtotime( '11:59:59pm 8th March, 2026' ),
+				"expire"      => strtotime( '11:59:59pm 10th May, 2026' ),
 				'display_if'  => !wp_is_mobile(),
 				'screens'     => [
 					'dashboard',
@@ -451,7 +476,7 @@ class Admin extends Base {
 			);
 			$holiday_text .= sprintf(
 				'<button class="button button-link dismiss-btn" data-dismiss="true">%1$s</button>',
-				__('No, I’ll Pay Full Price Later', 'templately'),
+				__('No, I\'ll Pay Full Price Later', 'templately'),
 			);
 			$holiday_text .= "</div>";
 

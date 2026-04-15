@@ -17,14 +17,6 @@ class Categories extends API {
 	}
 
 	public function get_categories() {
-        /**
-         * Return if there is any cache data.
-         */
-        $types = Database::get_transient( $this->endpoint );
-		if( ! empty( $types ) ){
-			return $this->success( $types );
-		}
-
 		/** @noinspection SpellCheckingInspection */
         $id       = $this->get_param( 'id', 0, 'intval' );
         $funcArgs = [];
@@ -33,12 +25,23 @@ class Categories extends API {
 			$funcArgs['id'] = $id;
 		}
 
-		$response = $this->http()->query( $this->endpoint, 'id, name, slug, status', $funcArgs )->post();
+		$fields           = 'id, name, slug, status, packs_count';
+		$transient_key    = $this->endpoint . '_' . md5( $fields . json_encode( $funcArgs ) );
+
+        /**
+         * Return if there is any cache data.
+         */
+        $types = Database::get_transient( $transient_key );
+		if( ! empty( $types ) ){
+			return $this->success( $types );
+		}
+
+		$response = $this->http()->query( $this->endpoint, $fields, $funcArgs )->post();
         /**
          * Caching the response in transient.
          */
 		if( ! is_wp_error( $response ) ) {
-			Database::set_transient( $this->endpoint, $response );
+			Database::set_transient( $transient_key, $response );
 		}
 
         return $response;

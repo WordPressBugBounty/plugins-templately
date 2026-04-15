@@ -37,13 +37,14 @@ use Templately\API\Dependencies;
 use Templately\API\TemplateTypes;
 use Templately\API\SavedTemplates;
 use Templately\API\Sites;
+use Templately\API\Tour;
 use Templately\Core\Maintenance;
 use Templately\Core\Migrator;
 use Templately\Core\Platform\Gutenberg;
 use Templately\Core\Platform\Elementor;
 
 final class Plugin extends Base {
-    public $version = '3.5.3';
+    public $version = '3.6.0';
 
 	public $admin;
 	public $settings;
@@ -196,6 +197,7 @@ final class Plugin extends Base {
 		MyClouds::get_instance();
 		WorkSpaces::get_instance();
 		Sites::get_instance();
+		Tour::get_instance();
 
 		APISettings::get_instance();
 		// Note: DeveloperSettings::get_instance() is called in Developer::init_modules() when developer functionality is available and enabled

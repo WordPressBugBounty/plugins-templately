@@ -145,9 +145,11 @@ class Profile extends API {
 		$page     = $this->get_param( 'page', 1, 'intval' );
 		$per_page = $this->get_param( 'per_page', 10, 'intval' );
 		$_all     = $this->get_param( 'all', false );
+		$platform = $this->get_param( 'platform', 'elementor' );
 
 		$funcArgs = [
 			'api_key'  => $this->api_key,
+			'platform' => $platform,
 			'page'     => $page,
 			'per_page' => $per_page
 		];

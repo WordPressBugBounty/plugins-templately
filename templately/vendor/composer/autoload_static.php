@@ -56,6 +56,7 @@ class ComposerStaticInitfbda63c7fbea4382c611c6bde8fe57fa
         'Templately\\API\\Tags' => __DIR__ . '/../..' . '/includes/API/Tags.php',
         'Templately\\API\\TemplateTypes' => __DIR__ . '/../..' . '/includes/API/TemplateTypes.php',
         'Templately\\API\\ThemeBuilderApi' => __DIR__ . '/../..' . '/includes/API/ThemeBuilderApi.php',
+        'Templately\\API\\Tour' => __DIR__ . '/../..' . '/includes/API/Tour.php',
         'Templately\\API\\WorkSpaces' => __DIR__ . '/../..' . '/includes/API/WorkSpaces.php',
         'Templately\\Admin\\API\\BaseAPI' => __DIR__ . '/../..' . '/includes/Admin/API/BaseAPI.php',
         'Templately\\Admin\\API\\Settings' => __DIR__ . '/../..' . '/includes/Admin/API/Settings.php',
