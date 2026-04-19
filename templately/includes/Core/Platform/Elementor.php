@@ -77,7 +77,7 @@ class Elementor extends Platform {
 	 *
 	 * @return WP_Error|void
 	 */
-	protected function is_eligible( $template, $types = [ 'page', 'section' ] ) {
+	protected function is_eligible( $template, $types = [ 'page', 'section','block' ] ) {
 		if ( ! Helper::is_plugin_active( 'elementor-pro/elementor-pro.php' ) &&
 			isset( $template['type'] ) &&
 			! in_array( $template['type'], $types, true )
@@ -297,6 +297,10 @@ class Elementor extends Platform {
 
 		if ( ! empty( $settings ) && ! empty( $template_data['content'] ) && is_array( $template_data['content'] ) ) {
 			$template_data['content'] = \Templately\Core\Importer\Utils\ElementorSettingsMerger::merge( $template_data['content'], $settings );
+		}
+
+		if(trim($template_data['type']) == 'block'){
+			$template_data['type'] = 'section';
 		}
 
 		$importer          = new ElementorImporter;

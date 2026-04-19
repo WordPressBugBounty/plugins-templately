@@ -112,6 +112,7 @@ class ComposerStaticInitfbda63c7fbea4382c611c6bde8fe57fa
         'Templately\\Core\\Developer\\API\\McpEndpoints' => __DIR__ . '/../..' . '/includes/Core/Developer/API/McpEndpoints.php',
         'Templately\\Core\\Developer\\API\\NetworkFsi' => __DIR__ . '/../..' . '/includes/Core/Developer/API/NetworkFsi.php',
         'Templately\\Core\\Developer\\API\\OpenAIEndpoints' => __DIR__ . '/../..' . '/includes/Core/Developer/API/OpenAIEndpoints.php',
+        'Templately\\Core\\Developer\\ApiErrorSimulator' => __DIR__ . '/../..' . '/includes/Core/Developer/ApiErrorSimulator.php',
         'Templately\\Core\\Developer\\ApiManager' => __DIR__ . '/../..' . '/includes/Core/Developer/ApiManager.php',
         'Templately\\Core\\Developer\\Developer' => __DIR__ . '/../..' . '/includes/Core/Developer/Developer.php',
         'Templately\\Core\\Developer\\DeveloperSettings' => __DIR__ . '/../..' . '/includes/Core/Developer/DeveloperSettings.php',

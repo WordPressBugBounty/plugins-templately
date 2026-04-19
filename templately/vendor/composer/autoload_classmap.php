@@ -89,6 +89,7 @@ return array(
     'Templately\\Core\\Developer\\API\\McpEndpoints' => $baseDir . '/includes/Core/Developer/API/McpEndpoints.php',
     'Templately\\Core\\Developer\\API\\NetworkFsi' => $baseDir . '/includes/Core/Developer/API/NetworkFsi.php',
     'Templately\\Core\\Developer\\API\\OpenAIEndpoints' => $baseDir . '/includes/Core/Developer/API/OpenAIEndpoints.php',
+    'Templately\\Core\\Developer\\ApiErrorSimulator' => $baseDir . '/includes/Core/Developer/ApiErrorSimulator.php',
     'Templately\\Core\\Developer\\ApiManager' => $baseDir . '/includes/Core/Developer/ApiManager.php',
     'Templately\\Core\\Developer\\Developer' => $baseDir . '/includes/Core/Developer/Developer.php',
     'Templately\\Core\\Developer\\DeveloperSettings' => $baseDir . '/includes/Core/Developer/DeveloperSettings.php',

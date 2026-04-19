@@ -134,6 +134,13 @@ class Helper extends Base {
 			$headers['Content-Type'] = 'application/json';
 		}
 
+		// Resolve requested platform: $_REQUEST wins (frontend-supplied), then caller's extra_headers, then default.
+		if ( isset( $_REQUEST['requested_platform'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$extra_headers['x-templately-requested-platform'] = sanitize_text_field( wp_unslash( $_REQUEST['requested_platform'] ) );
+		} elseif ( ! isset( $extra_headers['x-templately-requested-platform'] ) ) {
+			$extra_headers['x-templately-requested-platform'] = 'templately';
+		}
+
 		// Merge additional headers
 		$headers = array_merge($headers, $extra_headers);
 

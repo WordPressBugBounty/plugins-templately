@@ -95,9 +95,9 @@ class Elementor extends ElementorLocal {
 		];
 
 		$template_data = wp_parse_args( $template_data, $defaults );
-
+		$type = $template_data['type'] == 'block' ? 'section' : $template_data['type'];
 		$document = ElementorPlugin::$instance->documents->create(
-			$template_data['type'],
+			$type,
 			[
 				'post_title' => $template_data['post_title'],
 				'post_status' => $template_data['status'],

@@ -326,24 +326,25 @@ class AIContent extends API {
 			$user = $this->utils('options')->get('user');
 
 			$ai_process_data[$process_id] = [
-				'name'            => $name,
-				'category'        => $category,
-				'description'     => $description,
-				'email'           => $email,
-				'contactNumber'   => $contactNumber,
-				'businessAddress' => $businessAddress,
-				'openingHour'     => $openingHour,
-				'process_id'      => $process_id,
-				'pack_id'         => $pack_id,
-				'ai_page_ids'     => $ai_page_ids,
-				'ai_preview_ids'  => $preview_pages,
-				'content_ids'     => $content_ids,
-				'platform'        => $platform,
-				'api_key'         => $this->api_key,
-				'user_id'         => isset($user['id']) ? $user['id'] : null,
-				'session_id'      => $session_id,        // Store session_id for coordination
-				'imageReplace'    => $image_replace,    // Store session_id for coordination
-				'language'        => $language,
+				'name'               => $name,
+				'category'           => $category,
+				'description'        => $description,
+				'email'              => $email,
+				'contactNumber'      => $contactNumber,
+				'businessAddress'    => $businessAddress,
+				'openingHour'        => $openingHour,
+				'process_id'         => $process_id,
+				'pack_id'            => $pack_id,
+				'ai_page_ids'        => $ai_page_ids,
+				'ai_preview_ids'     => $preview_pages,
+				'content_ids'        => $content_ids,
+				'platform'           => $platform,
+				'api_key'            => $this->api_key,
+				'user_id'            => isset($user['id']) ? $user['id'] : null,
+				'session_id'         => $session_id,
+				'imageReplace'       => $image_replace,
+				'language'           => $language,
+				'requested_platform' => $requested_platform,
 			];
 
 			// Update using API key-based storage with automatic count-based cleanup
@@ -511,8 +512,9 @@ class AIContent extends API {
 	 */
 	public function get_attachments() {
 		// Get parameters from request
-		$type = $this->get_param('type', 'pack');
-		$id = $this->get_param('pack_id');
+		$type               = $this->get_param('type', 'pack');
+		$id                 = $this->get_param('pack_id');
+		$requested_platform = $this->get_param('requested_platform', 'templately');
 
 		// Require ID parameter - return error if not provided
 		if (empty($id)) {
@@ -525,7 +527,8 @@ class AIContent extends API {
 
 			// Make API call
 			$extra_headers = [
-				'Accept' => 'application/xml, text/xml',
+				'Accept'                          => 'application/xml, text/xml',
+				'x-templately-requested-platform' => $requested_platform,
 			];
 			$response = Helper::make_api_get_request("v2/$api_endpoint", [], $extra_headers, 30);
 
