@@ -1,4 +1,12 @@
 == Changelog ==
+= 3.6.2 - 23-04-2026 =
+Fixed: Security enhancements (reported by Patchstack).
+Few minor bug fixes and improvements.
+
+= 3.6.1 - 19-04-2026 =
+Fixed: Section importing was failing in Elementor.
+Few minor bug fixes and improvements.
+
 = 3.6.0 - 15-04-2026 =
 Revamped: Entire Template Library experience
 Few minor bug fixes and improvements

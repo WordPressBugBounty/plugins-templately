@@ -96,29 +96,44 @@ class Conditions extends API {
 		$query = $request->get_param( 'query' );
 		$type  = $query['query_type'] ?? '';
 
-		if ( empty( $type ) ) {
-			// FIXME: need throw error maybe
+		$allowed_fields = [
+			'authors'  => [ 'ID', 'user_nicename', 'display_name' ],
+			'posts'    => [ 'ID', 'post_title', 'post_name' ],
+			'taxonomy' => [ 'term_id', 'slug', 'name' ],
+		];
+
+		if ( empty( $type ) || ! isset( $allowed_fields[ $type ] ) ) {
 			return $this->success( [] );
 		}
 
 		$by_field = $query['field'] ?? '';
 
-		if ( empty( $by_field ) ) {
-			// FIXME: need throw error maybe
+		if ( empty( $by_field ) || ! in_array( $by_field, $allowed_fields[ $type ], true ) ) {
+			return $this->success( [] );
+		}
+
+		if ( 'authors' === $type && ! current_user_can( 'list_users' ) ) {
 			return $this->success( [] );
 		}
 
 		$payload = sanitize_text_field( $request->get_param( 'payload' ) );
 		$args    = [ 'search' => $payload ];
-		if(is_numeric($payload)){
-			$args = [ 'post__in' => [(int) $payload] ];
+		if ( is_numeric( $payload ) ) {
+			$args = [ 'post__in' => [ (int) $payload ] ];
 		}
 
-		if ( isset( $query['query'] ) ) {
-			$args = wp_parse_args( $query['query'], $args );
+		if ( isset( $query['query'] ) && is_array( $query['query'] ) ) {
+			$safe_query_keys = [
+				'post_type', 'posts_per_page', 'number', 'orderby', 'order',
+				'taxonomy', 'parent', 'hide_empty',
+			];
+			$safe_query = array_intersect_key( $query['query'], array_flip( $safe_query_keys ) );
+			$args       = wp_parse_args( $safe_query, $args );
 		}
 
-		$results = [];
+		$results  = [];
+		$data     = [];
+		$data_key = '';
 
 		switch ( $type ) {
 			case 'taxonomy':
@@ -127,9 +142,11 @@ class Conditions extends API {
 				$data_key = 'name';
 				break;
 			case 'posts':
-				$args['s'] = $args['search'];
-				$data      = get_posts( $args );
-				$data_key  = 'post_title';
+				$args['s']           = $args['search'];
+				$args['post_status'] = 'publish';
+				$args['perm']        = 'readable';
+				$data                = get_posts( $args );
+				$data_key            = 'post_title';
 				break;
 			case 'authors':
 				$args['search_columns'] = [ 'user_nicename', 'user_login' ];
