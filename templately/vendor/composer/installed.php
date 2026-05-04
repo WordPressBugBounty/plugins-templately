@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'templately/templately',
-        'pretty_version' => 'v3.6.2',
-        'version' => '3.6.2.0',
-        'reference' => '58c1b822173410b677e4f265354df5c17c07e7e9',
+        'pretty_version' => 'v3.6.3',
+        'version' => '3.6.3.0',
+        'reference' => '4cd3e76669c611548dae264458412da82736b3e8',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -20,9 +20,9 @@
             'dev_requirement' => false,
         ),
         'templately/templately' => array(
-            'pretty_version' => 'v3.6.2',
-            'version' => '3.6.2.0',
-            'reference' => '58c1b822173410b677e4f265354df5c17c07e7e9',
+            'pretty_version' => 'v3.6.3',
+            'version' => '3.6.3.0',
+            'reference' => '4cd3e76669c611548dae264458412da82736b3e8',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
