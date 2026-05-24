@@ -90,6 +90,15 @@ class AIContent extends API {
 		$this->post($this->endpoint . '/ai-update', [$this, 'ai_update']);
 		$this->post($this->endpoint . '/ai-update-preview', [$this, 'ai_update_preview']);
 		$this->post($this->endpoint . '/generate-tagline', [$this, 'generate_tagline']);
+		$this->get($this->endpoint . '/chatbot-conversation', [$this, 'get_chatbot_conversation'], [
+			'chat' => [
+				'required' => true,
+				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => function($param, $request, $key) {
+					return is_string($param) && strlen($param) > 0 && strlen($param) <= 128 && preg_match('/^[A-Za-z0-9\-_]+$/', $param);
+				},
+			],
+		]);
 		$this->get($this->endpoint . '/attachments', [$this, 'get_attachments'], [
 			'type' => [
 				'default' => 'pack',
@@ -933,6 +942,46 @@ class AIContent extends API {
 		}
 
 		// Return the response as-is
+		return $data;
+	}
+
+	/**
+	 * Fetch a chatbot conversation by ID from the external Templately chatbot API.
+	 *
+	 * Used to resume a conversation that began on templately.dev when the user
+	 * is redirected into the plugin with ?process=ai&chat={uuid}.
+	 *
+	 * @return array|\WP_Error Pass-through of the external response { status, data } or WP_Error.
+	 */
+	public function get_chatbot_conversation() {
+		$chat = $this->get_param('chat');
+
+		if (empty($chat)) {
+			return $this->error('invalid_chat_id', __('Invalid conversation ID.', 'templately'), 'ai-content/chatbot-conversation', 400);
+		}
+
+		$extra_headers = [
+			'Accept' => 'application/json',
+		];
+		$response = Helper::make_api_get_request("v2/chatbot/conversation/{$chat}", [], $extra_headers, 30);
+
+		if (is_wp_error($response)) {
+			return $this->error('request_failed', __('Failed to fetch conversation.', 'templately'), 'ai-content/chatbot-conversation', 500, ['error_detail' => $response->get_error_message()]);
+		}
+
+		$response_code = wp_remote_retrieve_response_code($response);
+		$body          = wp_remote_retrieve_body($response);
+		$data          = json_decode($body, true);
+
+		if ($response_code !== 200) {
+			$message = (is_array($data) && !empty($data['message'])) ? $data['message'] : sprintf(__('API returned HTTP %d error.', 'templately'), $response_code);
+			return $this->error('api_http_error', $message, 'ai-content/chatbot-conversation', $response_code);
+		}
+
+		if (!is_array($data) || !isset($data['status'])) {
+			return $this->error('invalid_response', __('Invalid response.', 'templately'), 'ai-content/chatbot-conversation', 500);
+		}
+
 		return $data;
 	}
 

@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Templately plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Templately 3.6.3\n"
+"Project-Id-Version: Templately 3.6.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/templately\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-05-04T08:39:43+00:00\n"
+"POT-Creation-Date: 2026-05-24T12:09:56+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: templately\n"
@@ -43,8 +43,8 @@ msgid "https://templately.com/"
 msgstr ""
 
 #: includes/API/AIContent.php:52
-#: includes/API/AIContent.php:172
-#: includes/API/AIContent.php:232
+#: includes/API/AIContent.php:181
+#: includes/API/AIContent.php:241
 #: includes/API/LogoGeneration.php:45
 msgid "Invalid ID."
 msgstr ""
@@ -58,125 +58,135 @@ msgstr ""
 msgid "Invalid API key provided in header."
 msgstr ""
 
-#: includes/API/AIContent.php:183
-#: includes/API/AIContent.php:291
+#: includes/API/AIContent.php:192
+#: includes/API/AIContent.php:300
 msgid "Request failed."
 msgstr ""
 
-#: includes/API/AIContent.php:190
-#: includes/API/AIContent.php:298
+#: includes/API/AIContent.php:199
+#: includes/API/AIContent.php:307
+#: includes/API/AIContent.php:982
 msgid "Invalid response."
 msgstr ""
 
-#: includes/API/AIContent.php:235
+#: includes/API/AIContent.php:244
 msgid "Invalid prompt."
 msgstr ""
 
-#: includes/API/AIContent.php:238
+#: includes/API/AIContent.php:247
 msgid "Invalid content ids."
 msgstr ""
 
-#: includes/API/AIContent.php:241
+#: includes/API/AIContent.php:250
 msgid "Invalid platform."
 msgstr ""
 
-#: includes/API/AIContent.php:355
+#: includes/API/AIContent.php:364
 msgid "The content is being generated in the queue"
 msgstr ""
 
-#: includes/API/AIContent.php:452
+#: includes/API/AIContent.php:461
 msgid "Template must be a non-empty array with content_id as keys."
 msgstr ""
 
-#: includes/API/AIContent.php:498
+#: includes/API/AIContent.php:507
 #, php-format
 msgid "Processed %d templates: %d successful, %d failed."
 msgstr ""
 
-#: includes/API/AIContent.php:521
+#: includes/API/AIContent.php:530
 msgid "Pack ID or ID parameter is required."
 msgstr ""
 
-#: includes/API/AIContent.php:537
+#: includes/API/AIContent.php:546
 msgid "Failed to fetch attachments from API."
 msgstr ""
 
-#: includes/API/AIContent.php:550
+#: includes/API/AIContent.php:559
+#: includes/API/AIContent.php:977
 #: includes/Core/Importer/Utils/AIUtils.php:257
 #, php-format
 msgid "API returned HTTP %d error."
 msgstr ""
 
-#: includes/API/AIContent.php:555
+#: includes/API/AIContent.php:564
 msgid "No XML content found in API response."
 msgstr ""
 
-#: includes/API/AIContent.php:562
+#: includes/API/AIContent.php:571
 msgid "Failed to parse XML content."
 msgstr ""
 
-#: includes/API/AIContent.php:571
+#: includes/API/AIContent.php:580
 #, php-format
 msgid "Found %d attachments."
 msgstr ""
 
-#: includes/API/AIContent.php:575
+#: includes/API/AIContent.php:584
 msgid "An unexpected error occurred while fetching attachments."
 msgstr ""
 
-#: includes/API/AIContent.php:596
+#: includes/API/AIContent.php:605
 msgid "Failed to create temporary file."
 msgstr ""
 
-#: includes/API/AIContent.php:603
+#: includes/API/AIContent.php:612
 msgid "Failed to write XML content to temporary file."
 msgstr ""
 
-#: includes/API/AIContent.php:748
+#: includes/API/AIContent.php:757
 msgid "Search query is required."
 msgstr ""
 
-#: includes/API/AIContent.php:785
+#: includes/API/AIContent.php:794
 msgid "Failed to fetch images from external service."
 msgstr ""
 
-#: includes/API/AIContent.php:797
+#: includes/API/AIContent.php:806
 #, php-format
 msgid "External API returned error code: %d"
 msgstr ""
 
-#: includes/API/AIContent.php:808
+#: includes/API/AIContent.php:817
 msgid "Invalid response from external service."
 msgstr ""
 
-#: includes/API/AIContent.php:818
+#: includes/API/AIContent.php:827
 msgid "External API returned an error status."
 msgstr ""
 
-#: includes/API/AIContent.php:857
+#: includes/API/AIContent.php:866
 msgid "Prompt is required for tagline generation."
 msgstr ""
 
-#: includes/API/AIContent.php:880
+#: includes/API/AIContent.php:889
 msgid "Failed to generate tagline."
 msgstr ""
 
-#: includes/API/AIContent.php:896
-#: includes/API/AIContent.php:908
+#: includes/API/AIContent.php:905
+#: includes/API/AIContent.php:917
 #: includes/API/LogoGeneration.php:177
 #: includes/API/LogoGeneration.php:193
 #: includes/API/LogoGeneration.php:205
 msgid "Something went wrong. Please try again or contact support."
 msgstr ""
 
-#: includes/API/AIContent.php:919
+#: includes/API/AIContent.php:928
 #: includes/API/LogoGeneration.php:216
 msgid "Invalid response from API."
 msgstr ""
 
-#: includes/API/AIContent.php:929
+#: includes/API/AIContent.php:938
 #: includes/API/LogoGeneration.php:226
 msgid "API returned an unexpected response."
+msgstr ""
+
+#: includes/API/AIContent.php:960
+msgid "Invalid conversation ID."
+msgstr ""
+
+#: includes/API/AIContent.php:969
+msgid "Failed to fetch conversation."
 msgstr ""
 
 #: includes/API/API.php:166
@@ -1266,7 +1276,7 @@ msgstr ""
 #: assets/js/templately.js:1
 #: react-src/app/components/core/AiContentSidebar/index.js:312
 #: react-src/app/components/core/itemDetails/Packs/FullSiteImport.js:112
-#: react-src/app/components/core/itemDetails/Packs/FullSiteImport.js:143
+#: react-src/app/components/core/itemDetails/Packs/FullSiteImport.js:144
 #: react-src/app/hooks/useFullSiteImport.js:362
 msgid "Oops!"
 msgstr ""
@@ -1830,7 +1840,7 @@ msgid "You have deleted a WorkSpace from your account."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2109
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2297
 #: react-src/utils/workSpaceContextMenu.js:63
 msgid "Edit"
 msgstr ""
@@ -1945,7 +1955,7 @@ msgstr[1] ""
 #: assets/js/templately.js:1
 #: react-src/app/components/clouds/components/modals/DeleteFileModal.js:16
 #: react-src/app/components/clouds/components/modals/DeleteWorkSpaceModal.js:32
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2080
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2268
 #: react-src/app/components/core/modals/partials/DependencyShowcase.js:127
 #: react-src/app/revert/Modal.js:72
 #: react-src/app/settings/components/Modal.js:71
@@ -2344,6 +2354,7 @@ msgid "Elementor not installed."
 msgstr ""
 
 #: assets/js/templately.js:1
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2094
 #: react-src/app/components/core/itemDetails/Packs/import-parts/AIContent.js:399
 #: react-src/utils/savedTemplatesContextMenu.js:91
 msgid "Preview"
@@ -3057,7 +3068,7 @@ msgid "Hi"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:412
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:463
 #: react-src/app/components/core/AiContentSidebar/helper.js:746
 msgid "there"
 msgstr ""
@@ -3501,7 +3512,7 @@ msgid "Browse media library"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2738
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2926
 msgid "Skip"
 msgstr ""
 
@@ -3510,142 +3521,160 @@ msgid "Failed to search images. Please try again."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:160
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:167
+msgid "Let's get started, need some additional information. What's your business name?"
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:168
 msgid "Let's get started, what's your business name?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:412
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:463
 msgid "Would you like us to generate your website content based on your previous conversation?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:421
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:769
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2240
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:472
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:820
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2428
 msgid "Yes, I would like to change images"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:435
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1008
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1332
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:486
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1059
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1383
 msgid "I want to skip the question"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:785
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:836
 msgid "No, I will keep the default images."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1007
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1058
 msgid "I want to keep English"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1676
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1727
 msgid "Oops! An unexpected error occurred."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1692
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1743
 msgid "Oops! It's taking a bit longer than usual."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1696
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1707
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1747
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1758
 msgid "Sorry, something went wrong."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1701
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1752
 msgid "Oops! Something went wrong while updating your content."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1828
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1879
 msgid "Unknown Language"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1857
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2055
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2547
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2570
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1908
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2243
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2735
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2758
 msgid "Unknown Category"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1904
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1955
 msgid "You can check your AI Credits here!"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1906
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1957
 msgid "Buy credits if you needed!"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1943
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1984
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2131
 #: react-src/app/components/new-components/header/UserNavigation.js:55
 #: react-src/app/layouts/CloudsLayout.js:50
 msgid "Profile"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:1985
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2016
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2678
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2704
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2021
+msgid "Hey! What kind of website are you building? Describe your business and I'll find the perfect templates for you."
+msgstr ""
+
+#. translators: %s is the selected template pack name.
+#: assets/js/templately.js:1
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2034
+#, js-format
+msgid "Going with %s, let’s get it live for me!"
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2173
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2204
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2866
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2892
 msgid "Type your answer..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2013
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2701
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2201
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2889
 msgid "Enter your email address..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2015
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2703
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2203
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2891
 msgid "Enter your phone number..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2078
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2266
 msgid "Cancel editing"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2086
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2274
 msgid "Save changes"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2088
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2276
 msgid "Save"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2103
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2291
 msgid "Edit answer"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2106
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2294
 msgid "Cannot edit while AI generation is in progress"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2108
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2296
 msgid "Please finish editing the current conversation first"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2131
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2319
 #, js-format
 msgid "%d image replaced successfully."
 msgid_plural "%d images replaced successfully."
@@ -3653,140 +3682,140 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2141
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2329
 msgid "No image has been replaced yet."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2157
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2304
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2323
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2335
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2345
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2492
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2511
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2523
 msgid "Please finish editing conversations before starting"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2158
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2346
 msgid "View and Edit"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2161
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2349
 msgid "View & Edit"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2305
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2309
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2493
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2497
 msgid "Yes, let’s start"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2324
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2327
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2512
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2515
 msgid "Yes"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2336
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2339
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2524
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2527
 msgid "No"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2355
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2392
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2436
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2472
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2543
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2580
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2624
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2660
 msgid "Please finish editing conversations before starting new chat"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2356
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2393
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2437
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2441
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2473
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2544
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2581
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2625
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2629
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2661
 msgid "New Chat"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2454
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2457
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2642
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2645
 msgid "Generate Again"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2363
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2400
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2480
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2551
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2588
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2668
 msgid "No, Let’s Start Fresh"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2492
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2680
 msgid "AI generation in progress..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2372
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2415
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2494
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2560
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2603
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2682
 msgid "Please finish editing conversations before proceeding"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2495
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2683
 msgid "Generate and Proceed"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2377
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2420
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2499
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2565
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2608
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2687
 msgid "Yes, Let’s Do It!"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2373
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2416
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2561
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2604
 msgid "Generate and Proceed..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2515
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2703
 msgid "Type your business category..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2594
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2782
 msgid "Search or select a language..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2624
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2651
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2812
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2839
 msgid "Unknown language"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2734
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2922
 msgid "Please finish editing conversations before skipping"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2735
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2923
 msgid "Skip this question"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2765
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2769
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2953
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2957
 msgid "Submit answer"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2768
+#: react-src/app/components/core/AiContentSidebar/AIConversation.js:2956
 msgid "Please finish editing conversations before submitting"
 msgstr ""
 
@@ -4500,12 +4529,12 @@ msgid "Unfortunately, you don't have permission to import templates. Please chec
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/Packs/FullSiteImport.js:217
+#: react-src/app/components/core/itemDetails/Packs/FullSiteImport.js:221
 msgid "Build Full Website"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/itemDetails/Packs/FullSiteImport.js:222
+#: react-src/app/components/core/itemDetails/Packs/FullSiteImport.js:226
 msgid "Build with Templately AI"
 msgstr ""
 

@@ -1,4 +1,8 @@
 == Changelog ==
+= 3.6.4 - 24-05-2026 =
+Improved: Templately AI now carries full site conversations into the plugin with selected template.
+Few minor bug fixes and improvements.
+
 = 3.6.3 - 04-05-2026 =
 Improved: Templately AI now skips the greeting step and starts directly at the business name step when user comes from Templately site
 Few minor bug fixes and improvements.
