@@ -236,7 +236,7 @@ class Admin extends Base {
 		wp_enqueue_media();
 		templately()->assets->enqueue( 'templately', 'js/templately.js', $script_dependencies, true );
 		templately()->assets->enqueue( 'templately', 'css/templately.css', ['templately-dmsans', 'templately-inter'] );
-		$tailwind_hooks = apply_filters( 'templately_tailwind_hooks', [ 'toplevel_page_templately', 'elementor', 'gutenberg', 'templately_page_templately_settings' ] );
+		$tailwind_hooks = apply_filters( 'templately_tailwind_hooks', [ 'toplevel_page_templately', 'elementor', 'gutenberg', 'templately_page_templately_settings', 'edit.php' ] );
 		if ( in_array( $hook, $tailwind_hooks, true ) ) {
 			templately()->assets->enqueue( 'templately-tailwind', 'css/tailwind.css', ['templately', 'templately-inter'] );
 		}
@@ -272,6 +272,7 @@ class Admin extends Base {
 			'loadingImage'            => templately()->assets->icon( 'logos/loading-logo.gif' ),
 			'current_url'             => admin_url( 'admin.php?page=templately' ),
 			'wp_dashboard_url'        => admin_url( 'index.php' ),
+			'templately_library_url'  => admin_url( 'edit.php?post_type=templately_library' ),
 			'is_signed'               => Login::is_signed(),
 			'is_globally_signed'      => Login::is_globally_signed(),
 			'signed_as_global'        => Login::signed_as_global(),

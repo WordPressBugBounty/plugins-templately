@@ -3,6 +3,8 @@
 namespace Templately\Core\Importer\Utils;
 
 use Exception;
+use Templately\Builder\PageTemplates;
+use Templately\Builder\Factory\TemplateFactory;
 use Templately\Core\Importer\FullSiteImport;
 use Templately\Core\Importer\WPImport;
 use Templately\Utils\Base;
@@ -163,6 +165,135 @@ class Utils extends Base {
 	public static function update_option($key, $value, $autoload = 'no') {
 		self::backup_option_value($key, $autoload);
 		return update_option($key, $value, $autoload);
+	}
+
+	/**
+	 * Create the WordPress page an archive-type template attaches to, and wire up
+	 * the matching WP/WooCommerce/LearnDash setting.
+	 *
+	 * Shared by the FSI Templates runner and single-template Library imports so both
+	 * produce the same companion page + settings (page_for_posts,
+	 * woocommerce_shop_page_id, LearnDash courses slug).
+	 *
+	 * @param array  $template_settings Needs 'type'; optional 'title' and 'page_settings.archive_page_id'.
+	 * @param string $platform          'elementor' | 'gutenberg'.
+	 * @param array  $manifest          FSI manifest (optional). Only used to skip creation when the
+	 *                                  archive page is already part of the imported content.
+	 *
+	 * @return false|int New page ID, or false on skip/failure.
+	 */
+	public static function create_archive_page( $template_settings, $platform, $manifest = [] ) {
+		try {
+			$archive_page_id = $template_settings['page_settings']['archive_page_id'] ?? null;
+			if ( $archive_page_id && ! empty( $manifest['content']['page'][ $archive_page_id ] ) ) {
+				return false;
+			}
+
+			$type = $template_settings['type'];
+
+			$archive_page = wp_insert_post( [
+				'post_title'    => $template_settings['title'] ?? ucfirst( $type ) . ' - (by Templately)',
+				'post_status'   => 'publish',
+				'post_type'     => 'page',
+				'post_content'  => '',
+				'page_template' => $platform === 'elementor' ? 'elementor_header_footer' : PageTemplates::TEMPLATE_HEADER_FOOTER,
+			] );
+
+			if ( is_wp_error( $archive_page ) ) {
+				return false;
+			}
+
+			if ( $type === 'archive' ) {
+				self::update_option( 'page_for_posts', $archive_page );
+			}
+
+			if ( $type === 'product_archive' ) {
+				self::update_option( 'woocommerce_shop_page_id', $archive_page );
+			}
+
+			if ( $type === 'course_archive' ) {
+				// get page slug from $archive_page id and update learndash_settings_permalinks option to courses.
+				$post_name = get_post_field( 'post_name', $archive_page );
+
+				if ( class_exists( '\LearnDash_Settings_Section' ) ) {
+					$section = \LearnDash_Settings_Section::get_section_instance( 'LearnDash_Settings_Section_Permalinks' );
+					if ( ! empty( $section ) ) {
+						$section->set_setting( 'courses', $post_name );
+						if ( function_exists( 'learndash_setup_rewrite_flush' ) ) {
+							learndash_setup_rewrite_flush();
+						}
+					}
+				}
+			}
+
+			return $archive_page;
+		} catch ( \Exception $e ) {
+			return false;
+		}
+	}
+
+	/**
+	 * Create a single-page Library template carrying a post-content widget/block,
+	 * so a fluent_product_single import has a page template to render into.
+	 *
+	 * Shared by the FSI Templates runner and single-template Library imports.
+	 *
+	 * @param string $platform 'elementor' | 'gutenberg'.
+	 *
+	 * @return void
+	 */
+	public static function create_page_template( $platform ) {
+		try {
+			$meta = [];
+			$data = [];
+
+			$post_data = [
+				'post_title'  => 'Single Page - (by Templately)',
+				'post_status' => 'publish',
+				'post_type'   => 'templately_library',
+			];
+
+			if ( $platform === 'elementor' ) {
+				$meta['_wp_page_template'] = 'elementor_header_footer';
+				$data                      = json_decode( '{"content":[{"id":"4a86515d","settings":[],"elements":[{"id":"30a46db1","settings":{"content_width":"full"},"elements":[],"isInner":false,"widgetType":"tl-post-content","elType":"widget"}],"isInner":false,"elType":"container"}],"settings":{"template":"elementor_header_footer"},"metadata":[]}', true );
+			} elseif ( $platform === 'gutenberg' ) {
+				$meta['_wp_page_template'] = PageTemplates::TEMPLATE_HEADER_FOOTER;
+				$data                      = [ 'content' => '<!-- wp:post-content /-->' ];
+			}
+
+			$factory  = new TemplateFactory( $platform );
+			$template = $factory->create( 'page_single', $post_data, $meta );
+			$template->import( $data );
+		} catch ( \Exception $e ) {
+			return;
+		}
+	}
+
+	/**
+	 * Run the companion-content side effects for a freshly imported Library template.
+	 *
+	 * Dispatches by resolved Builder type:
+	 *   - archive / product_archive / course_archive → attached WP page + settings
+	 *   - fluent_product_single                      → single-page template
+	 *
+	 * Convenience wrapper for single-template imports, which have no FSI manifest.
+	 *
+	 * @param string $type     Resolved Builder type key.
+	 * @param string $title    Template title (used for the created page).
+	 * @param string $platform 'elementor' | 'gutenberg'.
+	 *
+	 * @return false|int|null Archive page ID for archive types, null otherwise.
+	 */
+	public static function create_companion_content( $type, $title, $platform ) {
+		if ( in_array( $type, [ 'archive', 'product_archive', 'course_archive' ], true ) ) {
+			return self::create_archive_page( [ 'title' => $title, 'type' => $type ], $platform );
+		}
+
+		if ( $type === 'fluent_product_single' ) {
+			self::create_page_template( $platform );
+		}
+
+		return null;
 	}
 
 	public static function import_page_settings( $id, $settings ) {

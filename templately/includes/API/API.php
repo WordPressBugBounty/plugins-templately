@@ -163,7 +163,7 @@ abstract class API extends Base {
 	 */
 	protected function permission_error( $message, $endpoint = '') {
         if( empty( $message ) ) {
-            $message = __( 'Sorry, you need to login/re-login again.', 'templately' );
+            $message = __( 'Your session has expired. Please log in again.', 'templately' );
         }
 
         $_additional_data = [

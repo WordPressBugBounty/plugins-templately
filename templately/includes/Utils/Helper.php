@@ -57,19 +57,44 @@ class Helper extends Base {
 	/**
 	 * Collect IP from request.
 	 *
+	 * Prefers REMOTE_ADDR since it cannot be spoofed by the client. When it is
+	 * a private/reserved address (reverse proxy, Docker bridge gateway like
+	 * 192.168.65.1, local dev), the forwarded headers are scanned for the first
+	 * public IP. If nothing public is found, the request is local: 127.0.0.1.
+	 *
 	 * @return string
 	 */
 	public static function get_ip() {
-		$ip = '127.0.0.1'; // Local IP
-		if (! empty($_SERVER['HTTP_CLIENT_IP'])) {
-			$ip = $_SERVER['HTTP_CLIENT_IP'];
-		} elseif (! empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-		} else {
-			$ip = ! empty($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : $ip;
+		$remote_addr = ! empty($_SERVER['REMOTE_ADDR']) ? sanitize_text_field($_SERVER['REMOTE_ADDR']) : '';
+
+		if (self::is_public_ip($remote_addr)) {
+			return $remote_addr;
 		}
 
-		return sanitize_text_field($ip);
+		foreach (['HTTP_X_FORWARDED_FOR', 'HTTP_CLIENT_IP'] as $header) {
+			if (empty($_SERVER[$header])) {
+				continue;
+			}
+			$candidates = explode(',', sanitize_text_field($_SERVER[$header]));
+			foreach ($candidates as $candidate) {
+				$candidate = trim($candidate);
+				if (self::is_public_ip($candidate)) {
+					return $candidate;
+				}
+			}
+		}
+
+		return '127.0.0.1';
+	}
+
+	/**
+	 * Check whether a string is a valid public (non-private, non-reserved) IP.
+	 *
+	 * @param string $ip
+	 * @return bool
+	 */
+	private static function is_public_ip($ip): bool {
+		return (bool) filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
 	}
 
 	/**

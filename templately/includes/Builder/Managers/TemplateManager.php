@@ -8,6 +8,8 @@ use Templately\Builder\Types\Archive;
 use Templately\Builder\Types\BaseTemplate;
 use Templately\Builder\Types\CourseArchive;
 use Templately\Builder\Types\CourseSingle;
+use Templately\Builder\Types\DocsArchive;
+use Templately\Builder\Types\DocsSingle;
 use Templately\Builder\Types\Error;
 use Templately\Builder\Types\FluentProductSingle;
 use Templately\Builder\Types\Footer;
@@ -17,6 +19,7 @@ use Templately\Builder\Types\PageSingle;
 use Templately\Builder\Types\Post;
 use Templately\Builder\Types\ProductArchive;
 use Templately\Builder\Types\ProductSingle;
+use Templately\Builder\Types\Search;
 use Templately\Builder\Types\Single;
 use WP_Error;
 
@@ -48,6 +51,13 @@ class TemplateManager {
 			// LMS (LearnDash)
 			'course_archive'  => CourseArchive::class,
 			'course_single'   => CourseSingle::class,
+
+			// BetterDocs
+			'docs_single'     => DocsSingle::class,
+			'docs_archive'    => DocsArchive::class,
+
+			// Search results
+			'search'          => Search::class,
 		];
 
 		$this->types = $types;

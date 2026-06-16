@@ -17,7 +17,7 @@
             },
             "time": "2023-12-27T06:49:41+00:00",
             "type": "library",
-            "installation-source": "dist",
+            "installation-source": "source",
             "autoload": {
                 "psr-4": {
                     "PriyoMukul\\WPNotice\\": "src/"
@@ -29,10 +29,6 @@
                     "email": "17237437+priyomukul@users.noreply.github.com"
                 }
             ],
-            "support": {
-                "source": "https://github.com/priyomukul/wp-notice/tree/v2",
-                "issues": "https://github.com/priyomukul/wp-notice/issues"
-            },
             "install-path": "../priyomukul/wp-notice"
         }
     ],

@@ -1341,11 +1341,18 @@ class FullSiteImport extends Base {
 
 		$extra_headers = $headers;
 
+		// Seconds the user spent idling in the customizer step, accumulated by
+		// the React import wizard. Sent so the backend can exclude it from the
+		// import-time metric (a customizer left open for hours would otherwise
+		// inflate the count). Absent for older clients, which the backend
+		// treats as zero idle.
+		$customizer_idle = isset($request_params['customizer_idle']) ? (int) $request_params['customizer_idle'] : 0;
+
 		if ($status === 'success') {
-			$body = ['type' => 'pack'];
+			$body = ['type' => 'pack', 'customizer_idle' => $customizer_idle];
 			$response = Helper::make_api_post_request('v1/import/success', $body, $extra_headers);
 		} elseif ($status === 'failed') {
-			$body = ['type' => 'pack', 'description' => $description ?: "Something Went wrong....."];
+			$body = ['type' => 'pack', 'description' => $description ?: "Something Went wrong.....", 'customizer_idle' => $customizer_idle];
 			$response = Helper::make_api_post_request('v1/import/failed', $body, $extra_headers);
 		}
 

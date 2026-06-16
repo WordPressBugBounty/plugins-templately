@@ -27,6 +27,7 @@ use Templately\Core\Module;
 use Templately\API\Tags;
 use Templately\API\Items;
 use Templately\API\Login;
+use Templately\API\Checkout;
 use Templately\API\SignUp;
 use Templately\API\Profile;
 use Templately\API\Import;
@@ -44,7 +45,7 @@ use Templately\Core\Platform\Gutenberg;
 use Templately\Core\Platform\Elementor;
 
 final class Plugin extends Base {
-    public $version = '3.6.5';
+    public $version = '3.6.6';
 
 	public $admin;
 	public $settings;
@@ -191,6 +192,7 @@ final class Plugin extends Base {
 		SavedTemplates::get_instance();
 
 		Login::get_instance();
+		Checkout::get_instance();
 		SignUp::get_instance();
 		Import::get_instance();
 		Profile::get_instance();

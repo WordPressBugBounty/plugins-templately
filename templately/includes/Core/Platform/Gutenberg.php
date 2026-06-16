@@ -6,6 +6,7 @@ use Templately\Core\Importer\Utils\Utils;
 use Templately\Core\Platform;
 use Templately\Core\Module;
 use Templately\Utils\Helper;
+use Templately\Utils\Options;
 
 use WP_Error;
 use function get_permalink;
@@ -13,6 +14,7 @@ use function get_edit_post_link;
 use function wp_insert_post;
 use function wp_slash;
 use function wp_unslash;
+use function wp_update_post;
 use function json_decode;
 
 class Gutenberg extends Platform {
@@ -170,6 +172,78 @@ class Gutenberg extends Platform {
         $data['content'] = Utils::import_and_replace_attachments($data['content'], $postId);
         return $data;
     }
+
+	/**
+	 * Import template to Templately Library
+	 *
+	 * @param integer $id
+	 * @param Import $importer
+	 * @param array $settings
+	 *
+	 * @return array|WP_Error array on success, WP_Error on failure.
+	 */
+	public function import_in_library( $id, $importer = null, $settings = [], $template_type = '', $item_type = '' ) {
+		$template_data = $importer->get_content( $id, 'gutenberg', 'remote' );
+
+		if ( is_wp_error( $template_data ) ) {
+			return $template_data;
+		}
+
+		if ( ! empty( $settings ) && ! empty( $template_data['content'] ) && is_string( $template_data['content'] ) ) {
+			$template_data['content'] = \Templately\Core\Importer\Utils\GutenbergSettingsMerger::merge( $template_data['content'], $settings );
+		}
+
+		// Handle attachment replacements before saving
+		$template_data['content'] = Utils::import_and_replace_attachments( $template_data['content'], 0 );
+
+		// Frontend-provided template_type (from item details API) takes precedence over
+		// whatever the fetched content JSON reports.
+		if ( ! empty( $template_type ) ) {
+			$template_data['template_type'] = $template_type;
+		}
+
+		// Resolve the correct Builder Type using template_type before passing to the importer.
+		try {
+			$type = static::resolve_library_type( $template_data );
+		} catch ( \InvalidArgumentException $e ) {
+			return Helper::error( 'unsupported_template_type', $e->getMessage(), 'import', 400 );
+		}
+
+		$factory = new \Templately\Builder\Factory\TemplateFactory( 'gutenberg' );
+
+		$template = $factory->create( $type, [
+			'post_title'  => $template_data['title'],
+			'post_status' => 'publish',
+			'post_type'   => 'templately_library',
+		] );
+
+		if ( is_wp_error( $template ) ) {
+			return $template;
+		}
+
+		$template->import( array_merge( $template_data, [
+			'import_settings' => [
+				'title' => $template_data['title'],
+				'type'  => $type,
+			]
+		] ) );
+
+		$post_id = $template->get_main_id();
+
+		// Companion content for archive/fluent types — same side effects (Shop page,
+		// page_for_posts, LearnDash courses slug, fluent single-page template) the FSI
+		// Templates runner performs when importing these template types.
+		Utils::create_companion_content( $type, $template_data['title'] ?? '', 'gutenberg' );
+
+		// Mark user as having imported a template
+		Options::get_instance()->set( 'has_imported_template', true );
+
+		return [
+			'post_id'   => $post_id,
+			'edit_link' => get_edit_post_link( $post_id, 'internal' ),
+			'visit'     => get_permalink( $post_id ),
+		];
+	}
 
     /**
      * AJAX handler to update the option `templately-gutenberg-hide-buttons`

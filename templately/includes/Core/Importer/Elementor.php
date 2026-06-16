@@ -30,9 +30,20 @@ class Elementor extends ElementorLocal {
 
 		$args['content'] = $this->iterate_data(
 			$args['content'], function( $element_data ) {
-				$element = ElementorPlugin::$instance->elements_manager->create_element_instance( $element_data );
+				// A widget with null/missing widgetType causes get_widget_types(null) to return ALL
+				// registered widgets as an array. The subsequent get_default_args() call then crashes
+				// with "Call to a member function get_default_args() on array". Guard early.
+				if ( 'widget' === ( $element_data['elType'] ?? '' ) && ! isset( $element_data['widgetType'] ) ) {
+					return null;
+				}
 
-				// If the widget/element isn't exist, like a plugin that creates a widget but deactivated
+				try {
+					$element = ElementorPlugin::$instance->elements_manager->create_element_instance( $element_data );
+				} catch ( \Throwable $e ) {
+					return null;
+				}
+
+				// If the widget/element doesn't exist, e.g. a deactivated plugin's widget
 				if ( ! $element ) {
 					return null;
 				}
@@ -67,22 +78,40 @@ class Elementor extends ElementorLocal {
 			return new WP_Error( 'file_error', 'Invalid File' );
 		}
 
-		$page_settings = $this->page_settings( $data );
-
-		// TODO: type check for (theme builder)
-
-		$template_id = $this->save_item( [
-			'content' => $content,
-			'title' => $data['title'],
-			'type' => $data['type'],
-			'page_settings' => $page_settings,
-		] );
-
-		if ( is_wp_error( $template_id ) ) {
-			return $template_id;
+		// type is already resolved by Platform::resolve_library_type() before reaching here.
+		// Validate it exists; fall back to 'page_single' if somehow unregistered.
+		$type             = $data['type'] ?? 'page_single';
+		$registered_types = templately()->theme_builder::$templates_manager->get_template_types();
+		if ( ! isset( $registered_types[ $type ] ) ) {
+			$type = 'page_single';
 		}
 
-		return $this->get_item( $template_id );
+		$factory = new \Templately\Builder\Factory\TemplateFactory( 'elementor' );
+
+		$template = $factory->create( $type, [
+			'post_title'  => $data['title'],
+			'post_status' => 'publish',
+			'post_type'   => 'templately_library',
+		] );
+
+		if ( is_wp_error( $template ) ) {
+			return $template;
+		}
+
+		$template->import( array_merge( $data, [
+			'import_settings' => [
+				'title' => $data['title'],
+				'type'  => $type,
+			]
+		] ) );
+
+		$post_id = $template->get_main_id();
+
+		return [
+			'template_id' => $post_id,
+			'edit_link'   => get_edit_post_link( $post_id, 'internal' ),
+			'url'         => get_permalink( $post_id ),
+		];
 	}
 
 	public function create_page( $template_data ){
@@ -95,9 +124,12 @@ class Elementor extends ElementorLocal {
 		];
 
 		$template_data = wp_parse_args( $template_data, $defaults );
-		$type = $template_data['type'] == 'block' ? 'section' : $template_data['type'];
+
+		// Elementor has no 'block' document type; map it to 'section' (saved section).
+		$doc_type = ( 'block' === $template_data['type'] ) ? 'section' : $template_data['type'];
+
 		$document = ElementorPlugin::$instance->documents->create(
-			$type,
+			$doc_type,
 			[
 				'post_title' => $template_data['post_title'],
 				'post_status' => $template_data['status'],

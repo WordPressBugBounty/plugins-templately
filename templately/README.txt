@@ -5,7 +5,7 @@ Tags: templates, elementor template, Gutenberg template, landing page, WoCommerc
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.2
-Stable tag: 3.6.5
+Stable tag: 3.6.6
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -153,7 +153,15 @@ Visit [WPDeveloper](https://wpdeveloper.com/) to learn more about how to do bett
 
 
 == Changelog ==
-= 3.6.5 - 25-05-2026 =
+= 3.6.6 - 16-06-2026 =
+Improved: Smoother template purchase and checkout experience.
+Improved: Automatic account verification after re-login for unverified users.
+Improved: Build Website and template import experience from Templately website.
+Improved: UI and usability of all popup modals.
+Improved: Logout handling for expired authentication tokens.
+Few minor bug fixes and improvements.
+
+= 3.6.5 - 24-05-2026 =
 Fixed: Previous AI conversation was appearing above the resumed Templately site chat history.
 Few minor bug fixes and improvements.
 
@@ -175,89 +183,6 @@ Few minor bug fixes and improvements.
 
 = 3.6.0 - 15-04-2026 =
 Revamped: Entire Template Library experience
-Few minor bug fixes and improvements
-
-= 3.5.4 - 07-04-2026 =
-Hotfix: Resolved release issue from the previous version.
-
-= 3.5.3 - 07-04-2026 =
-Fixed: Logo width changing unexpectedly after import.
-Fixed: Header displaying incorrectly after import.
-Fixed: Single page designs not applying properly after import.
-Fixed: Templately library not loading in the Gutenberg Editor when the Gutenberg plugin is active.
-Fixed: Design inconsistencies occurring during site migration.
-Improved: Single template import process for a smoother experience.
-Few minor bug fixes and improvements.
-
-= 3.5.2 - 25-02-2026 =
-Improved: AI logo generation experience.
-Fixed: Header menu not assigned properly after pack import.
-Fixed: Slider not working correctly after importing a pack or page.
-Few minor bug fixes and improvements.
-
-= 3.5.1 - 19-02-2026 =
-Added: Google social login.
-Added: Site Logo Generate using AI.
-Fixed: Header menu breaking issue when previewing templates.
-Fixed: Platform switch resetting on page refresh in Templately Cloud.
-Few minor bug fixes and improvements.
-
-= 3.5.0 - 15-01-2026 =
-Added: Responsive mode controller in Live Demo page with a top bar.
-Improved: Template pack details page UI.
-Few minor bug fixes and improvements.
-
-= 3.4.9 - 23-12-2025 =
-Fixed: Template import issue from the template details page.
-Fixed: Security enhancements (reported by Wordfence).
-Improved: Template details page UI for a better user experience.
-Few minor bug fixes & improvements.
-
-= 3.4.8 - 11-12-2025 =
-Fixed: Incorrect image URL mapping in template import
-Few minor bug fixes and improvements
-
-= 3.4.7 - 08-12-2025 =
-Fixed: Template import issue with older Elementor version.
-Few minor bug fixes and improvements
-
-= 3.4.6 - 04-12-2025 =
-Fixed: Header footer css loading issue.
-Fixed: Fatal error: conflict with Event ticket plugin.
-Few minor bug fixes and improvements.
-
-= 3.4.5 - 19-11-2025 =
-Fixed: Site logo preview wasn't working while importing a pack.
-Improved: Templately pack import workflow.
-Fixed: Templately Feedback feature wasn't working.
-Few minor bug fixes and improvements.
-
-= 3.4.4 - 09-11-2025 =
-Fixed: Template import issue on Multisite.
-Few minor bug fixes and improvements.
-
-= 3.4.3 - 06-11-2025 =
-Added: Filter image replacement in Templately AI.
-Added: Automated email verification in the plugin.
-Fixed: Elementor “Class not found” error.
-Fixed: PHP import error in Templately Core Importer.
-Fixed: LearnDash Archive page CSS loading issue.
-Improved: Pack Details page UI.
-Few minor bug fixes and improvements.
-
-= 3.4.2 - 23-10-2025 =
-Added: FluentCart Template import support.
-Fixed: Design broken issue for single Doc page while importing.
-Few minor bug fixes & improvements.
-
-= 3.4.1 - 29-09-2025 =
-Fixed: Pages and blocks were not saving in MyCloud.
-Fixed: UI issues in Pack details page.
-Few minor bug fixes and improvements.
-
-= 3.4.0 - 23-09-2025 =
-Added: Image replacement support in Templately AI.
-Revamped: User interface for Pack Details page.
 Few minor bug fixes and improvements
 
 = Earlier versions =

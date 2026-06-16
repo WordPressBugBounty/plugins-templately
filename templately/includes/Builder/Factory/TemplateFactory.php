@@ -7,8 +7,6 @@ use Templately\Builder\Source;
 
 class TemplateFactory {
 	protected $platform;
-
-	protected $template;
 	protected $template_manager;
 
 	public function __construct( $platform = 'elementor' ) {
@@ -18,7 +16,7 @@ class TemplateFactory {
 
 	public function create( $type, $data, $meta = [] ) {
 		$data = wp_parse_args( $data );
-		
+
 		$meta = wp_parse_args( $meta, [
 			Source::PLATFORM_META_KEY => $this->platform,
 			Source::TYPE_META_KEY     => $type,
@@ -30,5 +28,4 @@ class TemplateFactory {
 
 		return $this->template_manager->create( $type, $data, $meta );
 	}
-
 }

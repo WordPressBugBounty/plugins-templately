@@ -1,5 +1,13 @@
 == Changelog ==
-= 3.6.5 - 25-05-2026 =
+= 3.6.6 - 16-06-2026 =
+Improved: Smoother template purchase and checkout experience.
+Improved: Automatic account verification after re-login for unverified users.
+Improved: Build Website and template import experience from Templately website.
+Improved: UI and usability of all popup modals.
+Improved: Logout handling for expired authentication tokens.
+Few minor bug fixes and improvements.
+
+= 3.6.5 - 24-05-2026 =
 Fixed: Previous AI conversation was appearing above the resumed Templately site chat history.
 Few minor bug fixes and improvements.
 

@@ -159,9 +159,11 @@ class Import extends API {
     }
 
     public function import_in_library(){
-        $platform = $this->get_param( 'platform', 'elementor' );
-        $id       = $this->get_param( 'id', 0, 'intval' );
-        $settings = $this->get_param( 'settings', [], null );
+        $platform      = $this->get_param( 'platform', 'elementor' );
+        $id            = $this->get_param( 'id', 0, 'intval' );
+        $settings      = $this->get_param( 'settings', [], null );
+        $template_type = $this->get_param( 'template_type', '', 'sanitize_text_field' );
+        $type          = $this->get_param( 'type', '', 'sanitize_text_field' );
 
         if( $id == 0 ) {
             return $this->error('invalid_item_id', __( 'Invalid ID is provided.', 'templately' ), 'import/page', 404 );
@@ -179,14 +181,14 @@ class Import extends API {
         @set_time_limit( 0 ); // Unlimited execution time for this request.
         Utils::add_gd_editor_filter();
 
-        return $this->platform( $platform )->import_in_library( $id, $this, $settings );
+        return $this->platform( $platform )->import_in_library( $id, $this, $settings, $template_type, $type );
     }
 
     public function import_as_page(){
         $platform = $this->get_param( 'platform', 'elementor' );
         $id       = $this->get_param( 'id', 0, 'intval' );
         $title    = $this->get_param( 'title' );
-        $settings = $this->get_param( 'settings', [] );
+        $settings = $this->get_param( 'settings', [], null );
 
         if( $id == 0 ) {
             return $this->error('invalid_item_id', __( 'Invalid ID is provided.', 'templately' ), 'import/page', 404 );

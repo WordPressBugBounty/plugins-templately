@@ -16,6 +16,7 @@ use Elementor\Plugin;
 use Elementor\Core\Kits\Documents\Kit;
 use Elementor\Core\Settings\Manager as SettingsManager;
 use Templately\Core\Importer\Elementor as ElementorImporter;
+use Templately\Core\Importer\Utils\Utils;
 use Elementor\TemplateLibrary\Source_Local as ElementorLocal;
 
 class Elementor extends Platform {
@@ -77,7 +78,7 @@ class Elementor extends Platform {
 	 *
 	 * @return WP_Error|void
 	 */
-	protected function is_eligible( $template, $types = [ 'page', 'section','block' ] ) {
+	protected function is_eligible( $template, $types = [ 'page', 'section', 'block' ] ) {
 		if ( ! Helper::is_plugin_active( 'elementor-pro/elementor-pro.php' ) &&
 			isset( $template['type'] ) &&
 			! in_array( $template['type'], $types, true )
@@ -288,7 +289,7 @@ class Elementor extends Platform {
 		];
 	}
 
-	public function import_in_library( $id, $importer = null, $settings = [] ) {
+	public function import_in_library( $id, $importer = null, $settings = [], $template_type = '', $type = '' ) {
 		$template_data = $importer->get_content( $id, 'elementor', 'remote' );
 
 		if ( is_wp_error( $template_data ) ) {
@@ -299,8 +300,17 @@ class Elementor extends Platform {
 			$template_data['content'] = \Templately\Core\Importer\Utils\ElementorSettingsMerger::merge( $template_data['content'], $settings );
 		}
 
-		if(trim($template_data['type']) == 'block'){
-			$template_data['type'] = 'section';
+		// Frontend-provided template_type (from item details API) takes precedence over
+		// whatever the fetched content JSON reports.
+		if ( ! empty( $template_type ) ) {
+			$template_data['template_type'] = $template_type;
+		}
+
+		// Resolve the correct Builder Type using template_type before passing to the importer.
+		try {
+			$template_data['type'] = static::resolve_library_type( $template_data );
+		} catch ( \InvalidArgumentException $e ) {
+			return Helper::error( 'unsupported_template_type', $e->getMessage(), 'import', 400 );
 		}
 
 		$importer          = new ElementorImporter;
@@ -310,10 +320,23 @@ class Elementor extends Platform {
 			return $imported_template;
 		}
 
+		$post_id = $imported_template['template_id'];
+
+		// Companion content for archive/fluent types — same side effects (Shop page,
+		// page_for_posts, LearnDash courses slug, fluent single-page template) the FSI
+		// Templates runner performs when importing these template types.
+		Utils::create_companion_content( $template_data['type'], $template_data['title'] ?? '', 'elementor' );
+
+		// Mark user as having imported a template
+		\Templately\Utils\Options::get_instance()->set( 'has_imported_template', true );
+
+		$document            = Plugin::$instance->documents->get( $post_id );
+		$elementor_edit_link = $document ? $document->get_edit_url() : admin_url( 'post.php?post=' . $post_id . '&action=elementor' );
+
 		return [
-			'post_id'             => $imported_template['template_id'],
-			'edit_link'           => get_edit_post_link( $imported_template['template_id'], 'internal' ),
-			'elementor_edit_link' => Plugin::$instance->documents->get( $imported_template['template_id'] )->get_edit_url(),
+			'post_id'             => $post_id,
+			'edit_link'           => get_edit_post_link( $post_id, 'internal' ),
+			'elementor_edit_link' => $elementor_edit_link,
 			'visit'               => $imported_template['url']
 		];
 	}
