@@ -55,6 +55,7 @@ class Sites extends API {
             'headers' => [
                 'Authorization'        => 'Bearer ' . $api_key,
                 'Content-Type'         => 'application/json',
+                'Accept'               => 'application/json',
                 'x-templately-url'     => $new_url,
                 'x-templately-version' => defined('TEMPLATELY_VERSION') ? TEMPLATELY_VERSION : '1.0.0',
             ],

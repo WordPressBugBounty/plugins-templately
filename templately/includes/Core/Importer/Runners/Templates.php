@@ -36,6 +36,10 @@ class Templates extends BaseRunner {
 		$templates = $this->manifest['templates'];
 		$path      = $this->dir_path . 'templates' . DIRECTORY_SEPARATOR;
 
+		if ( $this->manifest['platform'] === 'elementor' ) {
+			$this->json->set_source_url( $this->manifest['site'] ?? '' );
+		}
+
 		$_extra_pages = [];
 
 
@@ -48,6 +52,10 @@ class Templates extends BaseRunner {
 			if ( $import ) {
 				$results['templates']['succeed'][ $id ]   = $import['id'];
 				$results['templates']['template_types'][] = $template_settings['type'];
+
+				if ( ! empty( $import['__link_rewrites'] ) ) {
+					$results['templates']['__link_rewrites'][ $id ] = true;
+				}
 
 				if ( $template_settings['type'] === 'archive' || $template_settings['type'] === 'product_archive' || $template_settings['type'] === 'course_archive' ) {
 					$page_id = Utils::create_archive_page( $template_settings, $this->manifest['platform'], $this->manifest );
@@ -128,6 +136,15 @@ class Templates extends BaseRunner {
 		$template_content['id']              = $id;
 		unset($template_settings['conditions']);
 		$template_content['import_settings'] = $template_settings;
+
+		// Detect source-site links (e.g. Mega Menu / EA Info Box / Button URLs). When
+		// present, flag the template so the Finalizer picks it up and rewrites them to
+		// the real imported permalinks once every page exists (see Finalizer::prepare).
+		if ( $this->manifest['platform'] === 'elementor' && ! empty( $template_content['content'] ) ) {
+			if ( $this->json->replace_source_urls( $template_content['content'] ) > 0 ) {
+				$result['__link_rewrites'] = true;
+			}
+		}
 
 		if($this->platform === 'elementor' && $this->is_ai_content($id)){
 			$template_content['content'] = [];

@@ -369,6 +369,26 @@ class Elementor extends Platform {
 	}
 
 	/**
+	 * Register the Pro-promotion child-type fix once per request.
+	 *
+	 * Templates can reference Elementor Pro widgets (e.g. nested-carousel) that aren't
+	 * installed. Elementor substitutes a Pro_Widget_Promotion placeholder, but its
+	 * get_child_type() can't resolve the original nested children — so saving such a
+	 * template fatals with "get_default_args() on array". filter_child_type() restores
+	 * the correct child type. FSI registers this in FullSiteImport; single-template
+	 * imports go through Importer\Elementor::get_data(), which calls this so the filter
+	 * is active for every import path.
+	 */
+	public static function register_child_type_filter() {
+		static $registered = false;
+		if ( $registered ) {
+			return;
+		}
+		$registered = true;
+		add_filter( 'elementor/element/get_child_type', [ __CLASS__, 'filter_child_type' ], 10, 3 );
+	}
+
+	/**
 	 * Filter Child Type
 	 *
 	 * @param $child_type

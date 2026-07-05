@@ -25,6 +25,12 @@ class Elementor extends ElementorLocal {
 		Utils::add_gd_editor_filter();
 		ElementorPlugin::$instance->editor->set_edit_mode( true );
 
+		// Ensure the Pro-promotion child-type fix is active for every import path (not just FSI),
+		// otherwise saving a template that uses an unavailable Elementor Pro widget (e.g.
+		// nested-carousel) fatals while Elementor resolves its nested children. See
+		// \Templately\Core\Platform\Elementor::filter_child_type().
+		\Templately\Core\Platform\Elementor::register_child_type_filter();
+
 		$args['content'] = $this->replace_elements_ids( $args['content'] );
 		$args['content'] = $this->process_export_import_content( $args['content'], 'on_import' );
 

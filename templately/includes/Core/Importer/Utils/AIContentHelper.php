@@ -204,6 +204,11 @@ trait AIContentHelper {
 	 * @return array The merged template JSON
 	 */
 	public static function mergeAiContentWithOriginal($ai_template_json, $original_template_json) {
+		// Some callers pass the AI template as a JSON-encoded string; decode it first.
+		if (is_string($ai_template_json)) {
+			$ai_template_json = json_decode($ai_template_json, true);
+		}
+
 		// 1. Flatten the AI template
 		$flat = self::flattenById($ai_template_json);
 
@@ -280,6 +285,11 @@ trait AIContentHelper {
 	public static function mergeAiContentWithOriginalGutenberg($ai_template_json, $original_template_json) {
 		if (empty($original_template_json['content'])) {
 			return $original_template_json;
+		}
+
+		// Some callers pass the AI template as a JSON-encoded string; decode it first.
+		if (is_string($ai_template_json)) {
+			$ai_template_json = json_decode($ai_template_json, true);
 		}
 
 		// 1. Flatten the AI template by block ID (for blocks with 'contents')

@@ -7,6 +7,7 @@ use Templately\Core\Importer\Exception\NonRetirableErrorException;
 use Templately\Core\Importer\Runners\AIContent;
 use Templately\Core\Importer\Runners\Attachments;
 use Templately\Core\Importer\Runners\BaseRunner;
+use Templately\Core\Importer\Runners\CustomCSS;
 use Templately\Core\Importer\Runners\Customizer;
 use Templately\Core\Importer\Runners\Dependencies;
 use Templately\Core\Importer\Runners\ElementorContent;
@@ -53,6 +54,7 @@ class Import {
 			new Dependencies( $this->request_params ),
 			new Attachments( $this->request_params ),
 			new Customizer( $this->request_params ),
+			new CustomCSS( $this->request_params ),
 			new ExtraContent( $this->request_params ),
 			new Templates( $this->request_params ),
 			new GutenbergContent( $this->request_params ),

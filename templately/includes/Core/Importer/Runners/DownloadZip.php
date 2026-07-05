@@ -66,14 +66,25 @@ class DownloadZip extends BaseRunner {
 	 */
 	private function download_zip( $id ) {
 		$this->sse_log( 'download', __( 'Downloading Template Pack', 'templately' ), 1 );
+
+		// Forward the host platform (e.g. 'ai-builder') so the cloud scopes the
+		// pack download the same way as the REST/AJAX calls — without it this
+		// binary download bypasses Helper::make_api_request() and the cloud
+		// defaults to 'templately', re-gating AI Builder packs. Sourced from the
+		// request param to match the param-only resolution in Helper.
+		$requested_platform = isset( $_REQUEST['requested_platform'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			? sanitize_text_field( wp_unslash( $_REQUEST['requested_platform'] ) )
+			: 'templately';
+
 		$response = wp_remote_get( $this->get_api_url( "v2", "import/pack/$id" ), [
 			'timeout' => 30,
 			'headers' => [
-				'Content-Type'         => 'application/json',
-				'Authorization'        => 'Bearer ' . $this->api_key,
-				'x-templately-ip'      => Helper::get_ip(),
-				'x-templately-url'     => home_url('/'),
-				'x-templately-version' => TEMPLATELY_VERSION,
+				'Content-Type'                    => 'application/json',
+				'Authorization'                   => 'Bearer ' . $this->api_key,
+				'x-templately-ip'                 => Helper::get_ip(),
+				'x-templately-url'                => home_url('/'),
+				'x-templately-version'            => TEMPLATELY_VERSION,
+				'x-templately-requested-platform' => $requested_platform,
 			]
 		]);
 

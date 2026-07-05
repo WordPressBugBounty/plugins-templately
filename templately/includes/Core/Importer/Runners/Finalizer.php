@@ -81,7 +81,16 @@ class Finalizer extends BaseRunner {
 				}
 			}
 
-			if ( ! isset( $template['data'] ) && !$has_attachment && !isset($template['has_logo']) && !$this->is_ai_content($id) && !isset($template["page_settings"]["fluent_cart_store_settings"]) ) {
+			// Pick up docs the import runners flagged as carrying source-site links
+			// (Mega Menu / nav / button URLs) so the finalize loop rewrites them to the
+			// real imported permalinks — same opt-in mechanism as __attachments above.
+			// $imported_data["templates"]["__link_rewrites"][52]
+			// $imported_data["content"]["page"]["__link_rewrites"][35]
+			$needs_link_rewrite = $sub_type
+				? isset( $imported_data[ $type ][ $sub_type ]['__link_rewrites'][ $id ] )
+				: isset( $imported_data[ $type ]['__link_rewrites'][ $id ] );
+
+			if ( ! isset( $template['data'] ) && !$has_attachment && !$needs_link_rewrite && !isset($template['has_logo']) && !$this->is_ai_content($id) && !isset($template["page_settings"]["fluent_cart_store_settings"]) ) {
 				continue;
 			}
 
@@ -106,6 +115,10 @@ class Finalizer extends BaseRunner {
 		$this->json->imported_data = $this->imported_data;
 		$this->json->map_post_ids  = Utils::map_old_new_post_ids( $this->imported_data );
 		$this->json->map_term_ids  = Utils::map_old_new_term_ids( $this->imported_data );
+		if ( $this->manifest['platform'] === 'elementor' ) {
+			$this->json->set_source_url( $this->manifest['site'] ?? '' );
+			$this->json->set_source_pages( $this->build_source_pages_map() );
+		}
 		if ( ! empty( $imported_data['extra-content'] ) ) {
 			$this->extra_content = $imported_data['extra-content'];
 		}
@@ -132,6 +145,98 @@ class Finalizer extends BaseRunner {
 		}
 
 		return [];
+	}
+
+	/**
+	 * Build the ORIGINAL-slug => imported-permalink map handed to ElementorHelper so
+	 * links can resolve to the page WordPress actually created (slug-change-proof).
+	 *
+	 * Keyed by the pack's original slug — which is what stored links still carry —
+	 * with the value being get_permalink() of the imported post, so a conflict rename
+	 * (about-us → about-us-2) is transparently followed. Pages win over other post
+	 * types on a slug collision. WooCommerce system pages (shop, cart, checkout,
+	 * my-account) are added as aliases since they live outside the manifest content.
+	 *
+	 * @return array
+	 */
+	private function build_source_pages_map(): array {
+		$map          = [];
+		$map_post_ids = $this->json->map_post_ids;
+		$content      = $this->manifest['content'] ?? [];
+
+		if ( is_array( $content ) ) {
+			foreach ( $content as $post_type => $items ) {
+				if ( ! is_array( $items ) ) {
+					continue;
+				}
+
+				foreach ( $items as $old_id => $entry ) {
+					$slug = isset( $entry['slug'] ) ? strtolower( trim( (string) $entry['slug'] ) ) : '';
+					if ( '' === $slug ) {
+						continue;
+					}
+
+					$new_id = $map_post_ids[ $old_id ] ?? null;
+					if ( empty( $new_id ) ) {
+						continue;
+					}
+
+					$permalink = get_permalink( $new_id );
+					if ( ! $permalink || is_wp_error( $permalink ) ) {
+						continue;
+					}
+
+					// First match wins, but a real `page` always overrides another
+					// post type that happens to share the slug.
+					if ( ! isset( $map[ $slug ] ) || 'page' === $post_type ) {
+						$map[ $slug ] = $permalink;
+					}
+				}
+			}
+		}
+
+		$this->add_woocommerce_page_aliases( $map );
+
+		return $map;
+	}
+
+	/**
+	 * Add WooCommerce system-page slugs to the resolution map. These pages are not in
+	 * the manifest content, so menu links to them (often relative, e.g. /demo/shop,
+	 * /demo/sign-in) would otherwise only get the plain domain swap.
+	 *
+	 * Heuristic: the demo's my-account page may be titled/slugged "sign-in", "login",
+	 * etc.; those common aliases are mapped to this site's WooCommerce my-account page.
+	 * Manifest pages already in the map are never overwritten.
+	 *
+	 * @param array $map slug => permalink (by reference).
+	 *
+	 * @return void
+	 */
+	private function add_woocommerce_page_aliases( array &$map ) {
+		if ( ! function_exists( 'wc_get_page_permalink' ) ) {
+			return;
+		}
+
+		$aliases = [
+			'shop'       => [ 'shop', 'store', 'products' ],
+			'cart'       => [ 'cart' ],
+			'checkout'   => [ 'checkout' ],
+			'myaccount'  => [ 'my-account', 'myaccount', 'account', 'sign-in', 'signin', 'login', 'log-in', 'dashboard' ],
+		];
+
+		foreach ( $aliases as $wc_page => $slugs ) {
+			$permalink = wc_get_page_permalink( $wc_page );
+			if ( ! $permalink ) {
+				continue;
+			}
+
+			foreach ( $slugs as $slug ) {
+				if ( ! isset( $map[ $slug ] ) ) {
+					$map[ $slug ] = $permalink;
+				}
+			}
+		}
 	}
 
 	private function regenerate_assets() {

@@ -181,6 +181,7 @@ public function google_auth_url($redirect_to = '', $current_url = '') {
 
         $headers = [
             'Content-Type'         => 'application/json',
+            'Accept'               => 'application/json',
             'x-templately-ip'      => Helper::get_ip(),
             'x-templately-url'     => home_url( '/' ),
             'x-templately-version' => TEMPLATELY_VERSION,

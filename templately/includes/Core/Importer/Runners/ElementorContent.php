@@ -9,6 +9,14 @@ use Templately\Core\Importer\Utils\Utils;
 use Templately\Utils\Helper;
 
 class ElementorContent extends BaseRunner {
+	/**
+	 * Set by import_post_type_content() when the just-imported page carried
+	 * source-site links, so the calling loop can flag it for the Finalizer.
+	 *
+	 * @var bool
+	 */
+	private $pending_link_rewrite = false;
+
 	public function get_name(): string {
 		return 'content';
 	}
@@ -128,6 +136,8 @@ class ElementorContent extends BaseRunner {
 		$results  = $data["imported_data"]["content"] ?? [];
 		$contents = $this->manifest['content'];
 		$path     = $this->dir_path . 'content' . DIRECTORY_SEPARATOR;
+
+		$this->json->set_source_url( $this->manifest['site'] ?? '' );
 
 
 		// $total     = array_reduce( $contents, function ( $carry, $item ) {
@@ -268,6 +278,12 @@ class ElementorContent extends BaseRunner {
 					} else {
 						Utils::import_page_settings( $import, $content_settings );
 						$result[ $post_type ]['succeed'][ $id ] = $import;
+
+						// Flag pages carrying source-site links so the Finalizer rewrites
+						// them to the real imported permalinks (see Finalizer::prepare).
+						if ( $this->pending_link_rewrite ) {
+							$result[ $post_type ]['__link_rewrites'][ $id ] = true;
+						}
 					}
 
 					// Broadcast Log - merge with outer results for accurate counting
@@ -297,6 +313,7 @@ class ElementorContent extends BaseRunner {
 	 * @throws Exception
 	 */
 	private function import_post_type_content( $id, $post_type, $path, $imported_data, $content_settings ) {
+		$this->pending_link_rewrite = false;
 		try {
 			$template = $this->factory->create( $content_settings['doc_type'], [
 				'post_title'  => $content_settings['title'],
@@ -323,6 +340,14 @@ class ElementorContent extends BaseRunner {
 
 			unset($content_settings['conditions']);
 			$post_data['import_settings'] = $content_settings;
+
+			// Detect source-site links. When present, flag the page so the Finalizer
+			// rewrites them to the real imported permalinks once every page exists.
+			// (Pages with `data` are deferred — content is [] here — and are finalized
+			// anyway, so their links get resolved in Finalizer::prepare regardless.)
+			if ( ! empty( $post_data['content'] ) && $this->json->replace_source_urls( $post_data['content'] ) > 0 ) {
+				$this->pending_link_rewrite = true;
+			}
 
 			$template->import( $post_data );
 

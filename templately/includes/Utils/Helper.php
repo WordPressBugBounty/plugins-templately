@@ -152,6 +152,11 @@ class Helper extends Base {
 			'x-templately-ip'      => self::get_ip(),
 			'x-templately-url'     => home_url('/'),
 			'x-templately-version' => defined( 'TEMPLATELY_VERSION' ) ? constant( 'TEMPLATELY_VERSION' ) : '1.0.0',
+			// Force JSON responses so the cloud returns JSON errors instead of an HTML
+			// error page (which json_decode() cannot parse). Binary/XML downloads
+			// (zip pack, attachment WXR) use their own wp_remote_* calls and bypass
+			// this helper, so they are unaffected. Callers can override via $extra_headers.
+			'Accept'               => 'application/json',
 		];
 
 		// Add Content-Type for POST requests

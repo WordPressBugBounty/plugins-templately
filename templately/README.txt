@@ -5,7 +5,7 @@ Tags: templates, elementor template, Gutenberg template, landing page, WoCommerc
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.2
-Stable tag: 3.6.6
+Stable tag: 3.6.7
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -153,6 +153,14 @@ Visit [WPDeveloper](https://wpdeveloper.com/) to learn more about how to do bett
 
 
 == Changelog ==
+= 3.6.7 - 05-07-2026 =
+Added: Site-wide Custom CSS import for template packs
+Added: Business information detection during Frontend/Agent template imports
+Fixed: Custom URLs not updating after importing a template pack
+Fixed: Shared Workspace permission issue when moving or deleting templates
+Fixed: Single template import failure when Elementor Pro was not installed
+Few minor bug fixes and improvements
+
 = 3.6.6 - 16-06-2026 =
 Improved: Smoother template purchase and checkout experience.
 Improved: Automatic account verification after re-login for unverified users.

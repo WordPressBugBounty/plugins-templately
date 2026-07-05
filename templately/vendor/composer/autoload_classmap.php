@@ -142,6 +142,7 @@ return array(
     'Templately\\Core\\Importer\\Runners\\AIContent' => $baseDir . '/includes/Core/Importer/Runners/AIContent.php',
     'Templately\\Core\\Importer\\Runners\\Attachments' => $baseDir . '/includes/Core/Importer/Runners/Attachments.php',
     'Templately\\Core\\Importer\\Runners\\BaseRunner' => $baseDir . '/includes/Core/Importer/Runners/BaseRunner.php',
+    'Templately\\Core\\Importer\\Runners\\CustomCSS' => $baseDir . '/includes/Core/Importer/Runners/CustomCSS.php',
     'Templately\\Core\\Importer\\Runners\\Customizer' => $baseDir . '/includes/Core/Importer/Runners/Customizer.php',
     'Templately\\Core\\Importer\\Runners\\Dependencies' => $baseDir . '/includes/Core/Importer/Runners/Dependencies.php',
     'Templately\\Core\\Importer\\Runners\\DownloadZip' => $baseDir . '/includes/Core/Importer/Runners/DownloadZip.php',

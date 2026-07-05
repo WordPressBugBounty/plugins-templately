@@ -165,6 +165,7 @@ class ComposerStaticInitfbda63c7fbea4382c611c6bde8fe57fa
         'Templately\\Core\\Importer\\Runners\\AIContent' => __DIR__ . '/../..' . '/includes/Core/Importer/Runners/AIContent.php',
         'Templately\\Core\\Importer\\Runners\\Attachments' => __DIR__ . '/../..' . '/includes/Core/Importer/Runners/Attachments.php',
         'Templately\\Core\\Importer\\Runners\\BaseRunner' => __DIR__ . '/../..' . '/includes/Core/Importer/Runners/BaseRunner.php',
+        'Templately\\Core\\Importer\\Runners\\CustomCSS' => __DIR__ . '/../..' . '/includes/Core/Importer/Runners/CustomCSS.php',
         'Templately\\Core\\Importer\\Runners\\Customizer' => __DIR__ . '/../..' . '/includes/Core/Importer/Runners/Customizer.php',
         'Templately\\Core\\Importer\\Runners\\Dependencies' => __DIR__ . '/../..' . '/includes/Core/Importer/Runners/Dependencies.php',
         'Templately\\Core\\Importer\\Runners\\DownloadZip' => __DIR__ . '/../..' . '/includes/Core/Importer/Runners/DownloadZip.php',

@@ -512,7 +512,7 @@ class FullSiteImport extends Base {
 
 			// Filter Child Type for Elementor Pro Promotion Widget
 			if ( class_exists( '\Elementor\Plugin' ) ) {
-				add_filter( 'elementor/element/get_child_type', [ '\Templately\Core\Platform\Elementor', 'filter_child_type' ], 10, 3 );
+				\Templately\Core\Platform\Elementor::register_child_type_filter();
 			}
 
 			// Refresh progress after potential multisite creation
