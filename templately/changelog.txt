@@ -1,4 +1,9 @@
 == Changelog ==
+= 3.6.8 - 07-07-2026 =
+Improved: Security and overall stability
+Fixed: WooCommerce widgets rendering empty in the Elementor editor
+Few minor bug fixes and improvements
+
 = 3.6.7 - 05-07-2026 =
 Added: Site-wide Custom CSS import for template packs
 Added: Business information detection during Frontend/Agent template imports

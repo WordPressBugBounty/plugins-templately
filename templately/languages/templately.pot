@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Templately plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Templately 3.6.7\n"
+"Project-Id-Version: Templately 3.6.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/templately-latest\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-01T10:21:14+00:00\n"
+"POT-Creation-Date: 2026-07-06T08:54:24+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.13.0-alpha-16cc7a8\n"
 "X-Domain: templately\n"
@@ -1301,7 +1301,7 @@ msgid "Invalid Session ID."
 msgstr ""
 
 #: includes/Core/Importer/FullSiteImport.php:619
-#: includes/Core/Importer/FullSiteImport.php:1296
+#: includes/Core/Importer/FullSiteImport.php:1399
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Packs/FullSiteImport.js:134
 #: react-src/app/hooks/useFullSiteImport.js:365
@@ -1350,23 +1350,23 @@ msgstr ""
 msgid "WP_Filesystem cannot be initialized"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:819
-#: includes/Core/Importer/FullSiteImport.php:1286
+#: includes/Core/Importer/FullSiteImport.php:825
+#: includes/Core/Importer/FullSiteImport.php:1389
 #: assets/js/templately.js:1
 #: react-src/app/hooks/useFullSiteImport.js:366
 #, php-format,js-format
 msgid "It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:903
+#: includes/Core/Importer/FullSiteImport.php:1006
 msgid "Cannot be imported, as the manifest file is corrupted"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:975
+#: includes/Core/Importer/FullSiteImport.php:1078
 msgid "Missing Credit Cost"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:1666
+#: includes/Core/Importer/FullSiteImport.php:1769
 msgid "API request failed with response code "
 msgstr ""
 

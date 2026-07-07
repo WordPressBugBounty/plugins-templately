@@ -133,12 +133,83 @@ class TemplateLoader {
 	public function set_global_product(){
 		global $product;
 
-		if ( class_exists('\WC_Product') && ! $product instanceof \WC_Product ) {
-			$product_id = get_the_ID();
-			if ( $product_id ) {
-				wc_setup_product_data( $product_id );
-			}
+		if ( ! function_exists( 'wc_setup_product_data' ) ) {
+			return;
 		}
+
+		// A real product is already in context (e.g. a live single-product page) — never override it.
+		if ( $product instanceof \WC_Product ) {
+			return;
+		}
+
+		$document_id = get_the_ID();
+		if ( ! $document_id ) {
+			return;
+		}
+
+		// The current post is itself a product — set it up (prior behaviour, kept explicit).
+		if ( get_post_type( $document_id ) === 'product' ) {
+			wc_setup_product_data( $document_id );
+			return;
+		}
+
+		// Otherwise only fabricate a preview product for a WooCommerce single-product
+		// Theme Builder template being rendered in the editor / preview. This mirrors what
+		// Elementor Pro's Single Product document does: point the global $product at a real
+		// product so any WooCommerce widget — ours and third-party (e.g. EA Woo Product Tabs) —
+		// renders real data in the editor instead of appearing empty. The live front end is
+		// unaffected (there a real product is always in context, handled above).
+		if ( ! $this->is_woo_single_preview( $document_id ) ) {
+			return;
+		}
+
+		$preview_product_id = $this->get_preview_product_id();
+		if ( $preview_product_id ) {
+			wc_setup_product_data( $preview_product_id );
+		}
+	}
+
+	/**
+	 * Whether the current request is the editor/preview render of a WooCommerce
+	 * single-product ( `product_single` ) Theme Builder template.
+	 *
+	 * @param int $document_id The templately_library post being rendered.
+	 * @return bool
+	 */
+	private function is_woo_single_preview( $document_id ) {
+		if ( get_post_meta( $document_id, Source::TYPE_META_KEY, true ) !== 'product_single' ) {
+			return false;
+		}
+
+		if ( ! post_type_exists( 'product' ) ) {
+			return false;
+		}
+
+		return Plugin::$instance->editor->is_edit_mode()
+			|| Plugin::$instance->preview->is_preview_mode( $document_id )
+			|| ( isset( $_GET['templately_library'], $_GET['preview_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	}
+
+	/**
+	 * Resolve the newest published product to use as the editor preview product.
+	 * Matches the "latest product" approach used by the dynamic Theme Builder
+	 * widgets ( Post_Content / Post_Title / Featured_Image ) and Elementor Pro.
+	 *
+	 * @return int Product ID, or 0 when the store has no published products.
+	 */
+	private function get_preview_product_id() {
+		$products = get_posts( [
+			'post_type'      => 'product',
+			'post_status'    => 'publish',
+			'numberposts'    => 1,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+			'suppress_filters' => false,
+		] );
+
+		return ! empty( $products ) ? (int) $products[0] : 0;
 	}
 
 	/**

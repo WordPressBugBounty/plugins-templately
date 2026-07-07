@@ -5,7 +5,7 @@ Tags: templates, elementor template, Gutenberg template, landing page, WoCommerc
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.2
-Stable tag: 3.6.7
+Stable tag: 3.6.8
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -153,6 +153,11 @@ Visit [WPDeveloper](https://wpdeveloper.com/) to learn more about how to do bett
 
 
 == Changelog ==
+= 3.6.8 - 07-07-2026 =
+Improved: Security and overall stability
+Fixed: WooCommerce widgets rendering empty in the Elementor editor
+Few minor bug fixes and improvements
+
 = 3.6.7 - 05-07-2026 =
 Added: Site-wide Custom CSS import for template packs
 Added: Business information detection during Frontend/Agent template imports
