@@ -12,6 +12,7 @@ namespace Templately\API;
 use Error;
 use Exception;
 use Templately\Utils\Helper;
+use Templately\Utils\Database;
 use WP_REST_Request;
 use WP_Error;
 use Templately\Core\Importer\Utils\Utils;
@@ -22,6 +23,19 @@ use Templately\Core\Importer\Parsers\WXR_Parser;
 class AIContent extends API {
 	private $endpoint  = 'ai-content';
 	private $dev_mode  = false;
+
+	/**
+	 * Short-lived cache of the `v2/chatbot/generated/{chat}` bundle.
+	 *
+	 * That payload is large (every generated page's block JSON, served off GCP)
+	 * and the direct-import handoff pulls it twice within seconds — once to read
+	 * the customization, once to write the pages. Only a COMPLETE bundle is ever
+	 * reused (an incomplete one has to be re-pulled to pick up new pages), and
+	 * the TTL is deliberately short so the `can_import` / already-imported gate
+	 * cannot go meaningfully stale.
+	 */
+	const GENERATED_CACHE_KEY = 'chatbot_generated_';
+	const GENERATED_CACHE_TTL = 60;
 
 
 	/**
@@ -91,6 +105,34 @@ class AIContent extends API {
 		$this->post($this->endpoint . '/ai-update-preview', [$this, 'ai_update_preview']);
 		$this->post($this->endpoint . '/generate-tagline', [$this, 'generate_tagline']);
 		$this->get($this->endpoint . '/chatbot-conversation', [$this, 'get_chatbot_conversation'], [
+			'chat' => [
+				'required' => true,
+				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => function($param, $request, $key) {
+					return is_string($param) && strlen($param) > 0 && strlen($param) <= 128 && preg_match('/^[A-Za-z0-9\-_]+$/', $param);
+				},
+			],
+		]);
+		$this->get($this->endpoint . '/chatbot-generated', [$this, 'get_chatbot_generated'], [
+			'chat' => [
+				'required' => true,
+				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => function($param, $request, $key) {
+					return is_string($param) && strlen($param) > 0 && strlen($param) <= 128 && preg_match('/^[A-Za-z0-9\-_]+$/', $param);
+				},
+			],
+		]);
+		$this->post($this->endpoint . '/chatbot-detected-info', [$this, 'update_chatbot_detected_info'], [
+			'chat' => [
+				'required' => true,
+				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => function($param, $request, $key) {
+					return is_string($param) && strlen($param) > 0 && strlen($param) <= 128 && preg_match('/^[A-Za-z0-9\-_]+$/', $param);
+				},
+			],
+		]);
+		$this->post($this->endpoint . '/chatbot-import-prepare', [$this, 'chatbot_import_prepare']);
+		$this->post($this->endpoint . '/chatbot-mark-imported', [$this, 'mark_chatbot_imported'], [
 			'chat' => [
 				'required' => true,
 				'sanitize_callback' => 'sanitize_text_field',
@@ -983,6 +1025,499 @@ class AIContent extends API {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Fetch the server-side generated content for a chatbot conversation (Phase 2).
+	 *
+	 * In Phase 2 the AI content is generated on the backend. This proxy mirrors
+	 * {@see get_chatbot_conversation()} and returns the already-generated page
+	 * content, customization data and signed logo URL so the plugin can run a
+	 * thin import without triggering generation or the customizer locally.
+	 *
+	 * @return array|\WP_Error Pass-through of the external response { status, data } or WP_Error.
+	 */
+	public function get_chatbot_generated() {
+		$chat = $this->get_param('chat');
+
+		if (empty($chat)) {
+			return $this->error('invalid_chat_id', __('Invalid conversation ID.', 'templately'), 'ai-content/chatbot-generated', 400);
+		}
+
+		$extra_headers = [
+			'Accept' => 'application/json',
+		];
+		$response = Helper::make_api_get_request("v2/chatbot/generated/{$chat}", [], $extra_headers, 30);
+
+		if (is_wp_error($response)) {
+			return $this->error('request_failed', __('Failed to fetch generated content.', 'templately'), 'ai-content/chatbot-generated', 500, ['error_detail' => $response->get_error_message()]);
+		}
+
+		$response_code = wp_remote_retrieve_response_code($response);
+		$body          = wp_remote_retrieve_body($response);
+		$data          = json_decode($body, true);
+
+		if ($response_code !== 200) {
+			$message = (is_array($data) && !empty($data['message'])) ? $data['message'] : sprintf(__('API returned HTTP %d error.', 'templately'), $response_code);
+			return $this->error('api_http_error', $message, 'ai-content/chatbot-generated', $response_code);
+		}
+
+		if (!is_array($data) || !isset($data['status'])) {
+			return $this->error('invalid_response', __('Invalid response.', 'templately'), 'ai-content/chatbot-generated', 500);
+		}
+
+		// The direct-import handoff reads this endpoint and then immediately calls
+		// chatbot-import-prepare, which pulls the very same (large) bundle off GCP
+		// seconds later. Park it so prepare can reuse it instead of paying for a
+		// second identical transfer.
+		Database::set_transient(self::GENERATED_CACHE_KEY . $chat, $data, self::GENERATED_CACHE_TTL);
+
+		return $data;
+	}
+
+	/**
+	 * Persist edited detected-info back to the chatbot conversation (Phase 2).
+	 *
+	 * Mirrors {@see get_chatbot_conversation()} / {@see get_chatbot_generated()}
+	 * but forwards a POST. When the user edits the detected-info card in the
+	 * sidebar, the plugin proxies the corrected values to the backend so a later
+	 * replay reflects them. The backend route is gated by the X-Templately-Apikey
+	 * header, so it is supplied explicitly here.
+	 *
+	 * Expected JSON body: { chat, detected_info: { ...fields } }
+	 *
+	 * @return array|\WP_Error Pass-through of the external response { status, data } or WP_Error.
+	 */
+	public function update_chatbot_detected_info() {
+		$chat          = $this->get_param('chat');
+		$detected_info = $this->get_param('detected_info', [], null);
+
+		if (empty($chat)) {
+			return $this->error('invalid_chat_id', __('Invalid conversation ID.', 'templately'), 'ai-content/chatbot-detected-info', 400);
+		}
+
+		// detected_info may arrive as a JSON string when sent via FormData.
+		if (is_string($detected_info)) {
+			$decoded       = json_decode($detected_info, true);
+			$detected_info = is_array($decoded) ? $decoded : [];
+		}
+		if (!is_array($detected_info)) {
+			$detected_info = [];
+		}
+
+		$extra_headers = [
+			'Accept'              => 'application/json',
+			'X-Templately-Apikey' => $this->api_key,
+		];
+		$response = Helper::make_api_post_request("v2/chatbot/conversation/{$chat}/detected-info", ['detected_info' => $detected_info], $extra_headers, 30);
+
+		if (is_wp_error($response)) {
+			return $this->error('request_failed', __('Failed to update detected info.', 'templately'), 'ai-content/chatbot-detected-info', 500, ['error_detail' => $response->get_error_message()]);
+		}
+
+		$response_code = wp_remote_retrieve_response_code($response);
+		$body          = wp_remote_retrieve_body($response);
+		$data          = json_decode($body, true);
+
+		if ($response_code !== 200) {
+			$message = (is_array($data) && !empty($data['message'])) ? $data['message'] : sprintf(__('API returned HTTP %d error.', 'templately'), $response_code);
+			return $this->error('api_http_error', $message, 'ai-content/chatbot-detected-info', $response_code);
+		}
+
+		if (!is_array($data) || !isset($data['status'])) {
+			return $this->error('invalid_response', __('Invalid response.', 'templately'), 'ai-content/chatbot-detected-info', 500);
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Report a completed import back to templately.dev (Phase 2 import-once gate).
+	 *
+	 * Once the plugin finishes importing the generated content for a conversation,
+	 * it calls this so the backend flips the conversation status to `imported`.
+	 * Subsequent pulls then return `already_imported = true`, and the web/plugin
+	 * UIs refuse a second import.
+	 *
+	 * @return array|\WP_Error
+	 */
+	public function mark_chatbot_imported() {
+		$chat = $this->get_param('chat');
+
+		if (empty($chat)) {
+			return $this->error('invalid_chat_id', __('Invalid conversation ID.', 'templately'), 'ai-content/chatbot-mark-imported', 400);
+		}
+
+		$extra_headers = [
+			'Accept'              => 'application/json',
+			'X-Templately-Apikey' => $this->api_key,
+		];
+		$response = Helper::make_api_post_request("v2/chatbot/conversation/{$chat}/imported", [], $extra_headers, 30);
+
+		if (is_wp_error($response)) {
+			return $this->error('request_failed', __('Failed to record import.', 'templately'), 'ai-content/chatbot-mark-imported', 500, ['error_detail' => $response->get_error_message()]);
+		}
+
+		$response_code = wp_remote_retrieve_response_code($response);
+		$body          = wp_remote_retrieve_body($response);
+		$data          = json_decode($body, true);
+
+		if ($response_code !== 200) {
+			$message = (is_array($data) && !empty($data['message'])) ? $data['message'] : sprintf(__('API returned HTTP %d error.', 'templately'), $response_code);
+			return $this->error('api_http_error', $message, 'ai-content/chatbot-mark-imported', $response_code);
+		}
+
+		if (!is_array($data) || !isset($data['status'])) {
+			return $this->error('invalid_response', __('Invalid response.', 'templately'), 'ai-content/chatbot-mark-imported', 500);
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Thin importer prepare step (Phase 2).
+	 *
+	 * Given a chat uuid and a session that has already been created and had its
+	 * pack downloaded (via the existing templately_pack_create_session_and_download
+	 * AJAX flow), this:
+	 *   1. Registers AI process data (including `chat_id`) so ai_get_json()/
+	 *      validation keep working AND so the Finalizer's ChatAIContentProvider
+	 *      can claim this process.
+	 *   2. Fetches the backend-generated page content for the conversation.
+	 *   3. Writes whatever pages are ALREADY generated to the same .ai.json
+	 *      location the legacy flow uses (via AIUtils::save_template_to_file).
+	 *   4. Downloads the signed logo URL into the WP media library (Utils::upload_logo).
+	 *
+	 * This endpoint NEVER waits for generation to complete. Pages still being
+	 * generated are reported in `missing` and are pulled on demand — and waited
+	 * for — by the Finalizer via AIContentResolver. Previously this held the
+	 * client in a 3s poll loop until every page was ready, which delayed the
+	 * start of the import by minutes for no benefit.
+	 *
+	 * It returns the resolved customization data, logo attachment and the
+	 * process_id so the React app can build the settings FormData and run the
+	 * existing import. No generation or local customizer is involved.
+	 *
+	 * Expected JSON body: { chat, session_id, ai_page_ids: { 'content/page': [...], templates: [...] } }
+	 *
+	 * @return array|\WP_Error
+	 */
+	/**
+	 * Does a `v2/chatbot/generated` bundle already carry every expected page?
+	 *
+	 * A page counts as present when it is in `templates` (string or int key, the
+	 * upstream is inconsistent) or listed in `skipped_pages` — a skipped page is
+	 * never coming, so waiting on it would hang the poll until it timed out.
+	 *
+	 * @param array $data        Decoded `{ status, data }` bundle.
+	 * @param array $expected_ids Flattened page ids, as strings.
+	 * @return bool
+	 */
+	private function is_generated_bundle_complete($data, $expected_ids) {
+		$generated = isset($data['data']) && is_array($data['data']) ? $data['data'] : [];
+
+		// Never reuse a bundle the user is no longer allowed to import.
+		if (isset($generated['can_import']) && ! $generated['can_import']) {
+			return false;
+		}
+
+		$templates = isset($generated['templates']) && is_array($generated['templates']) ? $generated['templates'] : [];
+		$skipped   = isset($generated['skipped_pages']) && is_array($generated['skipped_pages']) ? array_map('strval', $generated['skipped_pages']) : [];
+
+		if (empty($templates) && empty($skipped)) {
+			return false;
+		}
+
+		foreach ($expected_ids as $id) {
+			if (array_key_exists($id, $templates) || array_key_exists((int) $id, $templates) || in_array($id, $skipped, true)) {
+				continue;
+			}
+			return false;
+		}
+
+		return true;
+	}
+
+	public function chatbot_import_prepare() {
+		add_filter('wp_redirect', '__return_false', 999);
+		set_time_limit(3 * MINUTE_IN_SECONDS);
+
+		$handler_started = microtime(true);
+
+		$chat        = $this->get_param('chat');
+		$session_id  = $this->get_param('session_id');
+		$ai_page_ids = $this->get_param('ai_page_ids', [], null);
+
+		if (empty($chat)) {
+			return $this->error('invalid_chat_id', __('Invalid conversation ID.', 'templately'), 'ai-content/chatbot-import-prepare', 400);
+		}
+
+		if (empty($session_id)) {
+			return $this->error('invalid_session_id', __('Invalid session ID.', 'templately'), 'ai-content/chatbot-import-prepare', 400);
+		}
+
+		// Security: sanitize the session id before it is used to build file paths.
+		$session_id = AIUtils::sanitize_path_component($session_id, 'session_id');
+		if (is_wp_error($session_id)) {
+			return $this->error('invalid_session_id', $session_id->get_error_message(), 'ai-content/chatbot-import-prepare', 400);
+		}
+
+		// ai_page_ids may arrive as a JSON string when sent via FormData, and with
+		// scalar / comma-separated group values — normalize to the canonical
+		// `type/sub_type => ['id',...]` shape before anything indexes into it.
+		$ai_page_ids = AIUtils::normalize_ai_page_ids($ai_page_ids);
+		if (empty($ai_page_ids)) {
+			return $this->error('invalid_ai_page_ids', __('Invalid AI page IDs.', 'templately'), 'ai-content/chatbot-import-prepare', 400);
+		}
+
+		// Expected page ids (flattened) — the client may redirect to customization
+		// as soon as the home/header/footer are ready, so by import time some pages
+		// can still be generating. We re-pull until every expected page is present
+		// (bounded wait), then proceed; anything still missing falls back to the
+		// pack's default content.
+		$expected_ids = AIUtils::flatten_ai_page_ids($ai_page_ids);
+
+		$extra_headers = ['Accept' => 'application/json'];
+		$cache_key     = self::GENERATED_CACHE_KEY . $chat;
+
+		// This endpoint NEVER waits for completeness. The import starts as soon as
+		// the session exists; whatever pages are already generated are written
+		// here as a warm start, and any page still generating is pulled on demand
+		// by the Finalizer (Core/Importer/Utils/AIContentResolver +
+		// Providers/ChatAIContentProvider).
+		//
+		// Reuse the bundle chatbot-generated just parked, but ONLY when it already
+		// holds every expected page — a complete bundle cannot become less
+		// complete, whereas an incomplete one has to be re-pulled to pick up the
+		// pages that have since finished. On the common handoff (generation
+		// finished long before the user landed here) this removes an entire
+		// duplicate transfer of every page's block JSON.
+		$pull_started  = microtime(true);
+		$pull_duration = 0;
+		$data          = Database::get_transient($cache_key);
+		$from_cache    = is_array($data) && $this->is_generated_bundle_complete($data, $expected_ids);
+
+		if (! $from_cache) {
+			// Single pull — no server-side sleep/retry. The user can reach import as
+			// soon as the key pages (home/header/footer) are ready while the rest are
+			// still generating; rather than hold the request open until everything is
+			// done (which tripped a gateway 504), we return a non-fatal `pending`
+			// status and let the client poll (JS-side pull).
+			$response      = Helper::make_api_get_request("v2/chatbot/generated/{$chat}", [], $extra_headers, 2 * MINUTE_IN_SECONDS);
+			$pull_duration = microtime(true) - $pull_started;
+
+			if (is_wp_error($response)) {
+				Helper::log(sprintf('chatbot_import_prepare[%s] pull failed after %.2fs: %s', $chat, $pull_duration, $response->get_error_message()), 'ai-import', 'error');
+				return $this->error('request_failed', __('Failed to fetch generated content.', 'templately'), 'ai-content/chatbot-import-prepare', 500, ['error_detail' => $response->get_error_message()]);
+			}
+
+			$response_code = wp_remote_retrieve_response_code($response);
+			$data          = json_decode(wp_remote_retrieve_body($response), true);
+
+			if ($response_code !== 200 || !is_array($data) || !isset($data['status'])) {
+				$message = (is_array($data) && !empty($data['message'])) ? $data['message'] : sprintf(__('API returned HTTP %d error.', 'templately'), $response_code);
+				Helper::log(sprintf('chatbot_import_prepare[%s] pull HTTP %d after %.2fs', $chat, $response_code, $pull_duration), 'ai-import', 'error');
+				return $this->error('api_http_error', $message, 'ai-content/chatbot-import-prepare', $response_code ?: 500);
+			}
+
+			// Park a complete bundle for the credits re-read on the success screen.
+			if ($this->is_generated_bundle_complete($data, $expected_ids)) {
+				Database::set_transient($cache_key, $data, self::GENERATED_CACHE_TTL);
+			}
+		} else {
+			Helper::log(sprintf('chatbot_import_prepare[%s] reused cached bundle (no upstream pull)', $chat), 'ai-import', 'info');
+		}
+
+		$generated = isset($data['data']) && is_array($data['data']) ? $data['data'] : [];
+
+		// Access gate: the backend blocks a free user past their 7-day window.
+		if (isset($generated['can_import']) && ! $generated['can_import']) {
+			return $this->error('access_expired', __('Your free access to this generated site has ended. Upgrade your plan or purchase this template to import it.', 'templately'), 'ai-content/chatbot-import-prepare', 403);
+		}
+
+		$templates = isset($generated['templates']) && is_array($generated['templates']) ? $generated['templates'] : [];
+
+		// Pages the backend skipped (empty source JSON) or failed to generate.
+		// These will never appear in `templates`, so they must not be treated
+		// as "still generating" — without this, one skipped page keeps the poll
+		// pending until it times out.
+		$skipped_pages    = isset($generated['skipped_pages']) && is_array($generated['skipped_pages']) ? array_map('strval', $generated['skipped_pages']) : [];
+		$skipped_expected = array_values(array_intersect($expected_ids, $skipped_pages));
+
+		// Which expected pages are still missing from the bundle?
+		$missing = array_values(array_filter($expected_ids, function ($id) use ($templates, $skipped_pages) {
+			return !array_key_exists($id, $templates) && !array_key_exists((int) $id, $templates) && !in_array($id, $skipped_pages, true);
+		}));
+
+		$ready = array_values(array_diff($expected_ids, $missing));
+		Helper::log(sprintf('chatbot_import_prepare[%s] warm start: ready=%d/%d missing=%d skipped=%d pull=%.2fs', $chat, count($ready), count($expected_ids), count($missing), count($skipped_expected), $pull_duration), 'ai-import', 'info');
+
+
+		// Derive a process_id for this chat-driven import and register process data
+		// so the existing validation/ai_get_json paths keep functioning.
+		$process_id = 'chat-' . $session_id;
+		$user       = $this->utils('options')->get('user');
+
+		$ai_process_data = AIUtils::get_ai_process_data();
+		$ai_process_data[$process_id] = [
+			'process_id'  => $process_id,
+			'session_id'  => $session_id,
+			'ai_page_ids' => $ai_page_ids,
+			'api_key'     => $this->api_key,
+			'user_id'     => isset($user['id']) ? $user['id'] : null,
+			'chat_id'     => $chat,
+		];
+		AIUtils::update_ai_process_data($ai_process_data);
+
+		// Persist each generated page to its .ai.json location for the import runners.
+		//
+		// Every page present in THIS pull is written immediately, even when others
+		// are still generating. Holding the writes back until the whole set was
+		// ready meant a single slow page threw away the full bundle on every poll
+		// — dozens of multi-hundred-KB pulls (all of `templates`, straight off GCP)
+		// discarded to save nothing. Writing as we go also lets the Finalizer
+		// runner finalize the pages that ARE ready instead of blocking on all of
+		// them. Already-written pages are skipped, so a re-poll is cheap.
+		$save_started    = microtime(true);
+		$saved_count     = 0;
+		$errors          = [];
+		$processed_pages = get_option('templately_ai_processed_pages', []);
+		$already_saved   = isset($processed_pages[$process_id]['pages']) ? $processed_pages[$process_id]['pages'] : [];
+		foreach ($templates as $content_id => $template) {
+			if (empty($template)) {
+				continue;
+			}
+
+			if (array_key_exists((string) $content_id, $already_saved)) {
+				$saved_count++;
+				continue;
+			}
+
+			// The runners read JSON strings; normalize arrays/objects to a string.
+			$template_payload = is_string($template) ? $template : wp_json_encode($template);
+
+			$result = AIUtils::save_template_to_file(
+				$process_id,
+				$session_id,
+				$content_id,
+				$template_payload,
+				$ai_page_ids,
+				false
+			);
+
+			if (is_wp_error($result)) {
+				$errors[$content_id] = $result->get_error_message();
+				continue;
+			}
+			if (isset($result['status']) && $result['status'] === 'success') {
+				$saved_count++;
+			} else {
+				$errors[$content_id] = isset($result['message']) ? $result['message'] : 'unknown';
+			}
+		}
+
+		// Write each backend-skipped page as an explicit `{"isSkipped": true}`
+		// marker (same shape the legacy per-page callback wrote) so the import
+		// runners fall back to the pack's default content instead of treating
+		// the page as missing.
+		$skipped_saved = [];
+		foreach ($skipped_expected as $skipped_id) {
+			if (array_key_exists($skipped_id, $templates) || array_key_exists((int) $skipped_id, $templates)) {
+				continue;
+			}
+
+			if (array_key_exists((string) $skipped_id, $already_saved)) {
+				$skipped_saved[] = $skipped_id;
+				continue;
+			}
+
+			$result = AIUtils::save_template_to_file(
+				$process_id,
+				$session_id,
+				$skipped_id,
+				'',
+				$ai_page_ids,
+				true
+			);
+
+			if (is_wp_error($result)) {
+				$errors[$skipped_id] = $result->get_error_message();
+				continue;
+			}
+			if (isset($result['status']) && $result['status'] === 'success') {
+				$skipped_saved[] = $skipped_id;
+			} else {
+				$errors[$skipped_id] = isset($result['message']) ? $result['message'] : 'unknown';
+			}
+		}
+
+		$save_duration = microtime(true) - $save_started;
+		Helper::log(sprintf('chatbot_import_prepare[%s] saved %d/%d pages in %.2fs (skipped=%d, errors=%d)', $chat, $saved_count, count($templates), $save_duration, count($skipped_saved), count($errors)), 'ai-import', 'info');
+
+		// NOTE: there is deliberately NO `pending` return here any more. Pages that
+		// are still generating come back in `missing` and are pulled on demand —
+		// and waited for — by the Finalizer. Returning `pending` made the client
+		// poll for minutes before the import could even start.
+		//
+		// NOT an error when nothing was saved: with the wait deferred to the
+		// Finalizer it is legitimate for zero pages to be ready at import start.
+		// Only a genuine write failure (something was ready but every save
+		// errored) is fatal.
+		if ($saved_count === 0 && empty($skipped_saved) && !empty($errors)) {
+			return $this->error('save_failed', __('Failed to save generated content.', 'templately'), 'ai-content/chatbot-import-prepare', 500, ['errors' => $errors]);
+		}
+
+		Helper::log(sprintf('chatbot_import_prepare[%s] returning: pages=%d missing=%d pull=%.2fs', $chat, count($templates), count($missing), $pull_duration), 'ai-import', 'info');
+
+		// Import the logo into the media library and map it into the customization.
+		$customization = isset($generated['customization_data']) && is_array($generated['customization_data']) ? $generated['customization_data'] : [];
+		$logo          = null;
+		$logo_url      = !empty($generated['logo_url']) ? esc_url_raw($generated['logo_url']) : '';
+
+		if (!empty($logo_url)) {
+			$logo_started = microtime(true);
+			$uploaded = Utils::upload_logo($logo_url, $session_id);
+			Helper::log(sprintf('chatbot_import_prepare[%s] logo upload in %.2fs', $chat, microtime(true) - $logo_started), 'ai-import', 'info');
+			if (!empty($uploaded['id'])) {
+				$logo = [
+					'id'  => (int) $uploaded['id'],
+					'url' => $uploaded['url'],
+				];
+			} elseif (!empty($uploaded['error'])) {
+				// Logo is non-fatal: log and continue without it.
+				Helper::log('chatbot_import_prepare logo upload failed: ' . $uploaded['error']);
+			}
+		}
+
+		// Reflect the imported logo back into the customization payload so React
+		// can build the settings FormData from a single source.
+		if (!empty($logo)) {
+			$customization['logo'] = $logo;
+		}
+
+		Helper::log(sprintf('chatbot_import_prepare[%s] done in %.2fs total', $chat, microtime(true) - $handler_started), 'ai-import', 'info');
+
+		return [
+			'status' => 'success',
+			'data'   => [
+				'session_id'         => $session_id,
+				'process_id'         => $process_id,
+				'ai_page_ids'        => $ai_page_ids,
+				'saved'              => $saved_count,
+				// Pages the backend explicitly skipped — imported with the
+				// pack's default content instead.
+				'skipped'            => $skipped_expected,
+				// Readiness snapshot at import start. `missing` pages are NOT a
+				// failure: the Finalizer pulls each on demand and waits for it.
+				'expected'           => $expected_ids,
+				'ready'              => $ready,
+				'missing'            => $missing,
+				'platform'           => isset($customization['platform']) ? $customization['platform'] : null,
+				'customization_data' => $customization,
+				'logo'               => $logo,
+				'errors'             => $errors,
+			],
+		];
 	}
 
 	/**

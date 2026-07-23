@@ -66,6 +66,13 @@ class Profile extends API {
 		}
 
 		if ( ! empty( $response['user'] ) && is_array( $response['user'] ) ) {
+			/**
+			 * The cloud API key must never be persisted here or sent to the client.
+			 * Under a global login this key belongs to the admin, while any user with
+			 * `delete_posts` can reach this endpoint. Login and SignUp already drop it.
+			 */
+			unset( $response['user']['api_key'] );
+
 			$response['user']['site_url'] = base64_encode( home_url( '/' ) );
 			$response['user']['ip']       = Helper::get_ip();
 		}

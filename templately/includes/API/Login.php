@@ -229,6 +229,10 @@ class Login extends API {
             $global_user = $this->utils( 'options' )->get( 'user', false, $global_user_id );
 
             if ( ! empty( $global_user ) ) {
+                if ( is_array( $global_user ) ) {
+                    unset( $global_user['api_key'] );
+                }
+
                 $global_user['meta'] = $this->user_meta();
             }
         }
@@ -244,6 +248,11 @@ class Login extends API {
         $_user = ( new static )->utils( 'options' )->get( 'user', null );
 
         if ( ! is_null( $_user ) ) {
+            // Profiles stored before 3.7.1 may still carry the cloud API key.
+            if ( is_array( $_user ) ) {
+                unset( $_user['api_key'] );
+            }
+
             $_user['meta'] = self::get_instance()->user_meta();
         }
 

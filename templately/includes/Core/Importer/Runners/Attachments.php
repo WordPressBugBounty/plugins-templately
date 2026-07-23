@@ -202,8 +202,13 @@ class Attachments extends WPContent {
 
 			if (!empty($image_data["newData"]["original"])) {
 				$source = $image_data["source"];
-				if($source === 'upload'){
-					$new_id       = $image_data["newData"]["id"];
+				$new_id = $image_data["newData"]["id"] ?? null;
+
+				// A local WordPress media upload (the plugin's own picker): newData.id
+				// is an existing attachment id, so remap the imported post to it.
+				$is_wp_upload = $source === 'upload' && is_numeric($new_id) && get_post( (int) $new_id );
+
+				if($is_wp_upload){
 					$original_url = $image_data["originalUrl"];
 					$new_url      = $image_data["newUrl"];
 
@@ -217,13 +222,20 @@ class Attachments extends WPContent {
 
 					return $new_id;
 				}
-				else if($source ==='stock' && $image_data['newData']['provider'] == 'pexels'){
-					$post['original_attachment_url'] = $post['attachment_url'];
-					$post['guid']                    = $image_data["newData"]["original"];
-					$post['attachment_url']          = $image_data["newData"]["original"];
-				}
 				else if($source === 'ai'){
 					// @todo: coming soon
+				}
+				else {
+					// External-URL replacement — a stock photo (Pexels/Unsplash) or a
+					// web-customizer upload stored on GCS (no local attachment id).
+					// Re-point the attachment to the external URL so WordPress
+					// sideloads it during import.
+					$external = $image_data["newData"]["original"] ?? $image_data["newUrl"] ?? '';
+					if (!empty($external)) {
+						$post['original_attachment_url'] = $post['attachment_url'];
+						$post['guid']                    = $external;
+						$post['attachment_url']          = $external;
+					}
 				}
 			}
 		}

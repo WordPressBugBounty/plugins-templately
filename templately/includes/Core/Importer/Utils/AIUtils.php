@@ -123,14 +123,29 @@ class AIUtils {
 	 * @param string $session_id Session ID for progress tracking
 	 * @param string $progress_id Progress tracking identifier (e.g., 'ai_content_time', 'finalize_time')
 	 * @param array $updated_ids Currently updated/processed pages
-	 * @param array $ai_page_ids All AI pages that need processing
+	 * @param array $ai_page_ids All AI pages that need processing. MUST be a FLAT
+	 *                          list of content ids — this is counted against the
+	 *                          number of processed pages. Passing the nested
+	 *                          `type/sub_type => [...]` map counts groups, not
+	 *                          pages, and the wait silently never engages. Use
+	 *                          AIUtils::flatten_ai_page_ids().
 	 * @param callable $sse_message_callback Callback function for sending SSE messages
 	 * @param array $additional_sse_data Additional data to include in SSE message
-	 * @param string|null $old_template_id Optional template ID for local site polling
+	 * @param string|null $old_template_id The AI page id being waited on. Retained for
+	 *                                     signature/back-compat; on-demand pulling now
+	 *                                     runs in AIContentResolver providers before this.
 	 * @return bool True if should continue processing, false if should exit
 	 */
 	public static function handle_sse_wait_with_timeout($session_id, $progress_id, $updated_ids, $ai_page_ids, $sse_message_callback, $additional_sse_data = [], $old_template_id = null, $timeout_seconds = 420) {
-		$total_pages = count($ai_page_ids);
+		// Both callers hand this the GROUPED map — ['content/page' => [6, 10, …],
+		// 'templates' => [21, …]] — so a raw count() yields the number of groups
+		// (2), not of pages (9), and the "everything is done" check below passes
+		// the moment 3 pages exist. Flatten first. This stayed invisible while the
+		// pages were always written before the import started; it only bites once
+		// the writes can land mid-import, where it silently drops the AI content
+		// and reports success.
+		$ai_page_ids   = self::flatten_ai_page_ids($ai_page_ids);
+		$total_pages   = count($ai_page_ids);
 		$updated_pages = count($updated_ids['pages'] ?? []);
 
 		// If all pages are processed or credit cost is available, continue processing
@@ -145,7 +160,6 @@ class AIUtils {
 		$last_time = $progress_data['last_time'] ?? 0;
 		$current_time = time();
 		$progress_percentage = $total_pages > 0 ? round(($updated_pages / $total_pages) * 100) : 0;
-		$is_local_site = $session_data['isLocalSite'] ?? false;
 
 		// Skip timeout check if credit cost is available and time difference is > 10 seconds
 		if (isset($updated_ids['credit_cost']) && !empty($last_time) && ($current_time - $last_time) > 10) {
@@ -154,37 +168,10 @@ class AIUtils {
 
 		// Check if time difference is less than timeout(default 7 minutes) (timeout condition)
 		if (empty($last_time) || ($current_time - $last_time) < $timeout_seconds) {
-			// For local sites with template ID, attempt polling before waiting
-			if ($is_local_site && !empty($old_template_id)) {
-				$process_id = $session_data['process_id'] ?? null;
-				if (!empty($process_id)) {
-					// Call generic polling function to process all available templates
-					$polling_result = self::poll_for_template($process_id, $session_id, $ai_page_ids);
-					if ($polling_result === true) {
-						// Check if the specific template file now exists after polling
-						$upload_dir = wp_upload_dir();
-						$tmp_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . $session_id . DIRECTORY_SEPARATOR;
-
-						// Find the correct directory for the template ID
-						$template_file_found = false;
-						foreach ($ai_page_ids as $key => $ids) {
-							if (in_array($old_template_id, $ids)) {
-								$page_dir = $tmp_dir . $key . DIRECTORY_SEPARATOR;
-								$file_path = $page_dir . $old_template_id . '.ai.json';
-								if (file_exists($file_path)) {
-									$template_file_found = true;
-									break;
-								}
-							}
-						}
-
-						if ($template_file_found) {
-							// Specific template found and downloaded, continue processing
-							return true;
-						}
-					}
-				}
-			}
+			// NOTE: on-demand pulling of the page (classic local-site poll, chat-id
+			// pull, etc.) now happens in the source providers dispatched by
+			// AIContentResolver *before* this wait handler is reached. Here we only
+			// track progress and emit the shared SSE `wait`.
 
 			// Only update time if progress has changed
 			if ($progress_percentage !== $last_progress) {
@@ -195,6 +182,21 @@ class AIUtils {
 				];
 				SessionData::set($session_id, 'progress', $updated_progress);
 			}
+
+			// Surface progress BEFORE the wait. The frontend's `case 'wait'` closes
+			// the EventSource and reconnects after 5s without rendering anything
+			// (useFullSiteImport.js), so without this the UI sits frozen for the
+			// whole wait — which is now the expected path for chat imports, not a
+			// rare edge case. Mirrors the updateLog Runners/AIContent.php emits.
+			// `message` IS the row label the UI renders (addStep(type, message, …) in
+			// useFullSiteImport.js) — without it the step shows as a blank row with
+			// a percentage next to it.
+			call_user_func($sse_message_callback, array_merge([
+				'type'     => 'ai-content',
+				'action'   => 'updateLog',
+				'progress' => $progress_percentage,
+				'message'  => __('Waiting for AI Content', 'templately'),
+			], $additional_sse_data), false);
 
 			// Prepare SSE message data
 			$sse_data = array_merge([
@@ -221,6 +223,20 @@ class AIUtils {
 		]);
 		exit;
 		*/
+
+		// Timeout exceeded. Waiting is the normal path; reaching here means the
+		// page never arrived within $timeout_seconds, so the caller will import
+		// the pack's DEFAULT content for it. Log it — this used to be entirely
+		// silent, which made a defaulted page impossible to diagnose after the fact.
+		Helper::log(sprintf(
+			'ai_wait[%s/%s] timed out after %ds — page %s falls back to pack default content (%d/%d pages ready)',
+			$session_id,
+			$progress_id,
+			$timeout_seconds,
+			$old_template_id !== null ? $old_template_id : 'n/a',
+			$updated_pages,
+			$total_pages
+		), 'ai-import', 'error');
 
 		// Continue processing if timeout exceeded (current behavior)
 		return true;
@@ -601,10 +617,13 @@ class AIUtils {
 			]);
 		}
 
-		// Find the correct directory for the content ID
-		$found_key = null;
+		// Find the correct directory for the content ID. Normalize first: a scalar
+		// group value would make in_array() throw a TypeError on PHP 8, and mixed
+		// int/string ids make loose comparison unreliable.
+		$ai_page_ids = self::normalize_ai_page_ids($ai_page_ids);
+		$found_key   = null;
 		foreach ($ai_page_ids as $key => $ids) {
-			if (in_array($content_id, $ids)) {
+			if (in_array((string) $content_id, $ids, true)) {
 				$found_key = $key;
 				break;
 			}
@@ -787,6 +806,107 @@ class AIUtils {
 	}
 
 	/**
+	 * Normalize an `ai_page_ids` payload into the canonical structure:
+	 * `[ 'type/sub_type' => [ 'content_id', ... ], ... ]` with ids as strings.
+	 *
+	 * The value reaches us from several places in several shapes — the JS import
+	 * FormData (a JSON string), session data (already decoded), the manifest, and
+	 * AI process data — and consumers index into it in incompatible ways. Without
+	 * normalization the failure modes are ugly and inconsistent:
+	 *   - `save_template_to_file()` runs `in_array($id, $ids)` with no is_array
+	 *     guard → TypeError on PHP 8 if a group value is a scalar.
+	 *   - `BaseRunner::is_ai_content()` runs `array_merge` over the values → same.
+	 *   - `is_ai_content()` / `find_content_type_info()` DO guard with is_array,
+	 *     so a scalar group makes the page silently invisible instead — the page
+	 *     imports with default content and nothing is logged.
+	 *
+	 * Accepted inputs:
+	 *   - canonical map:      `['content/page' => [1, 2]]`
+	 *   - JSON string:        `'{"content/page":[1,2]}'`
+	 *   - scalar group value: `['content/page' => 1]`     → `['content/page' => ['1']]`
+	 *   - comma-separated:    `['content/page' => '1,2']` → `['content/page' => ['1','2']]`
+	 *   - flat list:          `[1, 2]` (see caveat below)
+	 *
+	 * Ids become strings so membership tests can use strict comparison — PHP's
+	 * loose `in_array()` on mixed int/string ids is a known foot-gun.
+	 *
+	 * CAVEAT: a flat list carries no `type/sub_type` grouping, and grouping cannot
+	 * be invented. Such input normalizes to one id per (numeric) key, which is
+	 * fine for membership and counting via {@see flatten_ai_page_ids()} but yields
+	 * meaningless type info from {@see find_content_type_info()}. Callers that
+	 * need the directory (file paths) require a genuinely grouped payload.
+	 *
+	 * @param mixed $ai_page_ids Raw value in any of the shapes above.
+	 * @return array Canonical `type/sub_type => [id,...]` map (empty on junk input).
+	 */
+	public static function normalize_ai_page_ids($ai_page_ids) {
+		// FormData sends this as a JSON string; some paths decode it, some don't.
+		if (is_string($ai_page_ids)) {
+			$trimmed = trim($ai_page_ids);
+			if ($trimmed === '') {
+				return [];
+			}
+			$decoded     = json_decode($trimmed, true);
+			$ai_page_ids = is_array($decoded) ? $decoded : explode(',', $trimmed);
+		}
+
+		if (!is_array($ai_page_ids) || empty($ai_page_ids)) {
+			return [];
+		}
+
+		$normalized = [];
+		foreach ($ai_page_ids as $key => $ids) {
+			// A group may arrive as a scalar, or as a comma-separated string.
+			if (is_string($ids) && strpos($ids, ',') !== false) {
+				$ids = explode(',', $ids);
+			} elseif (!is_array($ids)) {
+				$ids = [$ids];
+			}
+
+			$clean = [];
+			foreach ($ids as $id) {
+				// Objects/arrays are not valid ids; drop rather than stringify them.
+				if (is_array($id) || is_object($id) || is_bool($id) || $id === null) {
+					continue;
+				}
+				$id = trim((string) $id);
+				if ($id === '') {
+					continue;
+				}
+				$clean[] = $id;
+			}
+
+			if (!empty($clean)) {
+				$normalized[$key] = array_values(array_unique($clean));
+			}
+		}
+
+		return $normalized;
+	}
+
+	/**
+	 * Flatten an `ai_page_ids` payload into a single list of content-id strings.
+	 *
+	 * REQUIRED before handing the value to {@see handle_sse_wait_with_timeout()},
+	 * which compares `count($ai_page_ids)` against the number of processed pages.
+	 * Passing the nested map counts GROUPS (typically 2-3) rather than PAGES, so
+	 * the "everything is done" guard trips as soon as a couple of pages land and
+	 * the wait never engages — every still-generating page then silently imports
+	 * with pack default content.
+	 *
+	 * @param mixed $ai_page_ids Raw value in any shape {@see normalize_ai_page_ids()} accepts.
+	 * @return array Flat list of unique content-id strings.
+	 */
+	public static function flatten_ai_page_ids($ai_page_ids) {
+		$normalized = self::normalize_ai_page_ids($ai_page_ids);
+		if (empty($normalized)) {
+			return [];
+		}
+
+		return array_values(array_unique(array_merge(...array_values($normalized))));
+	}
+
+	/**
 	 * Check if content ID is in AI page IDs
 	 *
 	 * @param string $content_id The content ID to check
@@ -794,17 +914,7 @@ class AIUtils {
 	 * @return bool True if content ID is found in AI page IDs
 	 */
 	public static function is_ai_content($content_id, $ai_page_ids) {
-		if (empty($ai_page_ids) || !is_array($ai_page_ids)) {
-			return false;
-		}
-
-		foreach ($ai_page_ids as $ids) {
-			if (is_array($ids) && in_array($content_id, $ids)) {
-				return true;
-			}
-		}
-
-		return false;
+		return in_array((string) $content_id, self::flatten_ai_page_ids($ai_page_ids), true);
 	}
 
 	/**
@@ -891,12 +1001,13 @@ class AIUtils {
 	 * @return array|null Array with 'type' and 'sub_type' keys, or null if not found
 	 */
 	public static function find_content_type_info($content_id, $ai_page_ids) {
-		if (empty($ai_page_ids) || !is_array($ai_page_ids)) {
+		$ai_page_ids = self::normalize_ai_page_ids($ai_page_ids);
+		if (empty($ai_page_ids)) {
 			return null;
 		}
 
 		foreach ($ai_page_ids as $key => $ids) {
-			if (is_array($ids) && in_array($content_id, $ids)) {
+			if (in_array((string) $content_id, $ids, true)) {
 				$type_parts = explode('/', $key);
 				return [
 					'type' => $type_parts[0],
@@ -921,15 +1032,12 @@ class AIUtils {
 	public static function read_ai_template_data($session_id, $ai_page_ids, $dir_path) {
 		$result = [];
 
-		if (empty($ai_page_ids) || !is_array($ai_page_ids)) {
+		$ai_page_ids = self::normalize_ai_page_ids($ai_page_ids);
+		if (empty($ai_page_ids)) {
 			return $result;
 		}
 
 		foreach ($ai_page_ids as $key => $ids) {
-			if (!is_array($ids)) {
-				continue;
-			}
-
 			foreach ($ids as $id) {
 				$type_arr = explode('/', $key);
 				$type = $type_arr[0];

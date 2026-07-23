@@ -362,7 +362,11 @@ class Elementor extends Platform {
 		return $_response;
 	}
 
-	public function insert( $data ) {
+	public function insert( $data, $postId = 0, $settings = [] ) {
+		if ( ! empty( $settings ) && is_array( $settings ) && ! empty( $data['content'] ) && is_array( $data['content'] ) ) {
+			$data['content'] = \Templately\Core\Importer\Utils\ElementorSettingsMerger::merge( $data['content'], $settings );
+		}
+
 		$importer = new ElementorImporter();
 
 		return $importer->get_data( $data );

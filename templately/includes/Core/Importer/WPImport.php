@@ -120,6 +120,8 @@ class WPImport extends WP_Importer {
 	private $mapped_terms_slug    = [];
 
 	private $fetch_attachments = false;
+	private $attachment_timeout = 300;
+	private $attachment_retry_count = 3;
 	private $featured_images   = [];
 
 	/**
@@ -1146,9 +1148,25 @@ class WPImport extends WP_Importer {
 			$upload_url = set_url_scheme( wp_get_attachment_url( $saved_image ) );
 			$this->set_url_map($url, $upload_url, true);
 
-			if(!empty($post['original_attachment_url']) && !$this->get_saved_image($post['original_attachment_url'])){
-				add_post_meta( $saved_image, '_elementor_source_image_hash', sha1( $post['original_attachment_url'] ) );
-				self::$_replace_image_ids[ sha1( $post['original_attachment_url'] ) ] = $post_id;
+			// AI image replacement: the imported content still carries the ORIGINAL
+			// demo URL, so it must be remapped onto the replacement image here too.
+			// The fresh-upload branch below does this, but when the replacement
+			// image was already imported (a re-import, or the same stock photo
+			// reused) we land here instead — without the map the demo URL survives
+			// finalize and the pack's original images are silently kept.
+			if(!empty($post['original_attachment_url'])){
+				$this->set_url_map($post['original_attachment_url'], $upload_url, true);
+
+				$original_hash = sha1( $post['original_attachment_url'] );
+
+				// A stale hash from a previous import can still point the demo URL at
+				// the old, unreplaced attachment — re-point it at the replacement.
+				if( (int) $this->get_saved_image($post['original_attachment_url']) !== (int) $saved_image ){
+					$hash_meta_id = add_post_meta( $saved_image, '_elementor_source_image_hash', $original_hash );
+					add_post_meta( $saved_image, '_templately_image_hash_meta_id', $hash_meta_id );
+				}
+
+				self::$_replace_image_ids[ $original_hash ] = (int) $saved_image;
 			}
 
 			$full_size_path = get_attached_file($saved_image);
@@ -1309,11 +1327,11 @@ class WPImport extends WP_Importer {
 
 		// Fetch the remote URL and write it to the placeholder file.
 		$attempt         = 0;
-		$retry_count     = 3;
+		$retry_count     = $this->attachment_retry_count;
 		$remote_response = null;
 		do {
 			$remote_response = wp_safe_remote_get( $url, [
-				'timeout'  => 300,
+				'timeout'  => $this->attachment_timeout,
 				'stream'   => true,
 				'filename' => $tmp_file_name,
 				'headers'  => [
@@ -1453,11 +1471,24 @@ class WPImport extends WP_Importer {
 			return self::$_replace_image_ids[ $hash ];
 		}
 
+		// Newest row wins. A URL can be claimed by more than one attachment: an
+		// AI/customizer image replacement registers the ORIGINAL demo URL against
+		// the REPLACEMENT attachment (see process_attachment), while a previous
+		// plain import of the same pack already claimed that URL for the original
+		// image — and that older row is never cleaned up (clear_old_el_cache only
+		// tracks replacement hashes). Without the ordering the stale original wins
+		// and the replacement is silently ignored on every re-import.
+		//
+		// The static cache above short-circuits this, but the import is split
+		// across many requests (each SSE `continue` is a fresh PHP process), so
+		// the DB is the real source of truth for anything set in an earlier step.
 		$post_id = $wpdb->get_var(
 			$wpdb->prepare(
 				'SELECT `post_id` FROM `' . $wpdb->postmeta . '`
 					WHERE `meta_key` = \'_elementor_source_image_hash\'
 						AND `meta_value` = %s
+					ORDER BY `meta_id` DESC
+					LIMIT 1
 				;',
 				$hash
 			)
@@ -1781,6 +1812,14 @@ class WPImport extends WP_Importer {
 
 		if ( ! empty( $this->args['fetch_attachments'] ) ) {
 			$this->fetch_attachments = true;
+		}
+
+		if ( isset( $this->args['attachment_timeout'] ) && is_numeric( $this->args['attachment_timeout'] ) ) {
+			$this->attachment_timeout = max( 1, (int) $this->args['attachment_timeout'] );
+		}
+
+		if ( isset( $this->args['attachment_retries'] ) && is_numeric( $this->args['attachment_retries'] ) ) {
+			$this->attachment_retry_count = max( 1, (int) $this->args['attachment_retries'] + 1 );
 		}
 
 		if ( isset( $this->args['posts'] ) && is_array( $this->args['posts'] ) ) {

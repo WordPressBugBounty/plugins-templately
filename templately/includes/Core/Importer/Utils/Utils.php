@@ -520,9 +520,13 @@ class Utils extends Base {
      * @param int $postId
      * @return array
      */
-    public static function import_and_replace_attachments($content, $postId = 0) {
+    public static function import_and_replace_attachments($content, $postId = 0, $attachment_options = []) {
         // Instantiate GutenbergHelper
         $helper = new GutenbergHelper();
+
+		if ( ! empty( $attachment_options ) ) {
+			$helper->set_attachment_options( $attachment_options );
+		}
 
 		$data = [
 			'content' => $content,

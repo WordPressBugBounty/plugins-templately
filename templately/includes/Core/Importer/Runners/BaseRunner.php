@@ -7,6 +7,7 @@ use Templately\Builder\Factory\TemplateFactory;
 use Templately\Core\Importer\FullSiteImport;
 use Templately\Core\Importer\Import;
 use Templately\Core\Importer\LogHelper;
+use Templately\Core\Importer\Utils\AIUtils;
 use Templately\Core\Importer\Utils\ImportHelper;
 use Templately\Core\Importer\Utils\Utils;
 
@@ -61,7 +62,12 @@ abstract class BaseRunner {
 		$this->json = Utils::get_json_helper( $this->platform );
 		$this->json->session_id = $this->session_id;
 
-		$this->ai_page_ids = $request_params['ai_page_ids'] ?? [];
+		// Normalize once here so every runner sees the canonical
+		// `type/sub_type => ['id',...]` shape. This value arrives from the import
+		// FormData (a JSON string), session data, or the manifest, and consumers
+		// index into it in ways that either throw or silently miss pages when the
+		// shape differs. See AIUtils::normalize_ai_page_ids().
+		$this->ai_page_ids = AIUtils::normalize_ai_page_ids( $request_params['ai_page_ids'] ?? [] );
 		$this->process_id = $request_params['process_id'] ?? null;
 
 		if ( empty( $this->platform ) ) {
@@ -114,17 +120,13 @@ abstract class BaseRunner {
 	}
 
 	protected function is_ai_content($old_template_id ): bool {
-		if(empty($this->process_id) || empty($this->ai_page_ids) || !is_array($this->ai_page_ids)){
+		if(empty($this->process_id) || empty($this->ai_page_ids)){
 			return false;
 		}
-		// Get array of AI page IDs, filtering out any non-numeric values
-		$ai_page_ids = array_reduce($this->ai_page_ids, 'array_merge', array());
-		// $ai_page_ids = array_filter(
-		// 	array_map('intval', explode(',', $this->ai_page_ids ?? ''))
-		// );
 
-		$is_ai_content = in_array($old_template_id, $ai_page_ids);
-
-		return $is_ai_content;
+		// $this->ai_page_ids is already normalized in the constructor, so this is
+		// a plain flatten + strict membership test. It used to array_reduce with
+		// 'array_merge', which throws a TypeError if any group value is a scalar.
+		return AIUtils::is_ai_content($old_template_id, $this->ai_page_ids);
 	}
 }

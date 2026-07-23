@@ -51,6 +51,11 @@ class ThemeBuilder extends Base {
 		add_action( 'wp', function () {
 			new TemplateLoader( $this, self::$views );
 		} );
+		// Unconditional (admin + front end): the editor's admin page bootstrap
+		// (post.php?action=elementor) never fires `wp`, so this can't be gated
+		// behind the TemplateLoader instantiation above. See TemplateLoader::
+		// register_preview_product_hooks() for why two render pathways are covered.
+		TemplateLoader::register_preview_product_hooks();
 
 		add_action( 'init', [ $this, 'source_register' ] );
 		add_action( 'wp_ajax_templately_create_template', [ $this, 'create_template' ] );

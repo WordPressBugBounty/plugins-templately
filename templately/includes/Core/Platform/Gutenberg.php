@@ -166,10 +166,23 @@ class Gutenberg extends Platform {
      *
      * @param mixed $data
      * @param int $postId
+     * @param array $settings
      * @return array
      */
-    public function insert($data, $postId = 0) {
-        $data['content'] = Utils::import_and_replace_attachments($data['content'], $postId);
+    public function insert($data, $postId = 0, $settings = []) {
+        if ( ! empty( $settings ) && is_array( $settings ) && ! empty( $data['content'] ) && is_string( $data['content'] ) ) {
+            $data['content'] = \Templately\Core\Importer\Utils\GutenbergSettingsMerger::merge( $data['content'], $settings );
+        }
+
+        $data['content'] = Utils::import_and_replace_attachments(
+			$data['content'],
+			$postId,
+			[
+				'attachment_timeout'    => 8,
+				'attachment_retries'    => 0,
+				'attachment_deadline'   => microtime( true ) + 20,
+			]
+		);
         return $data;
     }
 

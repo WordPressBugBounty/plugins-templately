@@ -1061,12 +1061,14 @@ class FullSiteImport extends Base {
 			$processed_pages = get_option("templately_ai_processed_pages", []);
 			$updated_ids = $processed_pages[$request_params['process_id']] ?? [];
 
-			// Use the static timeout-aware wait handler from AIUtils
+			// Use the static timeout-aware wait handler from AIUtils.
+			// ai_page_ids must be FLATTENED — the handler counts it against the
+			// number of processed pages (see AIUtils::flatten_ai_page_ids).
 			AIUtils::handle_sse_wait_with_timeout(
 				$this->session_id,
 				'ai_content_import_time',
 				$updated_ids,
-				$request_params['ai_page_ids'],
+				AIUtils::flatten_ai_page_ids($request_params['ai_page_ids']),
 				[$this, 'sse_message'],
 				[
 					'name' => 'ai-content',
@@ -1434,6 +1436,16 @@ class FullSiteImport extends Base {
 			$headers['x-templately-ai-updated-pages']   = implode(',', array_keys($updated_pages));
 			$headers['x-templately-ai-missing-pages']   = implode(',', array_diff($ai_page_ids, array_keys($updated_pages)));
 			$headers['x-templately-ai-credit-cost']     = $updated_ids['credit_cost'] ?? null;
+
+			// Phase-2 (chat-from-site): the backend keys the generated site by the
+			// conversation uuid — no download_key is minted for AI bundles. Forward
+			// it so the success/failed endpoints can flip the conversation status
+			// (delivered / error) and persist the failure. The uuid was stored under
+			// the process data when the import was prepared (chatbot-import-prepare).
+			$ai_process_data = AIUtils::get_ai_process_data_by_process_id($request_params['process_id']);
+			if (!empty($ai_process_data['chat_id'])) {
+				$headers['x-templately-ai-chat-uuid'] = $ai_process_data['chat_id'];
+			}
 		}
 
 
@@ -1520,6 +1532,11 @@ class FullSiteImport extends Base {
 			// Get the latest AI process for the current API key
 			$last_ai_process = AIUtils::get_latest_ai_process_by_api_key($id);
 			if ($last_ai_process) {
+				// The cloud API key is stored on the process for server-side matching
+				// only. It must never reach the browser — under a global login it is
+				// the admin's credential, not the requesting user's.
+				unset($last_ai_process['api_key']);
+
 				$data['data']['ai_process'] = $last_ai_process;
 			}
 

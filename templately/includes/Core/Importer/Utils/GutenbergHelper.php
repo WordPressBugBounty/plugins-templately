@@ -10,6 +10,7 @@ class GutenbergHelper extends ImportHelper {
 
 	private $template_settings = [];
 	private $forms             = [];
+	private $attachment_options = [];
 	/**
 	 * @var WPImport
 	 */
@@ -34,10 +35,10 @@ class GutenbergHelper extends ImportHelper {
 	public function prepare( $template_json, $template_settings, $extra_content = [], $request_params = [] ) {
 		$this->template_settings = $template_settings;
 		$this->post_id           = $this->map_post_ids[ $template_settings['post_id'] ];
-		$this->wp_importer       = new WPImport( null, [
+		$this->wp_importer       = new WPImport( null, array_merge( [
 			'session_id'        => $this->session_id,
 			'fetch_attachments' => true,
-		] );
+		], $this->attachment_options ) );
 
 		$parsed_blocks = parse_blocks( $template_json['content'] );
 		if ( ! empty( $extra_content ) ) {
@@ -58,6 +59,18 @@ class GutenbergHelper extends ImportHelper {
 		}
 		$this->replace( $parsed_blocks, $request_params );
 		$this->content = wp_slash( serialize_blocks( $parsed_blocks ) );
+
+		return $this;
+	}
+
+	/**
+	 * Configure optional limits for best-effort attachment imports.
+	 *
+	 * @param array $options Attachment request timeout, retry count, and deadline.
+	 * @return self
+	 */
+	public function set_attachment_options( array $options ): self {
+		$this->attachment_options = $options;
 
 		return $this;
 	}
@@ -256,10 +269,12 @@ class GutenbergHelper extends ImportHelper {
 		}
 
 		if (is_string($attrs)) {
-			foreach ($this->wp_importer->url_remap as $old_url => $new_url) {
-				if (strpos($attrs, $old_url) !== false) {
-					$attrs = str_replace($old_url, $new_url, $attrs);
-				}
+			if ( ! empty( $this->wp_importer->url_remap ) ) {
+				$attrs = str_replace(
+					array_keys( $this->wp_importer->url_remap ),
+					array_values( $this->wp_importer->url_remap ),
+					$attrs
+				);
 			}
 		}
 		else if (is_array($attrs)) {
@@ -319,8 +334,9 @@ class GutenbergHelper extends ImportHelper {
 	}
 
 	private function processSingleImage($attrs, $imageKey) {
-		if (!empty(self::$attachment_ids[$attrs['attrs'][$imageKey]['url']])) {
-			$attrs['attrs'][$imageKey]['id'] = (int) self::$attachment_ids[$attrs['attrs'][$imageKey]['url']];
+		$image = $attrs['attrs'][$imageKey] ?? null;
+		if ( is_array( $image ) && ! empty( $image['url'] ) && ! empty( self::$attachment_ids[ $image['url'] ] ) ) {
+			$attrs['attrs'][$imageKey]['id'] = (int) self::$attachment_ids[ $image['url'] ];
 		}
 		return $attrs;
 	}
@@ -386,8 +402,16 @@ class GutenbergHelper extends ImportHelper {
 		set_time_limit( 0 );
 
 		$organizedUrls = $this->template_settings['__attachments'];
+		$deadline      = ! empty( $this->attachment_options['attachment_deadline'] )
+			? (float) $this->attachment_options['attachment_deadline']
+			: null;
 		// For each base image URL...
 		foreach ($organizedUrls as $base_url => $sizes) {
+			if ( $deadline && microtime( true ) >= $deadline ) {
+				$this->sse_log( 'warning', 'Skipping remaining attachments after the import time limit.', -1, 'eventLog' );
+				break;
+			}
+
 			// Prepare the post data for the attachment
 			$post_data = $this->prepare_post_data($this->post_id, $base_url);
 

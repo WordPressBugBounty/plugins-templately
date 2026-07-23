@@ -5,8 +5,8 @@ namespace Templately\Core\Importer\Runners;
 
 use Exception;
 use Templately\Core\Importer\Utils\AIContentHelper;
+use Templately\Core\Importer\Utils\AIContentResolver;
 use Templately\Core\Importer\Utils\Utils;
-use Templately\Core\Importer\Utils\AIUtils;
 use Templately\Utils\Helper;
 
 class Finalizer extends BaseRunner {
@@ -274,20 +274,23 @@ class Finalizer extends BaseRunner {
 				$updated_ids = $processed_pages[$this->process_id] ?? [];
 				$ai_paths = $this->generateAiFilePaths($old_template_id);
 				if($this->is_ai_content($old_template_id) && !file_exists($ai_paths['ai_file_path'])){
-					// Use the static timeout-aware wait handler from AIUtils
-					AIUtils::handle_sse_wait_with_timeout(
-						$this->session_id,
-						'ai_content_time',
-						$updated_ids,
-						$this->ai_page_ids,
-						[$this, 'sse_message'],
-						[
-							'name' => method_exists($this, 'get_name') ? $this->get_name() : '',
+					// Source-agnostic seam: whichever AI-content source owns this
+					// process (classic per-page callback, chat-id pull, or a future
+					// source) stages the .ai.json; otherwise the shared SSE-wait runs.
+					AIContentResolver::ensure_page_ready([
+						'session_id'          => $this->session_id,
+						'process_id'          => $this->process_id,
+						'content_id'          => $old_template_id,
+						'ai_page_ids'         => $this->ai_page_ids,
+						'updated_ids'         => $updated_ids,
+						'sse_callback'        => [$this, 'sse_message'],
+						'progress_id'         => 'ai_content_time',
+						'additional_sse_data' => [
+							'name'      => method_exists($this, 'get_name') ? $this->get_name() : '',
 							'post_type' => $post_type,
-							'id' => $old_template_id,
+							'id'        => $old_template_id,
 						],
-						$old_template_id // Pass template ID for local site polling
-					);
+					]);
 				}
 				// Check if this is AI content before processing
 				if ($this->isAiContent($old_template_id)) {
