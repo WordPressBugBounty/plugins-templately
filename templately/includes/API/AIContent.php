@@ -1238,6 +1238,51 @@ class AIContent extends API {
 		return true;
 	}
 
+	/**
+	 * Resolve the conversation answers to store on a chat-driven process.
+	 *
+	 * Prefers what the client sent (the sidebar holds the detected info the user
+	 * may have just edited), then what was already stored for this process (so a
+	 * repeat call costs nothing), and only then pulls the conversation from the
+	 * cloud — which is the path the `?process=import` landing takes, since it
+	 * never opens the sidebar and so has no answers to send.
+	 *
+	 * A failure here must never break the import: it returns an empty array and
+	 * the process is stored exactly as before.
+	 *
+	 * @param string $chat            Conversation uuid.
+	 * @param mixed  $detected_info   Raw `detected_info` sent by the client.
+	 * @param array  $ai_process_data All stored process data.
+	 * @param string $process_id      This process id.
+	 * @return array<string,string> Map of conversation step key => value.
+	 */
+	private function resolve_chat_conversation_fields($chat, $detected_info, $ai_process_data, $process_id) {
+		$mapped = AIUtils::map_chat_detected_info($detected_info);
+		if (!empty($mapped)) {
+			return $mapped;
+		}
+
+		// Already resolved on an earlier call for this process — reuse it.
+		if (isset($ai_process_data[$process_id]) && AIUtils::has_conversation_data($ai_process_data[$process_id])) {
+			return AIUtils::map_chat_detected_info(
+				array_intersect_key($ai_process_data[$process_id], array_flip(AIUtils::CONVERSATION_FIELDS))
+			);
+		}
+
+		$response = Helper::make_api_get_request("v2/chatbot/conversation/{$chat}", [], ['Accept' => 'application/json'], 30);
+		if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+			Helper::log(sprintf('chatbot_import_prepare[%s] conversation fetch failed — process stored without answers', $chat), 'ai-import', 'warning');
+			return [];
+		}
+
+		$data = json_decode(wp_remote_retrieve_body($response), true);
+		if (!is_array($data) || empty($data['data']['detected_info'])) {
+			return [];
+		}
+
+		return AIUtils::map_chat_detected_info($data['data']['detected_info']);
+	}
+
 	public function chatbot_import_prepare() {
 		add_filter('wp_redirect', '__return_false', 999);
 		set_time_limit(3 * MINUTE_IN_SECONDS);
@@ -1247,6 +1292,12 @@ class AIContent extends API {
 		$chat        = $this->get_param('chat');
 		$session_id  = $this->get_param('session_id');
 		$ai_page_ids = $this->get_param('ai_page_ids', [], null);
+		// Conversation context, so reopening "Build with AI" later can resume this
+		// app-end session instead of starting from scratch. `detected_info` is
+		// sanitized field-by-field in AIUtils::map_chat_detected_info().
+		$pack_id       = $this->get_param('pack_id', 0, 'absint');
+		$platform      = $this->get_param('platform');
+		$detected_info = $this->get_param('detected_info', [], null);
 
 		if (empty($chat)) {
 			return $this->error('invalid_chat_id', __('Invalid conversation ID.', 'templately'), 'ai-content/chatbot-import-prepare', 400);
@@ -1359,7 +1410,7 @@ class AIContent extends API {
 		$user       = $this->utils('options')->get('user');
 
 		$ai_process_data = AIUtils::get_ai_process_data();
-		$ai_process_data[$process_id] = [
+		$record = [
 			'process_id'  => $process_id,
 			'session_id'  => $session_id,
 			'ai_page_ids' => $ai_page_ids,
@@ -1367,6 +1418,26 @@ class AIContent extends API {
 			'user_id'     => isset($user['id']) ? $user['id'] : null,
 			'chat_id'     => $chat,
 		];
+
+		if (!empty($pack_id)) {
+			$record['pack_id'] = $pack_id;
+		}
+		if (!empty($platform)) {
+			$record['platform'] = $platform;
+		}
+
+		// Persist the app-end answers exactly as an in-plugin conversation stores
+		// them, so reopening "Build with AI" resumes this session instead of
+		// starting over. Without this the record holds no answers at all and the
+		// sidebar has nothing to restore.
+		$conversation = AIUtils::build_conversation_fields(
+			$this->resolve_chat_conversation_fields($chat, $detected_info, $ai_process_data, $process_id)
+		);
+		if (!empty($conversation)) {
+			$record = array_merge($record, $conversation);
+		}
+
+		$ai_process_data[$process_id] = $record;
 		AIUtils::update_ai_process_data($ai_process_data);
 
 		// Persist each generated page to its .ai.json location for the import runners.

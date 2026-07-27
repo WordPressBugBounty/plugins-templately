@@ -1540,7 +1540,7 @@ class FullSiteImport extends Base {
 				$data['data']['ai_process'] = $last_ai_process;
 			}
 
-			if($last_ai_process && $id == $last_ai_process['pack_id']){
+			if($last_ai_process && $id == ($last_ai_process['pack_id'] ?? null)){
 				// Read AI preview content directly from files using the common function
 				$session_id = $last_ai_process['session_id'] ?? null;
 				$ai_page_ids = $last_ai_process['ai_page_ids'] ?? [];

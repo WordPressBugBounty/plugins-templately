@@ -80,8 +80,20 @@ public function google_auth_url($redirect_to = '', $current_url = '') {
         $return_url = admin_url( 'admin.php?page=templately' );
     }
 
+    // Unique random state — doubles as cache busting and as the CSRF token the
+    // callback validates. Only minted into a transient for a logged-in user:
+    // this endpoint is public, and an anonymous caller could otherwise flood
+    // wp_options with tokens that can never authorize anything.
+    $state       = wp_generate_password( 32, false );
+    $state_owner = get_current_user_id();
+
+    if ( $state_owner > 0 ) {
+        Database::set_transient( 'google_state_' . $state, $state_owner, 15 * MINUTE_IN_SECONDS );
+    }
+
     $return_params = [
         'templately_google_login' => '1',
+        'templately_state'        => $state,
     ];
 
     // Add redirect-to parameter if provided
@@ -94,7 +106,7 @@ public function google_auth_url($redirect_to = '', $current_url = '') {
     $query_params = [
         'site_url' => urlencode($site_url_with_params),
         'site_ip' => Helper::get_ip(),
-        'state' => wp_generate_password(32, false) // Add unique random state for cache busting
+        'state' => $state,
     ];
 
     return add_query_arg($query_params, $auth_url);

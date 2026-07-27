@@ -22,6 +22,14 @@ class Options extends Base {
 	private $has_api;
 
 	/**
+	 * Pin every derived read/write to the acting user, bypassing the
+	 * global-login fallback in user_id().
+	 *
+	 * @var bool
+	 */
+	private $force_current_user = false;
+
+	/**
 	 * Automatically invoked and set up the properties.
 	 */
 	public function __construct(){
@@ -72,10 +80,26 @@ class Options extends Base {
 	}
 
 	/**
+	 * Pin the acting user as the target for every derived read/write.
+	 *
+	 * @param bool $force Whether to force the current user.
+	 * @return Options
+	 */
+	public function use_current_user( bool $force = true ): Options {
+		$this->force_current_user = $force;
+
+		return $this;
+	}
+
+	/**
 	 * Get user id determine dynamically
 	 * @return integer
 	 */
 	private function user_id(): int {
+		if ( $this->force_current_user ) {
+			return $this->current_user;
+		}
+
 		$_who_am_i = $this->who_am_i();
 
 		if( ! empty( $_SERVER['REQUEST_URI'] ) ) {
@@ -185,7 +209,13 @@ class Options extends Base {
 	}
 
 	public function update_user_meta($user_id, $meta_key, $meta_value) {
-		$user_id = is_null( $user_id ) ? $this->user_id() : $user_id;
+		if ( is_null( $user_id ) ) {
+			if ( ! $this->can_write() ) {
+				return false;
+			}
+
+			$user_id = $this->user_id();
+		}
 
 		if( ! is_multisite() ) {
 			return update_user_meta( $user_id, $meta_key, $meta_value );
@@ -195,11 +225,27 @@ class Options extends Base {
 	}
 
 	public function delete_user_meta( $meta_key ): bool {
+		if ( ! $this->can_write() ) {
+			return false;
+		}
+
 		if( ! is_multisite() ) {
 			return delete_user_meta( $this->user_id(), $meta_key );
 		}
 
 		return delete_user_option( $this->user_id(), $meta_key, $this->_is_global() );
+	}
+
+	/**
+	 * Whether the current request may write to a derived user target.
+	 *
+	 * Reads retain the global-login fallback for unauthenticated cloud callbacks,
+	 * but an anonymous request must never write through it to the administrator.
+	 *
+	 * @return bool
+	 */
+	private function can_write(): bool {
+		return $this->current_user > 0;
 	}
 
 	private function _is_global() {

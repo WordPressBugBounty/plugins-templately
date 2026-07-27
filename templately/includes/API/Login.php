@@ -122,6 +122,28 @@ class Login extends API {
             return $this->error( 'login_error', $response['message'] ?? __('Invalid API key.', 'templately'), 'login', 400 );
         }
 
+        $options = $this->utils( 'options' );
+        $options->use_current_user( true );
+
+        try {
+            return $this->store_connection( $response, $global_signin, $_ip, $_site_url );
+        } finally {
+            $options->use_current_user( false );
+        }
+    }
+
+    /**
+     * Persist an authenticated connection against the acting user.
+     *
+     * @param array  $response      Cloud response, already validated.
+     * @param bool   $global_signin Whether the user asked to sign in globally.
+     * @param string $_ip           Request IP, echoed back into the profile.
+     * @param string $_site_url     Site URL, echoed back into the profile.
+     *
+     * @return array
+     */
+    private function store_connection( $response, $global_signin, $_ip, $_site_url ) {
+
         if ( $global_signin && ! Login::is_globally_signed() ) {
             Options::set_global_login();
         }

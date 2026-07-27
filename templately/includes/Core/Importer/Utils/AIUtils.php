@@ -413,9 +413,153 @@ class AIUtils {
 	}
 
 	/**
+	 * Fields captured by the in-plugin AI conversation (AiContentSidebar).
+	 *
+	 * @var string[]
+	 */
+	const CONVERSATION_FIELDS = ['name', 'category', 'description', 'email', 'contactNumber', 'businessAddress', 'openingHour'];
+
+	/**
+	 * Whether a stored process holds an in-plugin AI conversation.
+	 *
+	 * A process registered by the chat handoff (`ai-content/chatbot-import-prepare`)
+	 * carries none of these fields — it exists only so the import runners can locate
+	 * the pages generated on the app end. Offering it as a "previous conversation"
+	 * made the sidebar render every question as "I want to skip the question",
+	 * because a *present but empty* field is what marks a genuinely skipped answer.
+	 *
+	 * @param array $process_data The stored process data.
+	 * @return bool
+	 */
+	public static function has_conversation_data($process_data) {
+		if (!is_array($process_data)) {
+			return false;
+		}
+
+		foreach (self::CONVERSATION_FIELDS as $field) {
+			if (array_key_exists($field, $process_data)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Chatbot `detected_info` keys → conversation step keys.
+	 *
+	 * Mirrors DETECTED_INFO_KEY_MAP in AiContentSidebar/helper.js, including its
+	 * snake_case/alias tolerance and its deliberate omission of `language` (that
+	 * step has bespoke selection logic). Step keys map to themselves so a payload
+	 * already keyed by step key passes through unchanged.
+	 *
+	 * @var array<string,string>
+	 */
+	const DETECTED_INFO_KEY_MAP = [
+		'business_name'        => 'name',
+		'name'                 => 'name',
+		'business_type'        => 'category',
+		'business_niche'       => 'category',
+		'business_niches'      => 'category',
+		'business_industry'    => 'category',
+		'category'             => 'category',
+		'business_description' => 'description',
+		'description'          => 'description',
+		'about'                => 'description',
+		'prompt'               => 'description',
+		'email'                => 'email',
+		'business_email'       => 'email',
+		'phone'                => 'contactNumber',
+		'phone_number'         => 'contactNumber',
+		'contact_number'       => 'contactNumber',
+		'contactNumber'        => 'contactNumber',
+		'business_address'     => 'businessAddress',
+		'address'              => 'businessAddress',
+		'businessAddress'      => 'businessAddress',
+		'opening_hour'         => 'openingHour',
+		'opening_hours'        => 'openingHour',
+		'openingHour'          => 'openingHour',
+	];
+
+	/**
+	 * Normalize a chatbot `detected_info` payload into conversation step keys.
+	 *
+	 * Accepts the plain-object shape (`{ business_name: '…' }`), the older
+	 * array-of-`{key,value}` shape, and a payload already keyed by step key.
+	 * Blank/non-scalar values and unknown keys are dropped; the first value wins
+	 * when two aliases map to the same step.
+	 *
+	 * @param mixed $detected_info Raw detected info.
+	 * @return array<string,string> Map of step key => sanitized value.
+	 */
+	public static function map_chat_detected_info($detected_info) {
+		$mapped = [];
+
+		if (!is_array($detected_info)) {
+			return $mapped;
+		}
+
+		foreach ($detected_info as $key => $value) {
+			// Array-of-{key,value} rows.
+			if (is_array($value) && isset($value['key'])) {
+				$key   = $value['key'];
+				$value = isset($value['value']) ? $value['value'] : '';
+			}
+
+			if (!is_string($key) || !isset(self::DETECTED_INFO_KEY_MAP[$key])) {
+				continue;
+			}
+
+			if (!is_scalar($value)) {
+				continue;
+			}
+
+			$value = trim(sanitize_textarea_field((string) $value));
+			if ($value === '') {
+				continue;
+			}
+
+			$step_key = self::DETECTED_INFO_KEY_MAP[$key];
+			if (isset($mapped[$step_key])) {
+				continue;
+			}
+
+			$mapped[$step_key] = $value;
+		}
+
+		return $mapped;
+	}
+
+	/**
+	 * Fill in every conversation field so a stored process reads as a complete
+	 * conversation: detected answers keep their value, undetected ones stay empty
+	 * (which the sidebar renders as "I want to skip the question" — accurate,
+	 * since the user never answered them).
+	 *
+	 * Returns an empty array when nothing at all was detected, so a process is
+	 * never stored as a conversation where *every* answer was skipped.
+	 *
+	 * @param array $mapped Output of {@see map_chat_detected_info()}.
+	 * @return array<string,string>
+	 */
+	public static function build_conversation_fields($mapped) {
+		if (empty($mapped) || !is_array($mapped)) {
+			return [];
+		}
+
+		$fields = [];
+		foreach (self::CONVERSATION_FIELDS as $field) {
+			$fields[$field] = isset($mapped[$field]) ? $mapped[$field] : '';
+		}
+
+		return $fields;
+	}
+
+	/**
 	 * Get the latest AI process data for the current API key or user ID
 	 * Used in import_info() to return the most recent AI process
 	 * Priority: api_key first, then user_id as fallback
+	 * Only processes carrying an in-plugin conversation are considered.
 	 *
 	 * @return array|null The latest AI process data or null if not found
 	 */
@@ -434,7 +578,7 @@ class AIUtils {
 		// Priority 1: Try to find processes by API key if available
 		if (!empty($api_key)) {
 			foreach ($all_ai_process_data as $process_id => $process_data) {
-				if (is_array($process_data) && isset($process_data['api_key']) && $process_data['api_key'] === $api_key) {
+				if (is_array($process_data) && isset($process_data['api_key']) && $process_data['api_key'] === $api_key && self::has_conversation_data($process_data)) {
 					$matching_processes[$process_id] = $process_data;
 				}
 			}
@@ -443,7 +587,7 @@ class AIUtils {
 		// Priority 2: If no API key matches found or API key is empty, fallback to user_id
 		if (empty($matching_processes) && !empty($user_id)) {
 			foreach ($all_ai_process_data as $process_id => $process_data) {
-				if (is_array($process_data) && isset($process_data['user_id']) && $process_data['user_id'] === $user_id) {
+				if (is_array($process_data) && isset($process_data['user_id']) && $process_data['user_id'] === $user_id && self::has_conversation_data($process_data)) {
 					$matching_processes[$process_id] = $process_data;
 				}
 			}
@@ -455,7 +599,7 @@ class AIUtils {
 
 		$latest_data = end($matching_processes);
 
-		if($id != $latest_data['pack_id'] && isset($latest_data['imageReplace'])){
+		if($id != ($latest_data['pack_id'] ?? null) && isset($latest_data['imageReplace'])){
 			unset($latest_data['imageReplace']);
 		}
 

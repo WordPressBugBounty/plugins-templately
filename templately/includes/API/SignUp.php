@@ -73,21 +73,28 @@ class SignUp extends API {
 			return $response;
 		}
 
-		if ( ! Login::is_globally_signed() ) {
-			Options::set_global_login();
-		}
+		$options = $this->utils( 'options' );
+		$options->use_current_user( true );
 
-		if ( ! empty( $response['user']['api_key'] ) ) {
-			$this->utils('options')->set( 'api_key', $response['user']['api_key'] );
-			unset( $response['user']['api_key'] );
-		}
+		try {
+			if ( ! Login::is_globally_signed() ) {
+				Options::set_global_login();
+			}
 
-		if ( ! empty( $response['user'] ) && is_array( $response['user'] ) ) {
-			$response['user']['site_url'] = base64_encode( $_site_url );
-			$response['user']['ip']       = $_ip;
-		}
+			if ( ! empty( $response['user']['api_key'] ) ) {
+				$options->set( 'api_key', $response['user']['api_key'] );
+				unset( $response['user']['api_key'] );
+			}
 
-		$this->utils('options')->set( 'user', $response['user'] );
+			if ( ! empty( $response['user'] ) && is_array( $response['user'] ) ) {
+				$response['user']['site_url'] = base64_encode( $_site_url );
+				$response['user']['ip']       = $_ip;
+			}
+
+			$options->set( 'user', $response['user'] );
+		} finally {
+			$options->use_current_user( false );
+		}
 
 		return $response;
 	}

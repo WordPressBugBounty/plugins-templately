@@ -33,5 +33,16 @@ class Database extends Base {
         return get_transient( $key );
     }
 
+    /**
+     * Delete transient data from options table.
+     *
+     * @param string $key Transient key.
+     * @return bool
+     */
+    public static function delete_transient( $key ) {
+        $key = '_templately_' . trim( $key );
+        return delete_transient( $key );
+    }
+
 
 }

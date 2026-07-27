@@ -19,6 +19,7 @@ use Templately\API\ThemeBuilderApi;
 use Templately\Builder\ThemeBuilder;
 use Templately\Core\Importer\FullSiteImport;
 use Templately\Utils\Base;
+use Templately\Utils\Database;
 use Templately\Utils\Enqueue;
 
 use Templately\Core\Admin;
@@ -45,7 +46,7 @@ use Templately\Core\Platform\Gutenberg;
 use Templately\Core\Platform\Elementor;
 
 final class Plugin extends Base {
-    public $version = '3.7.0';
+    public $version = '3.7.1';
 
 	public $admin;
 	public $settings;
@@ -271,9 +272,40 @@ final class Plugin extends Base {
 			return;
 		}
 
-		$redirect_url = remove_query_arg( [ 'templately_google_login', 'api_key', 'error', 'state', 'redirect-to' ] );
+		if ( wp_doing_ajax() || wp_doing_cron() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+			return;
+		}
 
-		if ( ! empty( $_GET['error'] ) ) {
+		// Checked before the token is consumed: the callback can land while the
+		// auth cookie is missing (expired session, cookie not yet set), and WP
+		// will bounce the user through wp-login and back to this same URL.
+		// Burning the token here would fail that legitimate retry.
+		if ( ! is_user_logged_in() ) {
+			return;
+		}
+
+		$state = '';
+		if ( ! empty( $_GET['templately_state'] ) ) {
+			$state = sanitize_text_field( wp_unslash( $_GET['templately_state'] ) );
+		} elseif ( ! empty( $_GET['state'] ) ) {
+			$state = sanitize_text_field( wp_unslash( $_GET['state'] ) );
+		}
+
+		$state_user_id = false;
+		if ( ! empty( $state ) ) {
+			$state_user_id = Database::get_transient( 'google_state_' . $state );
+			Database::delete_transient( 'google_state_' . $state );
+		}
+
+		$is_authorized = false !== $state_user_id
+			&& intval( $state_user_id ) === get_current_user_id()
+			&& current_user_can( 'delete_posts' );
+
+		$redirect_url = remove_query_arg( [ 'templately_google_login', 'templately_state', 'api_key', 'error', 'state', 'redirect-to' ] );
+
+		if ( ! $is_authorized ) {
+			$error_message = __( 'This sign-in link is no longer valid. Please try signing in again.', 'templately' );
+		} elseif ( ! empty( $_GET['error'] ) ) {
 			$error_message = sanitize_text_field( $_GET['error'] );
 		} elseif ( ! empty( $_GET['api_key'] ) ) {
 			$request = new \WP_REST_Request( 'POST', '/templately/v1/login' );
@@ -285,6 +317,9 @@ final class Plugin extends Base {
 			 */
 			$login = Login::get_instance();
 			$login->permission_check( $request );
+
+			// login() pins the write target to the acting user itself — no pin
+			// here, or its finally would release ours mid-request.
 			$response = $login->login();
 
 			if ( ! is_wp_error( $response ) && ! empty( $response['user'] ) ) {
