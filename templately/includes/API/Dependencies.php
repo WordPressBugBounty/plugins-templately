@@ -26,11 +26,19 @@ class Dependencies extends API {
 
 	public function permission_check( WP_REST_Request $request ) {
 		$this->request = $request;
-		// $_route = $request->get_route();
 
-		// if( $_route === '/templately/v1/dependencies/install' && ! Helper::current_user_can( 'install_plugins' ) ) {
-		// 	return Helper::error('invalid_permission', __( 'Sorry, you do not have permission to install a plugin.', 'templately' ), 'dependencies/install', 403 );
-		// }
+		// Installing reaches beyond template content, so it does not ride the
+		// `delete_posts` base gate the read routes are happy with. Installer::install()
+		// checks `install_plugins` / `activate_plugins` per plugin as well; this is the
+		// front gate, so the route cannot be probed at all without the capability.
+		if ( $request->get_route() === '/templately/v1/dependencies/install' && ! Helper::current_user_can( 'install_plugins' ) ) {
+			return $this->error(
+				'invalid_permission',
+				__( 'Sorry, you do not have permission to install a plugin.', 'templately' ),
+				'dependencies/install',
+				rest_authorization_required_code()
+			);
+		}
 
 		return true;
 	}

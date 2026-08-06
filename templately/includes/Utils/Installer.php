@@ -127,7 +127,12 @@ class Installer extends Base {
 			$plugin['plugin_file'] = $install_status['file'];
 		}
 
-		if ( !Helper::current_user_can( 'activate_plugins' ) && is_plugin_inactive( $file ) ) {
+		// `$file` was never defined here — the plugin path lives in
+		// $plugin['plugin_file'], and it is reassigned above when a fresh install
+		// resolves a different one. The undefined name made is_plugin_inactive()
+		// see null, which is never "active", so the guard silently collapsed to a
+		// bare capability test. It failed closed, but it was not the check written.
+		if ( !Helper::current_user_can( 'activate_plugins' ) && is_plugin_inactive( $plugin['plugin_file'] ) ) {
 			$response['code']    = 'invalid_requirements';
 			$response['message'] = __( 'Sorry, you do not have permission to activate a plugin.', 'templately' );
 			return $response;

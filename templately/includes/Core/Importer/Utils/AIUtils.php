@@ -744,10 +744,10 @@ class AIUtils {
 			return $content_id;
 		}
 
-		$upload_dir = wp_upload_dir();
-
-		// Always save to tmp directory for AI content workflow
-		$tmp_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . $session_id . DIRECTORY_SEPARATOR;
+		// Always save to tmp directory for AI content workflow. Via Helper so the
+		// wp-uploads/templately root is guarded even when an AI callback is what
+		// creates the tree, rather than a full import that ran first.
+		$tmp_dir = Helper::upload_dir('tmp') . $session_id . DIRECTORY_SEPARATOR;
 
 		// Decode template if it's base64 encoded
 		if (! empty($template) && base64_decode($template, true) !== false) {

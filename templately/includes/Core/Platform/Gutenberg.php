@@ -265,6 +265,14 @@ class Gutenberg extends Platform {
         // Check nonce for security
         check_ajax_referer( 'templately_nonce', 'nonce' );
 
+        // The nonce alone is not authorization: `templately_nonce` is handed to
+        // every user who loads a Templately-enqueued screen, so without this any
+        // logged-in user could write the option. It toggles buttons in the block
+        // editor, so the people who use that editor are exactly the right gate.
+        if ( ! current_user_can( 'edit_posts' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Insufficient permissions', 'templately' ) ], 403 );
+        }
+
         // Get the new value from the AJAX request
         $hide_buttons = isset($_GET['hide_buttons']) ? sanitize_text_field($_GET['hide_buttons']) : '';
 

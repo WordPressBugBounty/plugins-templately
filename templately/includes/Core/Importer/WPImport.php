@@ -1195,7 +1195,20 @@ class WPImport extends WP_Importer {
 		}
 
 		// Move the file to the uploads dir.
-		$file_name = basename( parse_url( $url, PHP_URL_PATH ) );
+		//
+		// The attachment url is attacker-reachable — a cloud template can point an
+		// image anywhere — so the url-derived name is sanitized, and an extension
+		// WordPress does not recognise as an uploadable type is dropped rather than
+		// carried into the destination path. fetch_remote_file() re-derives the
+		// extension from the response and validates it before writing, so dropping
+		// an unusable one here costs nothing.
+		$file_name = sanitize_file_name( basename( parse_url( $url, PHP_URL_PATH ) ) );
+		if ( pathinfo( $file_name, PATHINFO_EXTENSION ) ) {
+			$url_filetype = wp_check_filetype( $file_name );
+			if ( empty( $url_filetype['type'] ) ) {
+				$file_name = pathinfo( $file_name, PATHINFO_FILENAME );
+			}
+		}
 		$file_name = wp_unique_filename( $upload_dir['path'], $file_name );
 		$dest_file = $upload_dir['path'] . "/$file_name";
 		$start     = microtime(true);
@@ -1289,9 +1302,16 @@ class WPImport extends WP_Importer {
 
 	private function remove_extension($url) {
 		$parts = pathinfo($url);
-		$name  = basename($parts['basename'], ".{$parts['extension']}"); // PATHINFO_FILENAME in PHP 5.2
+		// pathinfo() omits 'extension' for a dotless name, and 'dirname' for an
+		// empty one. Remote attachment urls are not obliged to carry an extension
+		// (`.../media/1234`), and the url of an attachment that has since been
+		// deleted resolves to ''.
+		$dirname   = isset( $parts['dirname'] ) ? $parts['dirname'] : '';
+		$basename  = isset( $parts['basename'] ) ? $parts['basename'] : '';
+		$extension = isset( $parts['extension'] ) ? $parts['extension'] : '';
+		$name      = '' === $extension ? $basename : basename($basename, ".{$extension}"); // PATHINFO_FILENAME in PHP 5.2
 
-		return $parts['dirname'] . '/' . $name;
+		return $dirname . '/' . $name;
 	}
 
 	public function set_url_map($original_url, $new_url, $remove_extension = false){
@@ -1388,9 +1408,15 @@ class WPImport extends WP_Importer {
 			return new WP_Error( 'import_file_error', sprintf( esc_html__( 'Remote file is too large, limit is %s', 'elementor' ), size_format( $max_size ) ) );
 		}
 
-		// Override file name with Content-Disposition header value.
+		// Override file name with Content-Disposition header value. The header is
+		// whatever the remote chose to send, so it is sanitized before it is allowed
+		// anywhere near a path: sanitize_file_name() strips directory separators and
+		// neutralizes the inner extension of a double-extension name.
 		if ( ! empty( $headers['content-disposition'] ) ) {
 			$file_name_from_disposition = self::get_filename_from_disposition( (array) $headers['content-disposition'] );
+			if ( $file_name_from_disposition ) {
+				$file_name_from_disposition = sanitize_file_name( $file_name_from_disposition );
+			}
 			if ( $file_name_from_disposition ) {
 				$file_name = $file_name_from_disposition;
 			}
@@ -1417,8 +1443,26 @@ class WPImport extends WP_Importer {
 		}
 
 		if ( ( ! $type || ! $ext ) && ! current_user_can( 'unfiltered_upload' ) ) {
+			@unlink( $tmp_file_name );
+
 			return new WP_Error( 'import_file_error', esc_html__( 'Sorry, this file type is not permitted for security reasons.', 'elementor' ) );
 		}
+
+		// The type check above ran against $file_name (Content-Disposition), but the
+		// write lands on $new_file, whose name came from the request url path. When
+		// those two extensions disagree the check guarantees nothing about what is
+		// actually written — an image/gif verdict on `ok.gif` would let the bytes go
+		// to a `.php` destination. Re-derive the destination from the validated name
+		// so the two can never diverge. (CVE-2026-18438)
+		if ( $ext && strtolower( pathinfo( $new_file, PATHINFO_EXTENSION ) ) !== strtolower( $ext ) ) {
+			$file_name = wp_unique_filename( $uploads['path'], $file_name );
+			$new_file  = $uploads['path'] . "/$file_name";
+		}
+
+		// Whatever the branch above decided, the reported name must describe the file
+		// that is actually on disk — the remapped url in the imported content is built
+		// from it.
+		$file_name = wp_basename( $new_file );
 
 		$move_new_file = copy( $tmp_file_name, $new_file );
 

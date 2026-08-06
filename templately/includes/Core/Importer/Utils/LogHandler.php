@@ -2,12 +2,13 @@
 namespace Templately\Core\Importer\Utils;
 
 use Templately\Core\Importer\FullSiteImport;
+use Templately\Utils\Helper;
 
 class LogHandler {
     public static function get_log_dir() {
-        $upload_dir = wp_upload_dir();
-        $log_dir    = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'log' . DIRECTORY_SEPARATOR;
-        return $log_dir;
+        // Import logs carry pack and session detail and sit in web-served
+        // wp-uploads, so the root gets its access guards on the way past.
+        return Helper::upload_dir('log');
     }
 
     public static function get_log_file_path() {

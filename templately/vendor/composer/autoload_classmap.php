@@ -178,6 +178,7 @@ return array(
     'Templately\\Core\\Platform\\Elementor' => $baseDir . '/includes/Core/Platform/Elementor.php',
     'Templately\\Core\\Platform\\Gutenberg' => $baseDir . '/includes/Core/Platform/Gutenberg.php',
     'Templately\\Plugin' => $baseDir . '/includes/Plugin.php',
+    'Templately\\Utils\\AuthErrorCode' => $baseDir . '/includes/Utils/AuthErrorCode.php',
     'Templately\\Utils\\Base' => $baseDir . '/includes/Utils/Base.php',
     'Templately\\Utils\\Database' => $baseDir . '/includes/Utils/Database.php',
     'Templately\\Utils\\Enqueue' => $baseDir . '/includes/Utils/Enqueue.php',

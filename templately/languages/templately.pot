@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Templately plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Templately 3.7.1\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/templately-latest\n"
+"Project-Id-Version: Templately 3.7.2\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/templately\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-27T06:42:53+00:00\n"
+"POT-Creation-Date: 2026-08-06T08:59:41+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.13.0-alpha-16cc7a8\n"
 "X-Domain: templately\n"
@@ -42,192 +42,192 @@ msgstr ""
 msgid "https://templately.com/"
 msgstr ""
 
-#: includes/API/AIContent.php:66
-#: includes/API/AIContent.php:223
-#: includes/API/AIContent.php:283
-#: includes/API/LogoGeneration.php:45
+#: includes/API/AIContent.php:69
+#: includes/API/AIContent.php:226
+#: includes/API/AIContent.php:286
+#: includes/API/LogoGeneration.php:48
 msgid "Invalid ID."
 msgstr ""
 
-#: includes/API/AIContent.php:76
+#: includes/API/AIContent.php:79
 msgid "Missing API key in header."
 msgstr ""
 
-#: includes/API/AIContent.php:81
-#: includes/API/LogoGeneration.php:55
+#: includes/API/AIContent.php:84
+#: includes/API/LogoGeneration.php:58
 msgid "Invalid API key provided in header."
 msgstr ""
 
-#: includes/API/AIContent.php:234
-#: includes/API/AIContent.php:342
+#: includes/API/AIContent.php:237
+#: includes/API/AIContent.php:345
 msgid "Request failed."
 msgstr ""
 
-#: includes/API/AIContent.php:241
-#: includes/API/AIContent.php:349
-#: includes/API/AIContent.php:1024
-#: includes/API/AIContent.php:1066
-#: includes/API/AIContent.php:1128
-#: includes/API/AIContent.php:1171
+#: includes/API/AIContent.php:244
+#: includes/API/AIContent.php:352
+#: includes/API/AIContent.php:1027
+#: includes/API/AIContent.php:1069
+#: includes/API/AIContent.php:1131
+#: includes/API/AIContent.php:1174
 msgid "Invalid response."
 msgstr ""
 
-#: includes/API/AIContent.php:286
+#: includes/API/AIContent.php:289
 msgid "Invalid prompt."
 msgstr ""
 
-#: includes/API/AIContent.php:289
+#: includes/API/AIContent.php:292
 msgid "Invalid content ids."
 msgstr ""
 
-#: includes/API/AIContent.php:292
+#: includes/API/AIContent.php:295
 msgid "Invalid platform."
 msgstr ""
 
-#: includes/API/AIContent.php:406
+#: includes/API/AIContent.php:409
 msgid "The content is being generated in the queue"
 msgstr ""
 
-#: includes/API/AIContent.php:503
+#: includes/API/AIContent.php:506
 msgid "Template must be a non-empty array with content_id as keys."
 msgstr ""
 
-#: includes/API/AIContent.php:549
+#: includes/API/AIContent.php:552
 #, php-format
 msgid "Processed %d templates: %d successful, %d failed."
 msgstr ""
 
-#: includes/API/AIContent.php:572
+#: includes/API/AIContent.php:575
 msgid "Pack ID or ID parameter is required."
 msgstr ""
 
-#: includes/API/AIContent.php:588
+#: includes/API/AIContent.php:591
 msgid "Failed to fetch attachments from API."
 msgstr ""
 
-#: includes/API/AIContent.php:601
-#: includes/API/AIContent.php:1019
-#: includes/API/AIContent.php:1061
-#: includes/API/AIContent.php:1123
-#: includes/API/AIContent.php:1166
-#: includes/API/AIContent.php:1369
+#: includes/API/AIContent.php:604
+#: includes/API/AIContent.php:1022
+#: includes/API/AIContent.php:1064
+#: includes/API/AIContent.php:1126
+#: includes/API/AIContent.php:1169
+#: includes/API/AIContent.php:1372
 #: includes/Core/Importer/Utils/AIUtils.php:273
 #, php-format
 msgid "API returned HTTP %d error."
 msgstr ""
 
-#: includes/API/AIContent.php:606
+#: includes/API/AIContent.php:609
 msgid "No XML content found in API response."
 msgstr ""
 
-#: includes/API/AIContent.php:613
+#: includes/API/AIContent.php:616
 msgid "Failed to parse XML content."
 msgstr ""
 
-#: includes/API/AIContent.php:622
+#: includes/API/AIContent.php:625
 #, php-format
 msgid "Found %d attachments."
 msgstr ""
 
-#: includes/API/AIContent.php:626
+#: includes/API/AIContent.php:629
 msgid "An unexpected error occurred while fetching attachments."
 msgstr ""
 
-#: includes/API/AIContent.php:647
+#: includes/API/AIContent.php:650
 msgid "Failed to create temporary file."
 msgstr ""
 
-#: includes/API/AIContent.php:654
+#: includes/API/AIContent.php:657
 msgid "Failed to write XML content to temporary file."
 msgstr ""
 
-#: includes/API/AIContent.php:799
+#: includes/API/AIContent.php:802
 msgid "Search query is required."
 msgstr ""
 
-#: includes/API/AIContent.php:836
+#: includes/API/AIContent.php:839
 msgid "Failed to fetch images from external service."
 msgstr ""
 
-#: includes/API/AIContent.php:848
+#: includes/API/AIContent.php:851
 #, php-format
 msgid "External API returned error code: %d"
 msgstr ""
 
-#: includes/API/AIContent.php:859
+#: includes/API/AIContent.php:862
 msgid "Invalid response from external service."
 msgstr ""
 
-#: includes/API/AIContent.php:869
+#: includes/API/AIContent.php:872
 msgid "External API returned an error status."
 msgstr ""
 
-#: includes/API/AIContent.php:908
+#: includes/API/AIContent.php:911
 msgid "Prompt is required for tagline generation."
 msgstr ""
 
-#: includes/API/AIContent.php:931
+#: includes/API/AIContent.php:934
 msgid "Failed to generate tagline."
 msgstr ""
 
-#: includes/API/AIContent.php:947
-#: includes/API/AIContent.php:959
-#: includes/API/LogoGeneration.php:177
-#: includes/API/LogoGeneration.php:193
-#: includes/API/LogoGeneration.php:205
+#: includes/API/AIContent.php:950
+#: includes/API/AIContent.php:962
+#: includes/API/LogoGeneration.php:180
+#: includes/API/LogoGeneration.php:196
+#: includes/API/LogoGeneration.php:208
 msgid "Something went wrong. Please try again or contact support."
 msgstr ""
 
-#: includes/API/AIContent.php:970
-#: includes/API/LogoGeneration.php:216
+#: includes/API/AIContent.php:973
+#: includes/API/LogoGeneration.php:219
 msgid "Invalid response from API."
 msgstr ""
 
-#: includes/API/AIContent.php:980
-#: includes/API/LogoGeneration.php:226
+#: includes/API/AIContent.php:983
+#: includes/API/LogoGeneration.php:229
 msgid "API returned an unexpected response."
 msgstr ""
 
-#: includes/API/AIContent.php:1002
-#: includes/API/AIContent.php:1044
-#: includes/API/AIContent.php:1096
-#: includes/API/AIContent.php:1148
-#: includes/API/AIContent.php:1303
+#: includes/API/AIContent.php:1005
+#: includes/API/AIContent.php:1047
+#: includes/API/AIContent.php:1099
+#: includes/API/AIContent.php:1151
+#: includes/API/AIContent.php:1306
 msgid "Invalid conversation ID."
 msgstr ""
 
-#: includes/API/AIContent.php:1011
+#: includes/API/AIContent.php:1014
 msgid "Failed to fetch conversation."
 msgstr ""
 
-#: includes/API/AIContent.php:1053
-#: includes/API/AIContent.php:1362
+#: includes/API/AIContent.php:1056
+#: includes/API/AIContent.php:1365
 #: assets/js/templately.js:1
 #: react-src/app/components/core/AiContentSidebar/Utils.js:571
 msgid "Failed to fetch generated content."
 msgstr ""
 
-#: includes/API/AIContent.php:1115
+#: includes/API/AIContent.php:1118
 msgid "Failed to update detected info."
 msgstr ""
 
-#: includes/API/AIContent.php:1158
+#: includes/API/AIContent.php:1161
 msgid "Failed to record import."
 msgstr ""
 
-#: includes/API/AIContent.php:1307
+#: includes/API/AIContent.php:1310
 msgid "Invalid session ID."
 msgstr ""
 
-#: includes/API/AIContent.php:1321
+#: includes/API/AIContent.php:1324
 msgid "Invalid AI page IDs."
 msgstr ""
 
-#: includes/API/AIContent.php:1386
+#: includes/API/AIContent.php:1389
 msgid "Your free access to this generated site has ended. Upgrade your plan or purchase this template to import it."
 msgstr ""
 
-#: includes/API/AIContent.php:1538
+#: includes/API/AIContent.php:1541
 msgid "Failed to save generated content."
 msgstr ""
 
@@ -247,7 +247,12 @@ msgstr ""
 msgid "Successfully saved."
 msgstr ""
 
-#: includes/API/Dependencies.php:92
+#: includes/API/Dependencies.php:37
+#: includes/Utils/Installer.php:60
+msgid "Sorry, you do not have permission to install a plugin."
+msgstr ""
+
+#: includes/API/Dependencies.php:100
 #: includes/Core/Admin.php:551
 #: includes/Core/Importer/Runners/ElementorContent.php:25
 #: assets/js/templately.js:1
@@ -260,7 +265,7 @@ msgstr ""
 msgid "Elementor"
 msgstr ""
 
-#: includes/API/Dependencies.php:122
+#: includes/API/Dependencies.php:130
 msgid "You have the plugin installed."
 msgstr ""
 
@@ -345,57 +350,61 @@ msgstr ""
 msgid "Invalid API key."
 msgstr ""
 
-#: includes/API/Login.php:222
+#: includes/API/Login.php:209
+msgid "You are not connected to Templately."
+msgstr ""
+
+#: includes/API/Login.php:237
 msgid "Logged out."
 msgstr ""
 
-#: includes/API/LogoGeneration.php:70
-#: includes/API/LogoGeneration.php:295
+#: includes/API/LogoGeneration.php:73
+#: includes/API/LogoGeneration.php:298
 msgid "Invalid or expired logo generation process ID."
 msgstr ""
 
-#: includes/API/LogoGeneration.php:104
+#: includes/API/LogoGeneration.php:107
 msgid "Description is required for logo generation."
 msgstr ""
 
-#: includes/API/LogoGeneration.php:115
+#: includes/API/LogoGeneration.php:118
 msgid "Invalid size parameter. Allowed values: auto, 1024x1024, 1536x1024, 1024x1536"
 msgstr ""
 
-#: includes/API/LogoGeneration.php:126
+#: includes/API/LogoGeneration.php:129
 msgid "Invalid quality parameter. Allowed values: auto, high, medium, low"
 msgstr ""
 
-#: includes/API/LogoGeneration.php:137
+#: includes/API/LogoGeneration.php:140
 msgid "Invalid output format. Allowed values: png, jpeg"
 msgstr ""
 
-#: includes/API/LogoGeneration.php:147
+#: includes/API/LogoGeneration.php:150
 msgid "Invalid quantity. Must be between 1 and 10"
 msgstr ""
 
-#: includes/API/LogoGeneration.php:247
+#: includes/API/LogoGeneration.php:250
 msgid "Logo generation started"
 msgstr ""
 
-#: includes/API/LogoGeneration.php:340
+#: includes/API/LogoGeneration.php:343
 msgid "Logo generation completed successfully."
 msgstr ""
 
-#: includes/API/LogoGeneration.php:435
+#: includes/API/LogoGeneration.php:438
 msgid "Logo generation in progress"
 msgstr ""
 
-#: includes/API/LogoGeneration.php:442
+#: includes/API/LogoGeneration.php:445
 msgid "Logo generation data not found."
 msgstr ""
 
-#: includes/API/LogoGeneration.php:462
+#: includes/API/LogoGeneration.php:465
 #: includes/Core/Importer/Utils/AIUtils.php:256
 msgid "Process ID is required for logo polling."
 msgstr ""
 
-#: includes/API/LogoGeneration.php:507
+#: includes/API/LogoGeneration.php:510
 msgid "Logo generation data retrieved successfully."
 msgstr ""
 
@@ -1316,99 +1325,100 @@ msgid "Invalid nonce"
 msgstr ""
 
 #: includes/Core/Importer/FullSiteImport.php:110
+#: includes/Core/Platform/Gutenberg.php:273
 msgid "Insufficient permissions"
 msgstr ""
 
 #: includes/Core/Importer/FullSiteImport.php:129
-#: includes/Core/Importer/FullSiteImport.php:489
+#: includes/Core/Importer/FullSiteImport.php:493
 msgid "Your site connection is disconnected. Please migrate your connection first."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:259
-#: includes/Core/Importer/FullSiteImport.php:537
+#: includes/Core/Importer/FullSiteImport.php:263
+#: includes/Core/Importer/FullSiteImport.php:541
 msgid "Invalid Pack ID."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:284
-#: includes/Core/Importer/FullSiteImport.php:587
+#: includes/Core/Importer/FullSiteImport.php:288
+#: includes/Core/Importer/FullSiteImport.php:591
 msgid "Please update the templately plugin."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:299
+#: includes/Core/Importer/FullSiteImport.php:303
 msgid "Session created and pack downloaded successfully"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:501
+#: includes/Core/Importer/FullSiteImport.php:505
 msgid "Invalid Session ID."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:619
-#: includes/Core/Importer/FullSiteImport.php:1396
+#: includes/Core/Importer/FullSiteImport.php:623
+#: includes/Core/Importer/FullSiteImport.php:1551
 #: assets/js/templately.js:1
 #: react-src/app/components/core/itemDetails/Packs/FullSiteImport.js:240
 #: react-src/app/hooks/useFullSiteImport.js:365
 msgid "Oops!"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:696
+#: includes/Core/Importer/FullSiteImport.php:700
 msgid "Upload directory is not writable."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:705
+#: includes/Core/Importer/FullSiteImport.php:712
 msgid "Permission Passed"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:712
-#: includes/Core/Importer/FullSiteImport.php:743
-#: includes/Core/Importer/FullSiteImport.php:756
+#: includes/Core/Importer/FullSiteImport.php:719
+#: includes/Core/Importer/FullSiteImport.php:750
+#: includes/Core/Importer/FullSiteImport.php:763
 #: includes/Core/Importer/Runners/DownloadZip.php:68
 #: includes/Core/Importer/Runners/DownloadZip.php:114
 #: includes/Core/Importer/Runners/DownloadZip.php:126
 msgid "Downloading Template Pack"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:725
+#: includes/Core/Importer/FullSiteImport.php:732
 #: includes/Core/Importer/Runners/DownloadZip.php:96
 msgid "Template pack download failed"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:735
+#: includes/Core/Importer/FullSiteImport.php:742
 #: includes/Core/Importer/Runners/DownloadZip.php:106
 #, php-format
 msgid " Please try again or contact <a href='%s' target='_blank'>support</a>."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:740
+#: includes/Core/Importer/FullSiteImport.php:747
 #: includes/Core/Importer/Runners/DownloadZip.php:111
 msgid "Template pack download failed with response code: "
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:760
+#: includes/Core/Importer/FullSiteImport.php:767
 #: includes/Core/Importer/Runners/DownloadZip.php:130
 msgid "Downloading Failed. Please try again"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:769
+#: includes/Core/Importer/FullSiteImport.php:776
 msgid "WP_Filesystem cannot be initialized"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:819
-#: includes/Core/Importer/FullSiteImport.php:1386
+#: includes/Core/Importer/FullSiteImport.php:831
+#: includes/Core/Importer/FullSiteImport.php:1541
 #: assets/js/templately.js:1
 #: react-src/app/hooks/useFullSiteImport.js:366
 #, php-format,js-format
 msgid "It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>."
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:1001
+#: includes/Core/Importer/FullSiteImport.php:1156
 msgid "Cannot be imported, as the manifest file is corrupted"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:1075
+#: includes/Core/Importer/FullSiteImport.php:1230
 msgid "Missing Credit Cost"
 msgstr ""
 
-#: includes/Core/Importer/FullSiteImport.php:1781
+#: includes/Core/Importer/FullSiteImport.php:1936
 msgid "API request failed with response code "
 msgstr ""
 
@@ -1665,65 +1675,49 @@ msgstr ""
 msgid "Save %s in Templately"
 msgstr ""
 
-#: includes/Plugin.php:107
+#: includes/Plugin.php:108
 msgid "Cloning is forbidden."
 msgstr ""
 
-#: includes/Plugin.php:116
+#: includes/Plugin.php:117
 msgid "Un-serializing instances of this class is forbidden."
-msgstr ""
-
-#: includes/Plugin.php:307
-msgid "This sign-in link is no longer valid. Please try signing in again."
-msgstr ""
-
-#: includes/Plugin.php:350
-msgid "Login failed."
-msgstr ""
-
-#: includes/Plugin.php:353
-msgid "Missing API Key."
 msgstr ""
 
 #: includes/Utils/Http.php:323
 msgid "Unknown error occurred"
 msgstr ""
 
-#: includes/Utils/Installer.php:60
-msgid "Sorry, you do not have permission to install a plugin."
-msgstr ""
-
 #: includes/Utils/Installer.php:122
 msgid "Failed to install plugin"
 msgstr ""
 
-#: includes/Utils/Installer.php:132
+#: includes/Utils/Installer.php:137
 msgid "Sorry, you do not have permission to activate a plugin."
 msgstr ""
 
-#: includes/Utils/Installer.php:161
+#: includes/Utils/Installer.php:166
 msgid "Theme is already active"
 msgstr ""
 
-#: includes/Utils/Installer.php:166
+#: includes/Utils/Installer.php:171
 msgid "Function themes_api does not exist"
 msgstr ""
 
-#: includes/Utils/Installer.php:196
+#: includes/Utils/Installer.php:201
 msgid "Failed to install theme"
 msgstr ""
 
-#: includes/Utils/Installer.php:211
-#: includes/Utils/Installer.php:269
+#: includes/Utils/Installer.php:216
+#: includes/Utils/Installer.php:274
 msgid "Failed to activate theme"
 msgstr ""
 
-#: includes/Utils/Installer.php:222
+#: includes/Utils/Installer.php:227
 #, php-format
 msgid "The plugin requires PHP version %s or higher. You are running version %s."
 msgstr ""
 
-#: includes/Utils/Installer.php:231
+#: includes/Utils/Installer.php:236
 #, php-format
 msgid "The plugin requires WordPress version %s or higher. You are running version %s."
 msgstr ""
@@ -1865,6 +1859,26 @@ msgid "Request failed"
 msgstr ""
 
 #: assets/js/templately.js:1
+#: react-src/utils/authErrors.js:44
+msgid "This sign-in link is no longer valid. Please try signing in again."
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/utils/authErrors.js:47
+msgid "Missing API Key."
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/utils/authErrors.js:50
+msgid "Google could not complete the sign-in. Please try again."
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/utils/authErrors.js:53
+msgid "Login failed. Please try signing in again."
+msgstr ""
+
+#: assets/js/templately.js:1
 #: react-src/utils/messages.js:18
 msgid "Please enter a valid email address."
 msgstr ""
@@ -1895,7 +1909,7 @@ msgid "Password not matched!"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:132
+#: react-src/app/components/admin/SignIn.js:135
 #: react-src/app/components/admin/SignUp.js:52
 #: react-src/app/components/admin/SignUp.js:113
 #: react-src/utils/messages.js:60
@@ -3033,72 +3047,82 @@ msgid "You do not have any workspaces."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:170
+#: react-src/utils/authErrors.js:81
+msgid "You have connected as many sites as your current plan allows. Upgrade your plan to connect more sites."
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/utils/authErrors.js:87
+msgid "Upgrade your plan"
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/admin/SignIn.js:183
 #: react-src/developer/components/tabs/ApiTestingTab.js:133
 #: react-src/developer/components/tabs/OnboardingTestTab.js:51
 msgid "API Key"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:171
+#: react-src/app/components/admin/SignIn.js:184
 msgid "Your API Key"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:200
+#: react-src/app/components/admin/SignIn.js:213
 #: react-src/app/components/admin/SignUp.js:190
 msgid "Email Address"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:201
+#: react-src/app/components/admin/SignIn.js:214
 #: react-src/app/components/admin/SignUp.js:191
 msgid "Enter Your Email Address"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:217
-#: react-src/app/components/admin/SignIn.js:218
+#: react-src/app/components/admin/SignIn.js:230
+#: react-src/app/components/admin/SignIn.js:231
 #: react-src/app/components/admin/SignUp.js:209
 #: react-src/app/components/admin/SignUp.js:210
 msgid "Password"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:244
+#: react-src/app/components/admin/SignIn.js:257
 msgid "Forgot Password?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:262
+#: react-src/app/components/admin/SignIn.js:289
 msgid "Global Sign In"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:273
+#: react-src/app/components/admin/SignIn.js:300
 msgid "All the sitewide users will be logged in with this Templately account"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/admin/FrontPage.js:90
-#: react-src/app/components/admin/SignIn.js:280
+#: react-src/app/components/admin/SignIn.js:307
 #: react-src/app/components/new-components/header/UserFooter.js:60
 #: react-src/app/components/new-components/header/UserFooter.js:62
 msgid "Sign In"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:281
+#: react-src/app/components/admin/SignIn.js:308
 msgid "Signing In..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:285
+#: react-src/app/components/admin/SignIn.js:312
 msgid "Connect via API"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/admin/SignIn.js:286
+#: react-src/app/components/admin/SignIn.js:313
 msgid "Connect via Login Credentials"
 msgstr ""
 

@@ -174,16 +174,25 @@ abstract class API extends Base {
             $_additional_data['endpoint'] = $endpoint;
         }
 
-        // Delete user logged meta data
-		$this->utils('options')
-			->remove('user')
-			->remove('favourites')
-			->remove('reviews')
-			->remove('cloud_activity')
-			->remove('api_key');
+        // Delete user logged meta data — pinned to the acting user, otherwise
+		// Options::user_id() resolves a linked user to the global-login
+		// administrator and clears the administrator's session instead.
+		$options = $this->utils('options');
+		$options->use_current_user( true );
 
-		if( $this->utils('options')->who_am_i() === 'global' ) {
-			$this->utils('options')->remove_global_login();
+		try {
+			$options
+				->remove('user')
+				->remove('favourites')
+				->remove('reviews')
+				->remove('cloud_activity')
+				->remove('api_key');
+
+			if( $options->who_am_i() === 'global' ) {
+				$options->remove_global_login();
+			}
+		} finally {
+			$options->use_current_user( false );
 		}
 
 		return new WP_Error( 'invalid_api_key', $message, $_additional_data );

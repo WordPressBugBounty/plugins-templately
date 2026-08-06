@@ -750,4 +750,71 @@ class Helper extends Base {
 		return $r;
 	}
 
+	/**
+	 * Creates the plugin's working directory under wp-uploads and blocks direct
+	 * web access to it.
+	 *
+	 * Everything the importer needs on disk lands here: the extracted pack (its
+	 * WXR, its template JSON, its attachments), the AI-generated page JSON, and
+	 * the FSI logs. wp-uploads is web-served, so these paths are not private just
+	 * because their session id is a uuid — the guards are what makes them
+	 * unreadable, not the name.
+	 *
+	 * .htaccess covers Apache and is inherited by everything below this point;
+	 * web.config covers IIS; index.php stops a directory listing on any server.
+	 * nginx honours none of them, so an nginx site still needs a location rule —
+	 * this raises the floor, it does not replace server configuration.
+	 *
+	 * @param string $dir Absolute path to create and protect.
+	 *
+	 * @return bool Whether the directory exists and is usable.
+	 */
+	public static function protect_directory( $dir ) {
+		if ( empty( $dir ) ) {
+			return false;
+		}
+
+		if ( ! is_dir( $dir ) && ! wp_mkdir_p( $dir ) ) {
+			return false;
+		}
+
+		$guards = [
+			'index.php'  => "<?php\n// Silence is golden.\n",
+			'.htaccess'  => "# Templately working files — not for direct access.\n<IfModule mod_authz_core.c>\n\tRequire all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\n\tOrder allow,deny\n\tDeny from all\n</IfModule>\n",
+			'web.config' => "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<configuration>\n\t<system.webServer>\n\t\t<authorization>\n\t\t\t<deny users=\"*\" />\n\t\t</authorization>\n\t</system.webServer>\n</configuration>\n",
+		];
+
+		foreach ( $guards as $file => $contents ) {
+			$path = trailingslashit( $dir ) . $file;
+			// Never overwrite: a site owner may have relaxed these deliberately.
+			if ( ! file_exists( $path ) ) {
+				@file_put_contents( $path, $contents ); // phpcs:ignore
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Absolute path to the plugin's protected working directory in wp-uploads.
+	 *
+	 * @param string $sub Optional subdirectory ('tmp', 'log', 'preview', ...).
+	 *
+	 * @return string Trailing-slashed path, or '' when uploads is unusable.
+	 */
+	public static function upload_dir( $sub = '' ) {
+		$upload_dir = wp_upload_dir();
+
+		if ( ! empty( $upload_dir['error'] ) || empty( $upload_dir['basedir'] ) ) {
+			return '';
+		}
+
+		$base = trailingslashit( $upload_dir['basedir'] ) . 'templately' . DIRECTORY_SEPARATOR;
+
+		// The guards go on the root so every subdirectory inherits them.
+		self::protect_directory( $base );
+
+		return '' === $sub ? $base : trailingslashit( $base . $sub );
+	}
+
 }

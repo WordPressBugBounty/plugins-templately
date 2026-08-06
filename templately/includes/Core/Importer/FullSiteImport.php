@@ -146,11 +146,15 @@ class FullSiteImport extends Base {
 			$data = array_merge($session_data, $data);
 		}
 		else {
-			$session_id  = uniqid();
+			// Not uniqid(): that is a formatted microtime, so the path it keys in
+			// web-served wp-uploads is enumerable by anyone who knows roughly when
+			// an import ran. The chatbot flow already sends a client-side uuid4
+			// here, so this only brings the fallback in line with it.
+			$session_id  = wp_generate_uuid4();
 		}
 
-		$tmp_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR;
-		$prv_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'preview' . DIRECTORY_SEPARATOR;
+		$tmp_dir = Helper::upload_dir('tmp');
+		$prv_dir = Helper::upload_dir('preview');
 
 		$this->session_id = $session_id;
 		$data['session_id'] = $session_id;
@@ -197,8 +201,8 @@ class FullSiteImport extends Base {
 			return;
 		}
 
-		$tmp_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR;
-		$prv_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'preview' . DIRECTORY_SEPARATOR;
+		$tmp_dir = Helper::upload_dir('tmp');
+		$prv_dir = Helper::upload_dir('preview');
 
 		$this->session_id = $session_id;
 		$data['root_dir'] = $tmp_dir;
@@ -696,7 +700,10 @@ class FullSiteImport extends Base {
 			$this->throw(__('Upload directory is not writable.', 'templately'));
 		}
 
-		$this->tmp_dir = trailingslashit($upload_dir['basedir']) . 'templately' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR;
+		// Goes through Helper so the wp-uploads/templately root gets its
+		// index.php / .htaccess / web.config guards before anything is written
+		// into it — the extracted pack lives here and uploads is web-served.
+		$this->tmp_dir = Helper::upload_dir('tmp');
 
 		if (!is_dir($this->tmp_dir)) {
 			wp_mkdir_p($this->tmp_dir);
@@ -778,6 +785,11 @@ class FullSiteImport extends Base {
 			// self::unzip_file() for the extraction and path-traversal guard.
 			$unzip = $this->unzip_file($this->filePath, $this->dir_path);
 		}
+
+		// Core's unzip_file() extracts whatever the archive holds, and the pack
+		// lands under web-served wp-uploads. Sweep before anything else touches
+		// the tree, so the relocation below cannot copy an executable upward.
+		$this->purge_disallowed_files($this->dir_path);
 
 		$manifest_file = $this->dir_path . 'manifest.json';
 
@@ -866,6 +878,178 @@ class FullSiteImport extends Base {
 
 
 	/**
+	 * Extensions a pack carries that WordPress does not accept as an upload.
+	 *
+	 * Everything else comes from get_allowed_mime_types(), so this list only has
+	 * to name what the pack format adds on top of it:
+	 *
+	 * - `json` — every pack is built from JSON (manifest, templates, content),
+	 *   and WordPress has never allowed .json uploads.
+	 * - `xml`  — the WXR files under wp-content/. Also not an allowed upload:
+	 *   core hands .xml to the importer plugin rather than the media library.
+	 * - `ai`   — the marker segment in `{id}.ai.json`, an AI-generated page. Not
+	 *   the Illustrator format.
+	 * - `svg`  — packs ship SVG artwork. This plugin already allows SVG uploads
+	 *   for the duration of an import (see allow_svg_upload()), but that filter is
+	 *   only added in start_content_import(), which runs AFTER extraction — so at
+	 *   sweep time get_allowed_mime_types() does not have it and the pack's SVGs
+	 *   would be deleted. It has to be named here.
+	 * - fonts  — a pack may ship webfonts, and none of these are upload types.
+	 *   Passive assets; nothing here is executable by any server.
+	 *
+	 * Adding to this list is how a new pack file type gets through. It fails
+	 * closed and logs, so a missing entry shows up as a dropped file in the
+	 * import log — not as a silent hole.
+	 */
+	const PACK_EXTENSIONS = [
+		'json', 'xml', 'ai',
+		'svg', 'svgz',
+		'woff', 'woff2', 'ttf', 'otf', 'eot',
+	];
+
+	/**
+	 * Extensions an extracted pack member is permitted to use.
+	 *
+	 * Deliberately an allowlist, and deliberately WordPress's own: naming the
+	 * dangerous extensions instead means being exhaustive about `.phtml`, `.pht`,
+	 * `.phar`, `.cgi`, `.htaccess`, `.user.ini` and whatever a future server
+	 * config decides to execute — one omission and the guard is silent.
+	 * get_allowed_mime_types() already encodes what this site accepts, follows
+	 * the `upload_mimes` filter, and gains new formats as WordPress does.
+	 *
+	 * @return array Extension => true lookup.
+	 */
+	protected static function allowed_pack_extensions() {
+		$allowed = array_fill_keys(self::PACK_EXTENSIONS, true);
+
+		// Keys are alternation patterns: 'jpg|jpeg|jpe' => 'image/jpeg'.
+		foreach (array_keys(get_allowed_mime_types()) as $pattern) {
+			foreach (explode('|', $pattern) as $extension) {
+				$allowed[$extension] = true;
+			}
+		}
+
+		return $allowed;
+	}
+
+	/**
+	 * Segments that must never appear anywhere in a pack member's name.
+	 *
+	 * This one IS a denylist, and only because it is applied to the segments
+	 * *before* the real extension, which the allowlist has already vetted. A
+	 * permissive `AddHandler` runs `shell.php.gif` as PHP, so an inner segment
+	 * still has to be refused — but refusing every inner segment the allowlist
+	 * does not know would delete ordinary names like `style.min.css` or
+	 * `hero.2x.png`, where the inner segment is a word, not an extension.
+	 *
+	 * An omission here is far less serious than in the allowlist: it only
+	 * matters for a name whose final extension is already an accepted upload
+	 * type, on a server configured to hand an inner extension to a handler.
+	 */
+	const EXECUTABLE_SEGMENTS = [
+		'php', 'php3', 'php4', 'php5', 'php6', 'php7', 'php8',
+		'phps', 'phtml', 'phtm', 'pht', 'phar', 'inc',
+		'cgi', 'fcgi', 'pl', 'py', 'rb', 'sh', 'bash', 'ksh', 'csh', 'zsh',
+		'asp', 'aspx', 'ascx', 'ashx', 'asmx', 'cfm', 'cfml',
+		'jsp', 'jspx', 'jar', 'war',
+		'shtml', 'shtm',
+		'exe', 'com', 'bat', 'cmd', 'dll', 'so',
+		'htaccess', 'htpasswd', 'ini', 'env', 'conf',
+	];
+
+	/**
+	 * Whether an archive entry (or extracted file) is something a pack may hold.
+	 *
+	 * Two different rules, because a filename's dots do not all mean the same
+	 * thing. The LAST segment is the extension the server dispatches on, so it
+	 * is checked against the allowlist. The segments before it are usually just
+	 * part of the name — `style.min.css`, `hero.2x.png`, `logo.v2.png`,
+	 * `12.ai.json` — so they are only checked against EXECUTABLE_SEGMENTS,
+	 * which is what still refuses `shell.php.gif` under a permissive
+	 * `AddHandler`.
+	 *
+	 * A name with no extension at all is refused, which is what catches
+	 * `.htaccess`, `.user.ini` and `.env` — none of them have one.
+	 *
+	 * @param string $name    Entry name or file path.
+	 * @param array  $allowed Lookup from allowed_pack_extensions(). Built on
+	 *                        demand when omitted; pass it in when looping.
+	 *
+	 * @return bool
+	 */
+	protected static function is_allowed_entry($name, $allowed = null) {
+		if (null === $allowed) {
+			$allowed = self::allowed_pack_extensions();
+		}
+
+		$segments = explode('.', strtolower(wp_basename($name)));
+
+		// No extension, or a leading-dot name whose only "segment" is empty.
+		if (count($segments) < 2 || '' === $segments[0]) {
+			return false;
+		}
+
+		$extension = array_pop($segments);
+		if (!isset($allowed[$extension])) {
+			return false;
+		}
+
+		$executable = array_fill_keys(self::EXECUTABLE_SEGMENTS, true);
+
+		// array_slice() drops the base name; only what sits between it and the
+		// extension is a masking risk.
+		foreach (array_slice($segments, 1) as $segment) {
+			if (isset($executable[$segment])) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Deletes anything an extracted pack has no business containing.
+	 *
+	 * The fallback extractor below refuses these entries outright, but WordPress
+	 * core's unzip_file() runs first and has no such filter, so the guard has to
+	 * exist on the extracted tree as well.
+	 *
+	 * @param string $dir Extracted pack root.
+	 *
+	 * @return int Number of files removed.
+	 */
+	protected function purge_disallowed_files($dir) {
+		if (empty($dir) || !is_dir($dir)) {
+			return 0;
+		}
+
+		$removed = 0;
+		$allowed = self::allowed_pack_extensions();
+
+		try {
+			$files = new \RecursiveIteratorIterator(
+				new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
+				\RecursiveIteratorIterator::CHILD_FIRST
+			);
+
+			foreach ($files as $fileinfo) {
+				if (!$fileinfo->isFile() || self::is_allowed_entry($fileinfo->getFilename(), $allowed)) {
+					continue;
+				}
+
+				if (@unlink($fileinfo->getPathname())) {
+					$removed++;
+					Helper::log($fileinfo->getPathname(), 'unzip: removed disallowed file from extracted pack', 'warning');
+				}
+			}
+		} catch (\Exception $e) {
+			Helper::log($e->getMessage(), 'purge_disallowed_files', 'warning');
+		}
+
+		return $removed;
+	}
+
+	/**
 	 * Unzip a specified ZIP file to a location on the Filesystem.
 	 *
 	 * Why this custom extractor exists: some Templately packs carry entries with
@@ -899,6 +1083,8 @@ class FullSiteImport extends Base {
 		try {
 			$to = trailingslashit($to);
 
+			$allowed_extensions = self::allowed_pack_extensions();
+
 			for ($i = 0; $i < $zip->numFiles; $i++) {
 				$name = $zip->getNameIndex($i);
 				if ($name === false) {
@@ -924,6 +1110,15 @@ class FullSiteImport extends Base {
 				// than silently extracting only part of its contents.
 				if (0 !== validate_file($name)) {
 					Helper::log($name, 'unzip_file: skipped unsafe archive entry', 'warning');
+					continue;
+				}
+
+				// validate_file() stops a member escaping $to; it says nothing
+				// about what the member *is*. $to lives under web-served
+				// wp-uploads, so an executable member would be directly
+				// requestable.
+				if (!self::is_allowed_entry($name, $allowed_extensions)) {
+					Helper::log($name, 'unzip_file: skipped disallowed archive entry', 'warning');
 					continue;
 				}
 

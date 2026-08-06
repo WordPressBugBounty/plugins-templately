@@ -197,11 +197,26 @@ class Login extends API {
     }
 
     public function logout() {
+        // Read the key off the acting user's own record. Options::get() falls back to
+        // the global-login administrator when no target is given, so $this->api_key
+        // resolves to the administrator's key for any linked user — disconnecting the
+        // administrator's account on the cloud as well as locally.
+        $api_key = $this->utils( 'options' )->get( 'api_key', '', get_current_user_id() );
+
+        if ( empty( $api_key ) ) {
+            return $this->error(
+                'logout_error',
+                __( 'You are not connected to Templately.', 'templately' ),
+                'logout',
+                403
+            );
+        }
+
         $response = $this->http()->mutation(
             'disconnect',
             'status, message, data',
             [
-                'api_key'  => $this->api_key,
+                'api_key'  => $api_key,
                 "site_url" => home_url( '/' )
             ]
         )->post();
@@ -230,19 +245,30 @@ class Login extends API {
     }
 
 	public function delete(){
-		$this->utils( 'options' )
-            ->remove( 'user' )
-            ->remove( 'favourites' )
-            ->remove( 'reviews' )
-            ->remove( 'cloud_activity' )
-            ->remove( 'api_key' )
-            ->remove( 'global_login' )
-            ->remove( 'total_download_counts' )
-            ->remove( 'templates_in_clouds' );
+		$options = $this->utils( 'options' );
 
-        if ( $this->utils( 'options' )->who_am_i() === 'global' ) {
-            $this->utils( 'options' )->remove_global_login();
-        }
+		// Pin the removals to the acting user. Without the pin, Options::user_id()
+		// resolves a linked user to the global-login administrator and the delete
+		// path wipes the administrator's connection instead of the caller's.
+		$options->use_current_user( true );
+
+		try {
+			$options
+				->remove( 'user' )
+				->remove( 'favourites' )
+				->remove( 'reviews' )
+				->remove( 'cloud_activity' )
+				->remove( 'api_key' )
+				->remove( 'global_login' )
+				->remove( 'total_download_counts' )
+				->remove( 'templates_in_clouds' );
+
+			if ( $options->who_am_i() === 'global' ) {
+				$options->remove_global_login();
+			}
+		} finally {
+			$options->use_current_user( false );
+		}
 
 		$global_user_id = $this->utils( 'options' )->is_global();
 		$global_user = null;

@@ -33,13 +33,16 @@ class LogoGeneration extends API {
 
 		// Handle logo generation callback endpoint
 		if ( '/templately/v1/logo-generation/callback' === $_route ) {
-			Helper::log(
-				[
-					'headers' => $request->get_headers(),
-					'body'    => $request->get_params(),
-				],
-				'logo_generation_callback_request'
-			);
+			// Disabled: the headers carry X-Templately-Apikey, and Helper::log()
+			// writes to debug.log, which is web-readable on plenty of hosts. That
+			// key authorizes this very route.
+			// Helper::log(
+			// 	[
+			// 		'headers' => $request->get_headers(),
+			// 		'body'    => $request->get_params(),
+			// 	],
+			// 	'logo_generation_callback_request'
+			// );
 
 			if ( empty( $process_id ) ) {
 				return $this->error( 'invalid_id', __( 'Invalid ID.', 'templately' ), 'logo_generation_callback', 400 );

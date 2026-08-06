@@ -18,6 +18,7 @@ use Templately\API\Conditions;
 use Templately\API\ThemeBuilderApi;
 use Templately\Builder\ThemeBuilder;
 use Templately\Core\Importer\FullSiteImport;
+use Templately\Utils\AuthErrorCode;
 use Templately\Utils\Base;
 use Templately\Utils\Database;
 use Templately\Utils\Enqueue;
@@ -46,7 +47,7 @@ use Templately\Core\Platform\Gutenberg;
 use Templately\Core\Platform\Elementor;
 
 final class Plugin extends Base {
-    public $version = '3.7.1';
+    public $version = '3.7.2';
 
 	public $admin;
 	public $settings;
@@ -304,9 +305,12 @@ final class Plugin extends Base {
 		$redirect_url = remove_query_arg( [ 'templately_google_login', 'templately_state', 'api_key', 'error', 'state', 'redirect-to' ] );
 
 		if ( ! $is_authorized ) {
-			$error_message = __( 'This sign-in link is no longer valid. Please try signing in again.', 'templately' );
+			$error_code = AuthErrorCode::AUTH_STATE_INVALID;
 		} elseif ( ! empty( $_GET['error'] ) ) {
-			$error_message = sanitize_text_field( $_GET['error'] );
+			// Google's own reason is deliberately dropped rather than forwarded:
+			// everything on this query string is attacker-controlled, and the
+			// screen that displays it must never be handed prose from the URL.
+			$error_code = AuthErrorCode::AUTH_PROVIDER_FAILED;
 		} elseif ( ! empty( $_GET['api_key'] ) ) {
 			$request = new \WP_REST_Request( 'POST', '/templately/v1/login' );
 			$request->set_param( 'viaAPI', true );
@@ -347,15 +351,16 @@ final class Plugin extends Base {
 				wp_safe_redirect( $redirect_url );
 				exit;
 			} else {
-				$error_message = ( is_wp_error( $response ) ) ? $response->get_error_message() : __( 'Login failed.', 'templately' );
+				// The cloud's own wording stays server-side; the screen resolves
+				// its copy from the code.
+				$error_code = AuthErrorCode::INVALID_API_KEY;
 			}
 		} else {
-			$error_message = __( 'Missing API Key.', 'templately' );
+			$error_code = AuthErrorCode::AUTH_MISSING_API_KEY;
 		}
 
 		$redirect_url = add_query_arg( [
-			'templately_error' => 'login_failed',
-			'error_message'    => urlencode( $error_message ),
+			'templately_error' => $error_code,
 		], $redirect_url );
 
 		wp_safe_redirect( $redirect_url );
