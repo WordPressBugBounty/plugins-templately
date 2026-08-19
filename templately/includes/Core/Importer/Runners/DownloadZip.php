@@ -7,6 +7,7 @@ use Templately\Core\Importer\Form;
 use Templately\Core\Importer\Runners\BaseRunner;
 use Templately\Core\Importer\Utils\Utils;
 use Templately\Core\Importer\Utils\SessionData;
+use Templately\Utils\Helper;
 
 class DownloadZip extends BaseRunner {
 	/**
@@ -102,8 +103,8 @@ class DownloadZip extends BaseRunner {
 				// If the response body is JSON and it contains an error, throw an exception with the error message
 				if (isset($response_body['status']) && $response_body['status'] === 'error') {
 					$support_message = '';
-					if(strpos($response_body['message'], 'https://templately.com/?support=open') === false){
-						$support_message = sprintf(__(" Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), 'https://templately.com/?support=open');
+					if(strpos($response_body['message'], Helper::web_url( '', [ 'support' => 'open' ] )) === false){
+						$support_message = sprintf(__(" Please try again or contact <a href='%s' target='_blank'>support</a>.", "templately"), Helper::web_url( '', [ 'support' => 'open' ] ));
 					}
 					$this->throw_non_retryable($response_body['message'] . $support_message);
 				}

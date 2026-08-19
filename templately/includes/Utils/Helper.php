@@ -115,6 +115,27 @@ class Helper extends Base {
 	}
 
 	/**
+	 * A URL on the public Templately website, honouring the dev domain.
+	 *
+	 * The PHP counterpart of `react-src/utils/helper.js#webURL`. A hard-coded
+	 * `https://templately.com/...` sends a site running against the dev API to
+	 * the live site, where its account does not exist — so build every out-link
+	 * through this instead.
+	 *
+	 * Note this is the *website*, not the API host `get_api_url()` builds.
+	 *
+	 * @param string $path Path with or without a leading slash.
+	 * @param array  $args Query args (utm_* etc).
+	 * @return string
+	 */
+	public static function web_url( string $path = '', array $args = [] ): string {
+		$base_url = self::is_dev_api() ? 'https://templately.dev' : 'https://templately.com';
+		$url      = $base_url . '/' . ltrim( $path, '/' );
+
+		return empty( $args ) ? $url : add_query_arg( $args, $url );
+	}
+
+	/**
 	 * Get API URL for Templately endpoints
 	 *
 	 * @param string $endpoint API endpoint path (e.g., 'v2/import/pack/123')

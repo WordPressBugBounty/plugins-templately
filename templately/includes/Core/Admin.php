@@ -104,7 +104,7 @@ class Admin extends Base {
 	public function scripts( $hook = '' ) {
 		$allowed_hooks = apply_filters(
 			'templately_admin_enqueue_allowed_hooks',
-			[ 'index.php', 'edit.php', 'toplevel_page_templately', 'elementor', 'gutenberg', 'templately_page_templately_settings' ],
+			[ 'index.php', 'edit.php', 'plugins.php', 'toplevel_page_templately', 'elementor', 'gutenberg', 'templately_page_templately_settings' ],
 			$hook
 		);
 
@@ -163,6 +163,22 @@ class Admin extends Base {
 				] );
 
 			}
+			return;
+		}
+
+		if ( 'plugins.php' === $hook ) {
+			templately()->assets->enqueue(
+				'templately-inter',
+				set_url_scheme( '//fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap' )
+			);
+			templately()->assets->enqueue( 'templately-tailwind', 'css/tailwind.css', [ 'templately-inter' ] );
+			templately()->assets->enqueue( 'templately-deactivate-survey', 'css/deactivate-survey-style.css', [ 'templately-tailwind' ] );
+			templately()->assets->enqueue( 'templately', 'js/deactivate-survey.js', [ 'regenerator-runtime' ], true );
+			templately()->assets->localize( 'templately', 'templatelyDeactivateSurvey', [
+				'nonce'          => wp_create_nonce( 'templately_nonce' ),
+				'pluginBasename' => TEMPLATELY_PLUGIN_BASENAME,
+				'reasons'        => DeactivationSurvey::get_reasons_for_js(),
+			] );
 			return;
 		}
 
@@ -278,6 +294,10 @@ class Admin extends Base {
 			'signed_as_global'        => Login::signed_as_global(),
 			'current_screen'          => $_current_screen,
 			'can_fsi'                 => current_user_can('install_plugins') && current_user_can('install_themes'),
+			// Account-level administration: the Subscription screen. Mirrors the
+			// subscription branch of `Checkout::checkout()`, so the sidebar can hide
+			// it for non-admins rather than route them to a 403.
+			'can_manage_account'      => current_user_can( 'manage_options' ),
 			'post_type'               => get_post_type(),
 			'has_elementor'           => rest_sanitize_boolean( is_plugin_active( 'elementor/elementor.php' ) ),
 			'has_elementor_pro'       => rest_sanitize_boolean( is_plugin_active( 'elementor-pro/elementor-pro.php' ) ),
@@ -290,6 +310,13 @@ class Admin extends Base {
 			'is_free_user'            => $global_user === false || isset( $global_user['plan'] ) && $global_user['plan'] == 'free',
 			'is_disconnected'         => ! empty( $global_user['is_disconnected'] ),
 			'tour_status'             => Options::get_instance()->get( 'tour_status', [] ),
+			// Which Templately site the plugin talks to. `templatelyDeveloper.dev_api`
+			// carries the same flag, but only when developer mode is on and only from
+			// its own script handle — so anything rendered before that handle runs (the
+			// footer CTA, for one) linked to the live site while the plugin was pointed
+			// at dev. Kept here, on the main localized object, `webURL()` is right from
+			// the first paint. See `react-src/utils/helper.js#webURL`.
+			'dev_api'                 => Helper::is_dev_api(),
 		], $templately );
 
 		// Apply filter to allow network admin modifications
@@ -369,7 +396,7 @@ class Admin extends Base {
 						]
 					],
 					'support'          => [
-						'link'       => 'https://templately.com/?support=open',
+						'link'       => Helper::web_url( '', [ 'support' => 'open' ] ),
 						'attributes' => [
 							'target' => '_blank'
 						],
@@ -433,7 +460,7 @@ class Admin extends Base {
 				'html'      => $_notice_text_spring_savings_2026,
 				'links'     => [
 					'later'     => [
-						'link'       => 'https://templately.com/#pricing',
+						'link'       => Helper::web_url() . '#pricing',
 						'target'     => '_blank',
 						'label'      => __( 'Upgrade To Pro Now', 'templately' ),
 						'attributes' => [
@@ -473,7 +500,7 @@ class Admin extends Base {
 			$holiday_text .= sprintf(
 				'<a class="button button-primary" target="_blank" href="%2$s">%1$s</a>',
 				$crown . __('GET PRO Lifetime Access', 'templately'),
-				'https://templately.com/#pricing'
+				Helper::web_url() . '#pricing'
 			);
 			$holiday_text .= sprintf(
 				'<button class="button button-link dismiss-btn" data-dismiss="true">%1$s</button>',
@@ -528,7 +555,42 @@ class Admin extends Base {
 	}
 
 	public function display() {
-		Helper::views( 'template-library' );
+		Helper::views( 'template-library', [
+			'show_grid_skeleton' => $this->is_template_library_path(),
+		] );
+	}
+
+	/**
+	 * Whether the current `?path=` targets the template-library grid
+	 * (`TemplatesTypeLayout`, e.g. `elementor/packs`) — the only route the
+	 * pre-mount skeleton's card grid actually matches. Every other route
+	 * (`clouds/*`, `downloads`, `favourites`, `subscription`,
+	 * `purchased-items`, `ai-sites`, `settings/*`, item-detail pages, and
+	 * Saved Templates) gets a generic shell instead, so a hard reload doesn't
+	 * flash the wrong page shape before React mounts. See
+	 * views/template-library.php.
+	 *
+	 * @return bool
+	 */
+	private function is_template_library_path() {
+		$path = isset( $_GET['path'] ) ? sanitize_text_field( wp_unslash( $_GET['path'] ) ) : '';
+
+		if ( $path === '' ) {
+			return true;
+		}
+
+		$segments = array_values( array_filter( explode( '/', trim( $path, '/' ) ) ) );
+
+		$non_library_prefixes = [ 'clouds', 'downloads', 'favourites', 'subscription', 'purchased-items', 'ai-sites', 'settings' ];
+
+		if ( in_array( $segments[0] ?? '', $non_library_prefixes, true ) ) {
+			return false;
+		}
+
+		// `/:platform/:type` (the grid) vs `/:platform/:type/:slug` (item
+		// detail, its own skeleton shape) or `/:platform/templates` (Saved
+		// Templates, a table) — only the 2-segment form matches the grid.
+		return count( $segments ) === 2 && $segments[1] !== 'templates';
 	}
 
 	/**

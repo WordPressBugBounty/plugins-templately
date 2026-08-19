@@ -48,19 +48,21 @@ class Login extends API {
     }
 
 	public function pricing(){
-		$data = get_transient( "templately_subscriptions" );
+		$data = get_transient( "templately_subscriptions_v2" );
 
 		if( is_array( $data ) && ! empty( $data ) ) {
 			return $data;
 		}
 
-		$query = 'id, price, name, discounted_price, type, sites, coupon';
+		// Field set drives the Subscription screen's plan comparison grid, so it
+		// carries the per-plan limits too, not just price/sites.
+		$query = 'id, price, name, slug, discounted_price, type, sites, coupon, my_cloud_items, pro_items, workspace, fsi_limit, ai_credit, description';
 		$response = $this->http()->query(
 			'subscriptionPlans',
 			$query
 		)->post();
 
-		set_transient( "templately_subscriptions", $response, WEEK_IN_SECONDS );
+		set_transient( "templately_subscriptions_v2", $response, WEEK_IN_SECONDS );
 
 		return $response;
 	}
@@ -106,7 +108,11 @@ class Login extends API {
             return $this->error( 'login_error', $errors, 'login', 400 );
         }
 
-        $query = 'status, message, user{ id, name, first_name, last_name, display_name, email, profile_photo, joined, is_verified, is_company_user, api_key, plan, plan_expire_at, my_cloud{ limit, usages, last_pushed }, favourites{ id, type }, show_notice, reviews{ type, type_id, rating }, subscription { id, name, sites } }';
+        // `ends_at`, `plan_type` and `cancel_at_period_end` drive the Subscription
+        // screen's renewal line. They are asked for instead of leaning on
+        // `plan_expire_at`, which the API resolves with `empty($subscription->ends_at)
+        // ?? …` — a boolean that never falls through, so it never carries a date.
+        $query = 'status, message, user{ id, name, first_name, last_name, display_name, email, profile_photo, joined, is_verified, is_company_user, is_restricted_company_user, api_key, plan, plan_expire_at, my_cloud{ limit, usages, last_pushed }, favourites{ id, type }, show_notice, reviews{ type, type_id, rating }, subscription { id, name, sites, subscription_plan_id, ends_at, plan_type, cancel_at_period_end } }';
 
         $response = $this->http()->mutation(
             $viaAPI ? 'connectWithApiKey' : 'connect',

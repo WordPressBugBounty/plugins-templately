@@ -350,6 +350,24 @@ class Utils extends Base {
 	}
 
 	/**
+	 * Get a remote logo URL from the supported import payload shapes.
+	 *
+	 * @param mixed $logo A URL string or an array containing a URL.
+	 * @return string
+	 */
+	public static function get_logo_url( $logo ) {
+		if ( is_string( $logo ) ) {
+			return $logo;
+		}
+
+		if ( is_array( $logo ) && isset( $logo['url'] ) && is_string( $logo['url'] ) ) {
+			return $logo['url'];
+		}
+
+		return '';
+	}
+
+	/**
 	 * Upload base64 encoded image to media library
 	 *
 	 * @param string $base64 Base64 encoded image data (with or without data URI scheme)

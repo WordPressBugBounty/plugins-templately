@@ -31,6 +31,7 @@ use Templately\API\Items;
 use Templately\API\Login;
 use Templately\API\Checkout;
 use Templately\API\SignUp;
+use Templately\API\AiCredit;
 use Templately\API\Profile;
 use Templately\API\Import;
 use Templately\API\MyClouds;
@@ -41,13 +42,14 @@ use Templately\API\TemplateTypes;
 use Templately\API\SavedTemplates;
 use Templately\API\Sites;
 use Templately\API\Tour;
+use Templately\Core\DeactivationSurvey;
 use Templately\Core\Maintenance;
 use Templately\Core\Migrator;
 use Templately\Core\Platform\Gutenberg;
 use Templately\Core\Platform\Elementor;
 
 final class Plugin extends Base {
-    public $version = '3.7.2';
+    public $version = '3.7.3';
 
 	public $admin;
 	public $settings;
@@ -78,6 +80,7 @@ final class Plugin extends Base {
 		$this->set_locale();
 
 		Maintenance::init();
+		DeactivationSurvey::init();
 
 		$this->assets        = Enqueue::get_instance( TEMPLATELY_URL, TEMPLATELY_PATH, $this->version );
 		$this->admin         = Admin::get_instance();
@@ -198,6 +201,7 @@ final class Plugin extends Base {
 		SignUp::get_instance();
 		Import::get_instance();
 		Profile::get_instance();
+		AiCredit::get_instance();
 		MyClouds::get_instance();
 		WorkSpaces::get_instance();
 		Sites::get_instance();

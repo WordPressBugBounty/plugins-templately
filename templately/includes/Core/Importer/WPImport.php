@@ -1832,12 +1832,26 @@ class WPImport extends WP_Importer {
 	}
 
 	/**
+	 * There is deliberately NO `parent::__construct()` call here.
+	 *
+	 * `WP_Importer` declared an EMPTY constructor up to WordPress 7.0 and
+	 * removed it in 7.1. Calling a parent constructor the parent does not
+	 * declare throws `Error: Cannot call constructor`, so the call fataled every
+	 * Full Site Import on 7.1 — and it had never done anything on the versions
+	 * where it resolved, because the body was empty.
+	 *
+	 * Nothing contained it: `Error` is not an `Exception` in PHP 7+ (siblings
+	 * under `Throwable`), and the outer import handlers catch `Exception`. The
+	 * import streams over SSE, so the fatal landed mid-stream with no `error`
+	 * event: the connection just stopped.
+	 *
+	 * Do not "restore" it for symmetry. `tests/unit/Core/Importer/test-WPImportConstruction.php`
+	 * pins this, and only discriminates on a WP 7.1+ host.
+	 *
 	 * @param       $file
 	 * @param array $args
 	 */
 	public function __construct( $file, array $args = [] ) {
-		parent::__construct();
-
 		$this->args       = $args;
 		$this->session_id = $args['session_id'];
 

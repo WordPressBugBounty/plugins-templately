@@ -15,7 +15,10 @@ class Profile extends API {
 	}
 
 	public function sync() {
-		$query = 'status, message, user{ id, name, first_name, last_name, display_name, email, profile_photo, joined, is_verified, api_key, plan, plan_expire_at, my_cloud{ limit, usages, last_pushed }, favourites{ id, type }, show_notice, reviews{ type, type_id, rating } }';
+		// Keep the `subscription` field set in step with `Login::login()` — the
+		// Subscription screen renders from whichever of the two answered last, so a
+		// field missing here silently degrades the card after a profile sync.
+		$query = 'status, message, user{ id, name, first_name, last_name, display_name, email, profile_photo, joined, is_verified, is_restricted_company_user, api_key, plan, plan_expire_at, my_cloud{ limit, usages, last_pushed }, favourites{ id, type }, show_notice, reviews{ type, type_id, rating }, subscription { id, name, sites, subscription_plan_id, ends_at, plan_type, cancel_at_period_end } }';
 
 		$funcArgs = [
 			'api_key'  => $this->api_key,

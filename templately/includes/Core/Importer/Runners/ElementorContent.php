@@ -204,33 +204,31 @@ class ElementorContent extends BaseRunner {
 				}
 			}
 
-			if (!empty($data['logo']['id'])) {
+			$logo_url = Utils::get_logo_url($data['logo'] ?? null);
+			$logo_id  = is_array($data['logo'] ?? null) ? ($data['logo']['id'] ?? 0) : 0;
+			if (!empty($logo_id)) {
 				$settings['site_logo'] = $data['logo'];
 				Utils::backup_option_value( 'site_logo' );
-				$this->origin->update_imported_list('attachment', $data['logo']['id']);
-			} elseif (!empty($data['logo']['url']) && strpos($data['logo']['url'], 'data:image/') === 0) {
+				$this->origin->update_imported_list('attachment', $logo_id);
+			} elseif (!empty($logo_url) && strpos($logo_url, 'data:image/') === 0) {
 				// Upload base64 data URL
-				$site_logo = Utils::upload_logo_base64($data['logo']['url'], $this->session_id);
+				$site_logo = Utils::upload_logo_base64($logo_url, $this->session_id);
 
 				if(!empty($site_logo['id'])){
 					$settings['site_logo'] = $site_logo;
 					Utils::backup_option_value( 'site_logo' );
 					$this->origin->update_imported_list('attachment', $site_logo['id']);
 				}
-			} elseif (!empty($data['logo'])) {
+			} elseif (!empty($logo_url)) {
 				$settings['site_logo'] = $old_logo;
 
-				// If there's no old logo id, try to upload a new logo
-				if (empty($old_logo['id'])) {
-					// Upload regular URL
-					$site_logo = Utils::upload_logo($data['logo'], $this->session_id);
+				// Upload regular URL. If it fails, retain the old logo.
+				$site_logo = Utils::upload_logo($logo_url, $this->session_id);
 
-					// If the upload was successful, use the new logo, otherwise use the old one
-					if(!empty($site_logo['id'])){
-						$settings['site_logo'] = $site_logo;
-						Utils::backup_option_value( 'site_logo' );
-						$this->origin->update_imported_list('attachment', $site_logo['id']);
-					}
+				if(!empty($site_logo['id'])){
+					$settings['site_logo'] = $site_logo;
+					Utils::backup_option_value( 'site_logo' );
+					$this->origin->update_imported_list('attachment', $site_logo['id']);
 				}
 			}
 

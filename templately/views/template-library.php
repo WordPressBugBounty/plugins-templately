@@ -1,17 +1,26 @@
 <?php
 	defined('ABSPATH') or die( 'Access denied!' ); // Avoid direct file request
+
+	// Passed by Admin::display() — true only for the template-library grid
+	// route (`?path=elementor/packs` and friends). Every other route (clouds,
+	// downloads, subscription, settings, item-detail, saved templates, ...)
+	// falls back to $show_grid_skeleton = false below.
+	$show_grid_skeleton = $show_grid_skeleton ?? true;
 ?>
 
 <div class="templately-admin-body">
     <div id="templatelyAdmin">
         <?php
-            // Server-rendered full-page skeleton (no logo). Shown only until the React
-            // app mounts into #templatelyAdmin and replaces it, so a refresh shows a
-            // complete skeleton instantly — top nav, header, filter toolbar and the
-            // card grid — instead of a logo flash or a blank gap. Layout classes mirror
-            // the real components (TopNavigation, NewHeader, Filter, TemplateGridSkeleton);
-            // the grey placeholder blocks are sized with inline styles so they render
-            // correctly against the already-compiled admin CSS (no rebuild required).
+            // Server-rendered full-page skeleton (no logo, except the generic-shell
+            // branch below). Shown only until the React app mounts into
+            // #templatelyAdmin and replaces it, so a refresh shows something
+            // instantly instead of a blank gap. Top nav + header are shared chrome
+            // that's correct for every route, so they always render; only the
+            // content area below them is route-aware. Layout classes mirror the
+            // real components (TopNavigation, NewHeader, Filter,
+            // TemplateGridSkeleton); the grey placeholder blocks are sized with
+            // inline styles so they render correctly against the already-compiled
+            // admin CSS (no rebuild required).
         ?>
         <div class="templately-admin-skeleton fixed inset-0 h-screen w-screen flex flex-col bg-surface-primary overflow-hidden" aria-busy="true" aria-hidden="true">
 
@@ -45,47 +54,67 @@
                 </div>
             </div>
 
-            <?php // Outlet content — filter toolbar + card grid ?>
-            <div class="grow overflow-hidden flex flex-col">
+            <?php if ( $show_grid_skeleton ) : ?>
+                <?php // Outlet content — filter toolbar + card grid ?>
+                <div class="grow overflow-hidden flex flex-col">
 
-                <?php // Filter toolbar — mirrors FilterBarSkeleton.js ?>
-                <div class="shrink-0 w-full flex pb-4 md:pb-6 lg:pb-8">
-                    <div class="px-4 w-full md:px-6 lg:px-7 py-2 h-18 shrink-0 flex gap-x-4 md:gap-x-6 items-center">
-                        <span class="motion-safe:animate-pulse motion-reduce:animate-none shrink-0" style="display:block;background:#F1F1F7;border-radius:9999px;width:6rem;height:2.5rem;"></span>
-                        <div class="hidden md:!flex items-center gap-x-2 overflow-hidden">
-                            <span class="motion-safe:animate-pulse motion-reduce:animate-none" style="display:block;background:#F1F1F7;border-radius:.375rem;width:4rem;height:.75rem;"></span>
-                            <?php foreach ( array( '7rem', '5rem', '6rem', '7rem', '6rem', '5rem' ) as $chip_w ) : ?>
-                                <span class="motion-safe:animate-pulse motion-reduce:animate-none shrink-0" style="display:block;background:#F1F1F7;border-radius:9999px;width:<?php echo esc_attr( $chip_w ); ?>;height:2.5rem;"></span>
-                            <?php endforeach; ?>
-                        </div>
-                        <div class="ms-auto flex items-center gap-3 md:gap-4 shrink-0">
-                            <span class="motion-safe:animate-pulse motion-reduce:animate-none" style="display:block;background:#F1F1F7;border-radius:9999px;width:3.75rem;height:2.5rem;"></span>
-                            <span class="motion-safe:animate-pulse motion-reduce:animate-none" style="display:block;background:#F1F1F7;border-radius:9999px;width:6.25rem;height:2.5rem;"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <?php // Card grid — mirrors TemplateGridSkeleton.js ?>
-                <div class="grow flex flex-col px-4 md:px-6 lg:px-7 pb-8 overflow-hidden">
-                    <div class="grid grid-cols-auto-80 gap-x-4 md:gap-x-6 gap-y-8">
-                        <?php for ( $i = 0; $i < 12; $i++ ) : ?>
-                            <div class="w-full flex flex-col gap-3.5 mb-0">
-                                <div class="w-full bg-surface-secondary p-3 rounded-sm border border-solid border-border-secondary">
-                                    <div class="w-full motion-safe:animate-pulse motion-reduce:animate-none" style="background:#F1F1F7;aspect-ratio:100/114.65;"></div>
-                                </div>
-                                <div class="flex flex-col gap-3">
-                                    <span class="motion-safe:animate-pulse motion-reduce:animate-none" style="display:block;background:#F1F1F7;border-radius:.375rem;width:75%;height:.875rem;"></span>
-                                    <span class="w-full flex items-center gap-2">
-                                        <span class="motion-safe:animate-pulse motion-reduce:animate-none" style="display:block;background:#F1F1F7;border-radius:.375rem;width:6rem;height:2rem;"></span>
-                                        <span class="ms-auto motion-safe:animate-pulse motion-reduce:animate-none" style="display:block;background:#F1F1F7;border-radius:.375rem;width:3rem;height:1rem;"></span>
-                                    </span>
-                                </div>
+                    <?php // Filter toolbar — mirrors FilterBarSkeleton.js ?>
+                    <div class="shrink-0 w-full flex pb-4 md:pb-6 lg:pb-8">
+                        <div class="px-4 w-full md:px-6 lg:px-7 py-2 h-18 shrink-0 flex gap-x-4 md:gap-x-6 items-center">
+                            <span class="motion-safe:animate-pulse motion-reduce:animate-none shrink-0" style="display:block;background:#F1F1F7;border-radius:9999px;width:6rem;height:2.5rem;"></span>
+                            <div class="hidden md:!flex items-center gap-x-2 overflow-hidden">
+                                <span class="motion-safe:animate-pulse motion-reduce:animate-none" style="display:block;background:#F1F1F7;border-radius:.375rem;width:4rem;height:.75rem;"></span>
+                                <?php foreach ( array( '7rem', '5rem', '6rem', '7rem', '6rem', '5rem' ) as $chip_w ) : ?>
+                                    <span class="motion-safe:animate-pulse motion-reduce:animate-none shrink-0" style="display:block;background:#F1F1F7;border-radius:9999px;width:<?php echo esc_attr( $chip_w ); ?>;height:2.5rem;"></span>
+                                <?php endforeach; ?>
                             </div>
-                        <?php endfor; ?>
+                            <div class="ms-auto flex items-center gap-3 md:gap-4 shrink-0">
+                                <span class="motion-safe:animate-pulse motion-reduce:animate-none" style="display:block;background:#F1F1F7;border-radius:9999px;width:3.75rem;height:2.5rem;"></span>
+                                <span class="motion-safe:animate-pulse motion-reduce:animate-none" style="display:block;background:#F1F1F7;border-radius:9999px;width:6.25rem;height:2.5rem;"></span>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-            </div>
+                    <?php // Card grid — mirrors TemplateGridSkeleton.js ?>
+                    <div class="grow flex flex-col px-4 md:px-6 lg:px-7 pb-8 overflow-hidden">
+                        <div class="grid grid-cols-auto-80 gap-x-4 md:gap-x-6 gap-y-8">
+                            <?php for ( $i = 0; $i < 12; $i++ ) : ?>
+                                <div class="w-full flex flex-col gap-3.5 mb-0">
+                                    <div class="w-full bg-surface-secondary p-3 rounded-sm border border-solid border-border-secondary">
+                                        <div class="w-full motion-safe:animate-pulse motion-reduce:animate-none" style="background:#F1F1F7;aspect-ratio:100/114.65;"></div>
+                                    </div>
+                                    <div class="flex flex-col gap-3">
+                                        <span class="motion-safe:animate-pulse motion-reduce:animate-none" style="display:block;background:#F1F1F7;border-radius:.375rem;width:75%;height:.875rem;"></span>
+                                        <span class="w-full flex items-center gap-2">
+                                            <span class="motion-safe:animate-pulse motion-reduce:animate-none" style="display:block;background:#F1F1F7;border-radius:.375rem;width:6rem;height:2rem;"></span>
+                                            <span class="ms-auto motion-safe:animate-pulse motion-reduce:animate-none" style="display:block;background:#F1F1F7;border-radius:.375rem;width:3rem;height:1rem;"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            <?php endfor; ?>
+                        </div>
+                    </div>
+
+                </div>
+            <?php else : ?>
+                <?php
+                    // Generic shell — every other route (clouds, downloads, favourites,
+                    // manage-sites, subscription, purchased-items, ai-sites, settings,
+                    // item-detail, saved templates). None of them look like the template
+                    // grid, and their real shapes vary too much to hand-port here, so this
+                    // just holds the space with the same centered animated logo `Loader`
+                    // shows by default once React takes over — no layout-shape guess to
+                    // get wrong or keep in sync.
+                ?>
+                <div class="grow flex items-center justify-center">
+                    <img
+                        src="<?php echo esc_url( templately()->assets->icon( 'logos/loading-logo.gif' ) ); ?>"
+                        alt="Templately"
+                        width="120"
+                        height="120"
+                    />
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>

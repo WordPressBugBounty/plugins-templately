@@ -3,9 +3,9 @@ Contributors: templately, wpdevteam, re_enter_rupok, Asif2BD, priyomukul, rahat8
 Donate link: https://templately.com
 Tags: templates, elementor template, Gutenberg template, landing page, WoCommerce Templates
 Requires at least: 5.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.2
-Stable tag: 3.7.2
+Stable tag: 3.7.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -153,6 +153,17 @@ Visit [WPDeveloper](https://wpdeveloper.com/) to learn more about how to do bett
 
 
 == Changelog ==
+= 3.7.3 - 19-08-2026 =
+Added: My AI Sites - view and re-import the websites you generated with AI.
+Improved: Redesigned My Cloud, WorkSpace, My Favourites, My Downloads, Purchased Items and Subscription screens to match templately.com.
+Fixed: Renewal date and the free plan column missing from the Subscription screen.
+Fixed: Searching inside My Cloud or a WorkSpace switching over to a global template search.
+Fixed: WorkSpace file search not clearing when leaving or switching WorkSpace.
+Fixed: Header menu items overlapping on smaller screens.
+Fixed: Credit cost shown when re-importing a site that was already generated.
+Fixed: Plugin dependency filter opening off-screen near the bottom of the list.
+Few minor bug fixes and improvements.
+
 = 3.7.2 - 06-08-2026 =
 Fixed: Arbitrary file upload during template import - Reported by Wordfence.
 Fixed: Unauthenticated overwrite of administrator cloud connection - Reported by Patchstack.

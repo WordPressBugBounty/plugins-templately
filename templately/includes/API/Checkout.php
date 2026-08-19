@@ -19,6 +19,21 @@ class Checkout extends API {
 
 	public function checkout() {
 		$purchase_type = $this->get_param( 'purchase_type', 'template' );
+
+		/**
+		 * Buying a template is a content decision any contributor may make, but a
+		 * subscription is bought *for the account* and changes what everyone on it
+		 * pays. The base gate is `delete_posts`, so without this a Contributor
+		 * could start a plan purchase against the site owner's account.
+		 */
+		if ( 'subscription' === $purchase_type && ! current_user_can( 'manage_options' ) ) {
+			return $this->error(
+				'insufficient_permission',
+				__( 'Only administrators can change the subscription.', 'templately' ),
+				'checkout',
+				rest_authorization_required_code()
+			);
+		}
 		$id            = $this->get_param( 'id', 0, 'intval' );
 		$return_url    = $this->get_param( 'return_url', admin_url( 'admin.php?page=templately' ), 'esc_url_raw' );
 
@@ -50,7 +65,22 @@ class Checkout extends API {
 
 		// Frontend checkout URL created — the app redirects the buyer to it.
 		if ( ! empty( $data['url'] ) ) {
-			return $this->success( [ 'url' => $data['url'] ] );
+			/**
+			 * The client assigns this straight to `window.location.href`, so verify
+			 * it is an https URL on a Templately host before handing it over. The
+			 * response is our own API's, but a redirect target that arrives over the
+			 * wire and is followed unchecked is an open redirect waiting to happen.
+			 */
+			$url  = esc_url_raw( $data['url'] );
+			$host = wp_parse_url( $url, PHP_URL_HOST );
+
+			$allowed = $host && ( 'templately.com' === $host || 'templately.dev' === $host || str_ends_with( $host, '.templately.com' ) || str_ends_with( $host, '.templately.dev' ) );
+
+			if ( ! $allowed || 'https' !== wp_parse_url( $url, PHP_URL_SCHEME ) ) {
+				return $this->error( 'invalid_checkout_url', __( 'The checkout could not be verified. Please try again.', 'templately' ), 'checkout' );
+			}
+
+			return $this->success( [ 'url' => $url ] );
 		}
 
 		$message = ! empty( $response['message'] ) ? $response['message'] : __( 'Could not start the checkout. Please try again.', 'templately' );

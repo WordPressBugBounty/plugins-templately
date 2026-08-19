@@ -39,9 +39,21 @@ class Options extends Base {
 
 	/**
 	 * Get the current user ID.
+	 *
+	 * `get_current_user_id()` can still be 0 when this singleton is built — a
+	 * wp-cli run before `wp_set_current_user()`, or a request whose auth has not
+	 * been resolved yet. Caching that 0 for the rest of the request made every
+	 * derived write bail in `can_write()`, so a connect could answer "Site
+	 * connected successfully" and persist nothing. Re-read while it is still
+	 * unknown; a resolved id is never overwritten.
+	 *
 	 * @return int
 	 */
 	public function current_user_id(): int {
+		if ( $this->current_user <= 0 ) {
+			$this->current_user = get_current_user_id();
+		}
+
 		return $this->current_user;
 	}
 
@@ -64,11 +76,11 @@ class Options extends Base {
 	public function who_am_i(): string {
 		$_who_am_i = 'local';
 
-		if( $this->is_global() > 0 && $this->is_global() === $this->current_user ) {
+		if( $this->is_global() > 0 && $this->is_global() === $this->current_user_id() ) {
 			$_who_am_i = 'global';
 		}
 
-		if( $this->is_global() > 0 && $this->is_global() !== $this->current_user ) {
+		if( $this->is_global() > 0 && $this->is_global() !== $this->current_user_id() ) {
 			$_who_am_i = 'link';
 		}
 
@@ -97,7 +109,7 @@ class Options extends Base {
 	 */
 	private function user_id(): int {
 		if ( $this->force_current_user ) {
-			return $this->current_user;
+			return $this->current_user_id();
 		}
 
 		$_who_am_i = $this->who_am_i();
@@ -105,15 +117,15 @@ class Options extends Base {
 		if( ! empty( $_SERVER['REQUEST_URI'] ) ) {
 			$parse_uri = explode( '/', substr( $_SERVER['REQUEST_URI'], 0, strpos( $_SERVER['REQUEST_URI'], '?' ) ) );
 			if( $_who_am_i === 'link' && array_pop( $parse_uri ) === 'login' ) {
-				return $this->current_user;
+				return $this->current_user_id();
 			}
 		}
 
 		if( $_who_am_i === 'link' && $this->has_api ) {
-			return $this->current_user;
+			return $this->current_user_id();
 		}
 
-		return $_who_am_i === 'local' ? $this->current_user : $this->is_global();
+		return $_who_am_i === 'local' ? $this->current_user_id() : $this->is_global();
 	}
 
 	/**
@@ -145,7 +157,7 @@ class Options extends Base {
 	}
 
 	public function signed_as_global(): bool {
-		return $this->current_user === $this->is_global();
+		return $this->current_user_id() === $this->is_global();
 	}
 
 	/**
@@ -245,7 +257,7 @@ class Options extends Base {
 	 * @return bool
 	 */
 	private function can_write(): bool {
-		return $this->current_user > 0;
+		return $this->current_user_id() > 0;
 	}
 
 	private function _is_global() {

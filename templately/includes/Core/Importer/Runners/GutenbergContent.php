@@ -62,15 +62,17 @@ class GutenbergContent extends BaseRunner {
 					}
 				}
 			}
-			if(!empty($data['logo']['id'])){
-				$site_logo_id = $data['logo']['id'];
+			$logo_url = Utils::get_logo_url($data['logo'] ?? null);
+			$logo_id  = is_array($data['logo'] ?? null) ? ($data['logo']['id'] ?? 0) : 0;
+			if(!empty($logo_id)){
+				$site_logo_id = $logo_id;
 				$settings['site_logo'] = $site_logo_id;
 				Utils::update_option( 'site_logo', $site_logo_id );
-				$this->origin->update_imported_list('attachment', $data['logo']['id']);
+				$this->origin->update_imported_list('attachment', $logo_id);
 			}
-			else if (!empty($data['logo']['url']) && strpos($data['logo']['url'], 'data:image/') === 0) {
+			else if (!empty($logo_url) && strpos($logo_url, 'data:image/') === 0) {
 				// Upload base64 data URL
-				$site_logo = Utils::upload_logo_base64($data['logo']['url'], $this->session_id);
+				$site_logo = Utils::upload_logo_base64($logo_url, $this->session_id);
 
 				if(!empty($site_logo['id'])){
 					$settings['site_logo'] = $site_logo['id'];
@@ -78,9 +80,9 @@ class GutenbergContent extends BaseRunner {
 					$this->origin->update_imported_list('attachment', $site_logo['id']);
 				}
 			}
-			else if(!empty($data['logo']) && empty(get_option('site_logo'))){
-				// demo logo
-				$site_logo = Utils::upload_logo($data['logo'], $this->session_id);
+			else if(!empty($logo_url)){
+				// Upload remote URL
+				$site_logo = Utils::upload_logo($logo_url, $this->session_id);
 				if(!empty($site_logo['id'])){
 					$settings['site_logo'] = $site_logo['id'];
 					Utils::update_option( 'site_logo', $site_logo['id'] );

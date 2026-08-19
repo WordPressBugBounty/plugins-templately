@@ -116,6 +116,20 @@ class AIContent extends API {
 				},
 			],
 		]);
+		$this->get($this->endpoint . '/chatbot-conversations', [$this, 'get_chatbot_conversations'], [
+			'page' => [
+				'required' => false,
+				'default'  => 1,
+				// absint, not the sanitize_text_field default — that would turn the
+				// int into a string and corrupt anything non-string.
+				'sanitize_callback' => 'absint',
+			],
+			'per_page' => [
+				'required' => false,
+				'default'  => 10,
+				'sanitize_callback' => 'absint',
+			],
+		]);
 		$this->get($this->endpoint . '/chatbot-generated', [$this, 'get_chatbot_generated'], [
 			'chat' => [
 				'required' => true,
@@ -1025,6 +1039,51 @@ class AIContent extends API {
 
 		if (!is_array($data) || !isset($data['status'])) {
 			return $this->error('invalid_response', __('Invalid response.', 'templately'), 'ai-content/chatbot-conversation', 500);
+		}
+
+		return $data;
+	}
+
+	/**
+	 * List the connected account's generated AI sites, newest first.
+	 *
+	 * Backs the "My AI Sites" screen, which exists so a user can re-import a
+	 * generation at any time instead of having to keep its templately.com link.
+	 *
+	 * Each row carries `can_import` / `is_expired` / `is_pro` / `expires_at`,
+	 * computed server-side (free accounts get 7 days from generation, entitled
+	 * accounts import forever). Render those as given — recomputing the window
+	 * here would silently drift from the backend the moment the rule changes.
+	 *
+	 * @return array|\WP_Error Pass-through of { status, current_page, total_page, total, data } or WP_Error.
+	 */
+	public function get_chatbot_conversations() {
+		$page     = max(1, (int) $this->get_param('page', 1, 'absint'));
+		$per_page = min(100, max(1, (int) $this->get_param('per_page', 10, 'absint')));
+
+		$extra_headers = [
+			'Accept' => 'application/json',
+		];
+		$response = Helper::make_api_get_request('v2/chatbot/conversations', [
+			'page'     => $page,
+			'per_page' => $per_page,
+		], $extra_headers, 30);
+
+		if (is_wp_error($response)) {
+			return $this->error('request_failed', __('Failed to fetch your AI sites.', 'templately'), 'ai-content/chatbot-conversations', 500, ['error_detail' => $response->get_error_message()]);
+		}
+
+		$response_code = wp_remote_retrieve_response_code($response);
+		$body          = wp_remote_retrieve_body($response);
+		$data          = json_decode($body, true);
+
+		if ($response_code !== 200) {
+			$message = (is_array($data) && !empty($data['message'])) ? $data['message'] : sprintf(__('API returned HTTP %d error.', 'templately'), $response_code);
+			return $this->error('api_http_error', $message, 'ai-content/chatbot-conversations', $response_code);
+		}
+
+		if (!is_array($data) || !isset($data['status'])) {
+			return $this->error('invalid_response', __('Invalid response.', 'templately'), 'ai-content/chatbot-conversations', 500);
 		}
 
 		return $data;
