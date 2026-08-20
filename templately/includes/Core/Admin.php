@@ -171,8 +171,18 @@ class Admin extends Base {
 				'templately-inter',
 				set_url_scheme( '//fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap' )
 			);
-			templately()->assets->enqueue( 'templately-tailwind', 'css/tailwind.css', [ 'templately-inter' ] );
-			templately()->assets->enqueue( 'templately-deactivate-survey', 'css/deactivate-survey-style.css', [ 'templately-tailwind' ] );
+			/**
+			 * plugins.php is not our screen, so the survey gets the scoped Tailwind
+			 * build rather than css/tailwind.css. The unscoped bundle is compiled
+			 * with `important: true` and no layer, so its utilities outranked
+			 * wp-admin's own rules — `.inline` beat `.notice.inline` and `.hidden`,
+			 * which collapsed the update notices in every plugin row into coloured
+			 * slivers and revealed the hidden auto-update error placeholders.
+			 * css/tailwind-survey.css carries the same rules prefixed with
+			 * `.templately-scope`, the container the modal mounts into.
+			 */
+			templately()->assets->enqueue( 'templately-tailwind-survey', 'css/tailwind-survey.css', [ 'templately-inter' ] );
+			templately()->assets->enqueue( 'templately-deactivate-survey', 'css/deactivate-survey-style.css', [ 'templately-tailwind-survey' ] );
 			templately()->assets->enqueue( 'templately', 'js/deactivate-survey.js', [ 'regenerator-runtime' ], true );
 			templately()->assets->localize( 'templately', 'templatelyDeactivateSurvey', [
 				'nonce'          => wp_create_nonce( 'templately_nonce' ),

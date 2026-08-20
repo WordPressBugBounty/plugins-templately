@@ -1,4 +1,8 @@
 == Changelog ==
+= 3.7.4 - 20-08-2026 =
+Fixed: Plugins screen showing stray red and orange marks in every plugin row.
+Few minor bug fixes and improvements
+
 = 3.7.3 - 19-08-2026 =
 Added: My AI Sites - view and re-import the websites you generated with AI.
 Improved: Redesigned My Cloud, WorkSpace, My Favourites, My Downloads, Purchased Items and Subscription screens to match templately.com.

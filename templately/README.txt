@@ -5,7 +5,7 @@ Tags: templates, elementor template, Gutenberg template, landing page, WoCommerc
 Requires at least: 5.0
 Tested up to: 7.1
 Requires PHP: 7.2
-Stable tag: 3.7.3
+Stable tag: 3.7.4
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -153,6 +153,10 @@ Visit [WPDeveloper](https://wpdeveloper.com/) to learn more about how to do bett
 
 
 == Changelog ==
+= 3.7.4 - 20-08-2026 =
+Fixed: Plugins screen showing stray red and orange marks in every plugin row.
+Few minor bug fixes and improvements
+
 = 3.7.3 - 19-08-2026 =
 Added: My AI Sites - view and re-import the websites you generated with AI.
 Improved: Redesigned My Cloud, WorkSpace, My Favourites, My Downloads, Purchased Items and Subscription screens to match templately.com.
