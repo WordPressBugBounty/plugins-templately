@@ -3,7 +3,7 @@
         'name' => 'templately/templately',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '657992a3bc3565866df2d87a8cb21ee33a4f65c0',
+        'reference' => '770ea48375921648c2da65cef26bc39de774c03a',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -22,7 +22,7 @@
         'templately/templately' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '657992a3bc3565866df2d87a8cb21ee33a4f65c0',
+            'reference' => '770ea48375921648c2da65cef26bc39de774c03a',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

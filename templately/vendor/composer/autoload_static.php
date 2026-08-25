@@ -205,6 +205,7 @@ class ComposerStaticInitad568afa13e8e1f4563c5a20d9d90f8f
         'Templately\\Plugin' => __DIR__ . '/../..' . '/includes/Plugin.php',
         'Templately\\Utils\\AuthErrorCode' => __DIR__ . '/../..' . '/includes/Utils/AuthErrorCode.php',
         'Templately\\Utils\\Base' => __DIR__ . '/../..' . '/includes/Utils/Base.php',
+        'Templately\\Utils\\Caching' => __DIR__ . '/../..' . '/includes/Utils/Caching.php',
         'Templately\\Utils\\Database' => __DIR__ . '/../..' . '/includes/Utils/Database.php',
         'Templately\\Utils\\Enqueue' => __DIR__ . '/../..' . '/includes/Utils/Enqueue.php',
         'Templately\\Utils\\Helper' => __DIR__ . '/../..' . '/includes/Utils/Helper.php',

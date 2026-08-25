@@ -7,6 +7,7 @@ use Templately\Utils\Helper;
 use Templately\Utils\Database;
 use Templately\Utils\Installer;
 use WP_REST_Request;
+use Templately\Utils\Caching;
 
 use function current_user_can;
 
@@ -14,6 +15,7 @@ use function current_user_can;
 class Dependencies extends API {
 
 	private $endpoint = 'dependencies';
+
 	public $query = 'dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link }';
 
 	public function __construct() {
@@ -243,80 +245,92 @@ class Dependencies extends API {
 			}
 		}
 
-		// Category-based plugins
-		$included_categories = array(
-			'blog-magazine',
-			'construction',
-			'ecommerce',
-			'education',
-			'entertainment',
-			'fashion-lifestyle',
-			'features-services',
-			'food-restaurant',
-			'marketing',
-			'miscellaneous',
-			'multipurpose',
-			'nft-cryptocurrency',
-			'non-profit',
-			'technology',
-			'travel',
-		);
+		if ( $this->should_offer_caching() ) {
+			$caching = Caching::dependency_entry();
+			Caching::mark_offered();
 
-		$is_any_category_included = false;
-		if ( ! empty( $categories ) && is_array( $categories ) ) {
-			foreach ( $categories as $category ) {
-				if ( isset( $category['slug'] ) && in_array( $category['slug'], $included_categories, true ) ) {
-					$is_any_category_included = true;
-					break;
+			$new_dependency_list[]  = $caching;
+			$new_required_plugins[] = $caching;
+		} else {
+			// Category-based plugins
+			$included_categories = array(
+				'blog-magazine',
+				'construction',
+				'ecommerce',
+				'education',
+				'entertainment',
+				'fashion-lifestyle',
+				'features-services',
+				'food-restaurant',
+				'marketing',
+				'miscellaneous',
+				'multipurpose',
+				'nft-cryptocurrency',
+				'non-profit',
+				'technology',
+				'travel',
+			);
+
+			$is_any_category_included = false;
+			if ( ! empty( $categories ) && is_array( $categories ) ) {
+				foreach ( $categories as $category ) {
+					if ( isset( $category['slug'] ) && in_array( $category['slug'], $included_categories, true ) ) {
+						$is_any_category_included = true;
+						break;
+					}
 				}
 			}
-		}
 
-		if ( $is_any_category_included ) {
-			$nx_plugin = $this->find_plugin_by_name( $all_plugins, 'notificationx/notificationx' );
-			$notificationx = array(
-				'name' => 'NotificationX',
-				'icon' => 'https://ps.w.org/notificationx/assets/icon-256x256.gif?rev=2783824',
-				'plugin_file' => 'notificationx/notificationx.php',
-				'plugin_original_slug' => 'notificationx',
-				'is_pro' => false,
-				'installed' => $nx_plugin ? ( $nx_plugin['status'] === 'active' ) : false,
-				'link' => 'https://wordpress.org/plugins/notificationx/',
-			);
-			$new_dependency_list[] = $notificationx;
-			$new_required_plugins[] = $notificationx;
-		}
+			if ( $is_any_category_included ) {
+				$nx_plugin = $this->find_plugin_by_name( $all_plugins, 'notificationx/notificationx' );
+				$notificationx = array(
+					'name' => 'NotificationX',
+					'icon' => 'https://ps.w.org/notificationx/assets/icon-256x256.gif?rev=2783824',
+					'plugin_file' => 'notificationx/notificationx.php',
+					'plugin_original_slug' => 'notificationx',
+					'is_pro' => false,
+					'installed' => $nx_plugin ? ( $nx_plugin['status'] === 'active' ) : false,
+					'link' => 'https://wordpress.org/plugins/notificationx/',
+				);
+				$new_dependency_list[] = $notificationx;
+				$new_required_plugins[] = $notificationx;
+			}
 
-		// EmbedPress for blog-magazine category
-		$ep_is_any_category_included = false;
-		if ( ! empty( $categories ) && is_array( $categories ) ) {
-			foreach ( $categories as $category ) {
-				if ( isset( $category['slug'] ) && $category['slug'] === 'blog-magazine' ) {
-					$ep_is_any_category_included = true;
-					break;
+			// EmbedPress for blog-magazine category
+			$ep_is_any_category_included = false;
+			if ( ! empty( $categories ) && is_array( $categories ) ) {
+				foreach ( $categories as $category ) {
+					if ( isset( $category['slug'] ) && $category['slug'] === 'blog-magazine' ) {
+						$ep_is_any_category_included = true;
+						break;
+					}
 				}
 			}
-		}
 
-		if ( $ep_is_any_category_included ) {
-			$ep_plugin = $this->find_plugin_by_name( $all_plugins, 'embedpress/embedpress' );
-			$embed_press = array(
-				'name' => 'EmbedPress',
-				'icon' => 'https://ps.w.org/embedpress/assets/icon-256x256.gif?rev=2783824',
-				'plugin_file' => 'embedpress/embedpress.php',
-				'plugin_original_slug' => 'embedpress',
-				'is_pro' => false,
-				'installed' => $ep_plugin ? ( $ep_plugin['status'] === 'active' ) : false,
-				'link' => 'https://wordpress.org/plugins/embedpress/',
-			);
-			$new_dependency_list[] = $embed_press;
-			$new_required_plugins[] = $embed_press;
+			if ( $ep_is_any_category_included ) {
+				$ep_plugin = $this->find_plugin_by_name( $all_plugins, 'embedpress/embedpress' );
+				$embed_press = array(
+					'name' => 'EmbedPress',
+					'icon' => 'https://ps.w.org/embedpress/assets/icon-256x256.gif?rev=2783824',
+					'plugin_file' => 'embedpress/embedpress.php',
+					'plugin_original_slug' => 'embedpress',
+					'is_pro' => false,
+					'installed' => $ep_plugin ? ( $ep_plugin['status'] === 'active' ) : false,
+					'link' => 'https://wordpress.org/plugins/embedpress/',
+				);
+				$new_dependency_list[] = $embed_press;
+				$new_required_plugins[] = $embed_press;
+			}
 		}
 
 		return new \WP_REST_Response( array(
 			'dependencyList' => $new_dependency_list,
 			'requiredPlugins' => $new_required_plugins
 		) );
+	}
+
+	protected function should_offer_caching(): bool {
+		return Caching::should_offer();
 	}
 
 	/**

@@ -138,6 +138,12 @@ class Installer extends Base {
 			return $response;
 		}
 
+		$is_caching = Caching::PLUGIN_FILE === $plugin['plugin_file'];
+
+		if ( $is_caching ) {
+			Caching::prepare_settings();
+		}
+
 		$activate_status = $this->activate_plugin( $plugin['plugin_file'] );
 
 		if ( is_wp_error( $activate_status ) ) {
@@ -146,6 +152,12 @@ class Installer extends Base {
 
 		if ( $activate_status && ! is_wp_error( $activate_status ) ) {
 			$response['success'] = true;
+
+			if ( $is_caching ) {
+				Caching::configure_after_install();
+			}
+		} elseif ( $is_caching ) {
+			Caching::forget_settings();
 		}
 
 		$response['slug'] = $plugin['slug'];

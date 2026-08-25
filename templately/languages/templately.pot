@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Templately plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Templately 3.7.4\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/templately-latest\n"
+"Project-Id-Version: Templately 3.7.5\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/t3code-ab31667d\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-20T05:59:35+00:00\n"
+"POT-Creation-Date: 2026-08-25T12:09:16+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.13.0-alpha-16cc7a8\n"
 "X-Domain: templately\n"
@@ -261,12 +261,12 @@ msgstr ""
 msgid "Successfully saved."
 msgstr ""
 
-#: includes/API/Dependencies.php:37
+#: includes/API/Dependencies.php:39
 #: includes/Utils/Installer.php:60
 msgid "Sorry, you do not have permission to install a plugin."
 msgstr ""
 
-#: includes/API/Dependencies.php:100
+#: includes/API/Dependencies.php:102
 #: includes/Core/Admin.php:623
 #: includes/Core/Importer/Runners/ElementorContent.php:25
 #: assets/js/templately.js:1
@@ -279,7 +279,7 @@ msgstr ""
 msgid "Elementor"
 msgstr ""
 
-#: includes/API/Dependencies.php:130
+#: includes/API/Dependencies.php:132
 msgid "You have the plugin installed."
 msgstr ""
 
@@ -1724,29 +1724,29 @@ msgstr ""
 msgid "Sorry, you do not have permission to activate a plugin."
 msgstr ""
 
-#: includes/Utils/Installer.php:166
+#: includes/Utils/Installer.php:178
 msgid "Theme is already active"
 msgstr ""
 
-#: includes/Utils/Installer.php:171
+#: includes/Utils/Installer.php:183
 msgid "Function themes_api does not exist"
 msgstr ""
 
-#: includes/Utils/Installer.php:201
+#: includes/Utils/Installer.php:213
 msgid "Failed to install theme"
 msgstr ""
 
-#: includes/Utils/Installer.php:216
-#: includes/Utils/Installer.php:274
+#: includes/Utils/Installer.php:228
+#: includes/Utils/Installer.php:286
 msgid "Failed to activate theme"
 msgstr ""
 
-#: includes/Utils/Installer.php:227
+#: includes/Utils/Installer.php:239
 #, php-format
 msgid "The plugin requires PHP version %s or higher. You are running version %s."
 msgstr ""
 
-#: includes/Utils/Installer.php:236
+#: includes/Utils/Installer.php:248
 #, php-format
 msgid "The plugin requires WordPress version %s or higher. You are running version %s."
 msgstr ""
@@ -1860,32 +1860,32 @@ msgid "Rate Templately"
 msgstr ""
 
 #: assets/js/deactivate-survey.js:1
-#: react-src/deactivate-survey/Form.js:21
+#: react-src/deactivate-survey/Form.js:22
 msgid "Why are you deactivating?"
 msgstr ""
 
 #: assets/js/deactivate-survey.js:1
-#: react-src/deactivate-survey/Form.js:29
+#: react-src/deactivate-survey/Form.js:30
 msgid "Select a reason (optional)"
 msgstr ""
 
 #: assets/js/deactivate-survey.js:1
-#: react-src/deactivate-survey/Form.js:39
+#: react-src/deactivate-survey/Form.js:40
 msgid "Anything else you want to tell us?"
 msgstr ""
 
 #: assets/js/deactivate-survey.js:1
-#: react-src/deactivate-survey/Form.js:45
+#: react-src/deactivate-survey/Form.js:46
 msgid "Optional"
 msgstr ""
 
 #: assets/js/deactivate-survey.js:1
-#: react-src/deactivate-survey/Form.js:61
+#: react-src/deactivate-survey/Form.js:62
 msgid "Skip & Deactivate"
 msgstr ""
 
 #: assets/js/deactivate-survey.js:1
-#: react-src/deactivate-survey/Form.js:68
+#: react-src/deactivate-survey/Form.js:69
 msgid "Submit & Deactivate"
 msgstr ""
 
@@ -5001,129 +5001,129 @@ msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/AiContentSidebar/helper.js:849
-#: react-src/app/components/core/AiContentSidebar/helper.js:865
-#: react-src/app/components/core/AiContentSidebar/helper.js:875
-#: react-src/app/components/core/AiContentSidebar/helper.js:888
-#: react-src/app/components/core/AiContentSidebar/helper.js:901
-#: react-src/app/components/core/AiContentSidebar/helper.js:911
-#: react-src/app/components/core/AiContentSidebar/helper.js:921
+#: react-src/app/components/core/AiContentSidebar/helper.js:859
+#: react-src/app/components/core/AiContentSidebar/helper.js:872
+#: react-src/app/components/core/AiContentSidebar/helper.js:885
+#: react-src/app/components/core/AiContentSidebar/helper.js:895
+#: react-src/app/components/core/AiContentSidebar/helper.js:905
+#: react-src/app/components/core/AiContentSidebar/helper.js:918
 #: react-src/app/components/core/AiContentSidebar/helper.js:934
 msgid "For example"
 msgstr ""
 
 #: assets/js/templately.js:1
 #: react-src/app/components/core/AiContentSidebar/helper.js:853
-msgid "Do you want to change the language for content generation? By default, we generate content in English."
-msgstr ""
-
-#: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:862
-msgid "Here you can change your content language or can click skip to keep the default language."
-msgstr ""
-
-#: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:865
-msgid "English, Spanish, French, German, etc."
-msgstr ""
-
-#: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:869
 msgid "Love that!"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:869
+#: react-src/app/components/core/AiContentSidebar/helper.js:853
 msgid "What type of business or industry are you in?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:875
+#: react-src/app/components/core/AiContentSidebar/helper.js:859
 msgid "Share your business type. You can either select from the available categories in the dropdown or write down any specific type."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:878
+#: react-src/app/components/core/AiContentSidebar/helper.js:862
 msgid "Agency, Restaurant, Technology"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:882
+#: react-src/app/components/core/AiContentSidebar/helper.js:866
 msgid "Sounds great! Tell me more about your business — what you do, who you serve, and what makes you special. Please write at least 50 words."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:888
+#: react-src/app/components/core/AiContentSidebar/helper.js:872
 msgid "Share your business details with us."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:888
+#: react-src/app/components/core/AiContentSidebar/helper.js:872
 msgid "It’s an agency website that offers education consultancy to students who want to study abroad."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:895
+#: react-src/app/components/core/AiContentSidebar/helper.js:879
 msgid "Thank you! What’s the email address you’d like to show on your website?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:901
+#: react-src/app/components/core/AiContentSidebar/helper.js:885
 msgid "Share the email address that you want to show on your website."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:901
+#: react-src/app/components/core/AiContentSidebar/helper.js:885
 msgid "xyz@gmail.com"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:905
+#: react-src/app/components/core/AiContentSidebar/helper.js:889
 msgid "Do you also want to add a contact number? If yes, please share it."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:911
+#: react-src/app/components/core/AiContentSidebar/helper.js:895
 msgid "Share the contact number you want to add."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:911
+#: react-src/app/components/core/AiContentSidebar/helper.js:895
 msgid "+02860630"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:915
+#: react-src/app/components/core/AiContentSidebar/helper.js:899
 msgid "Nice! What’s your business address?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:921
+#: react-src/app/components/core/AiContentSidebar/helper.js:905
 msgid "Share your business address you want to show."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:921
+#: react-src/app/components/core/AiContentSidebar/helper.js:905
 msgid "123 Business Lane, Suite 456 Downtown District, New York, NY 10001 United States"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:928
+#: react-src/app/components/core/AiContentSidebar/helper.js:912
 msgid "Awesome"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:928
+#: react-src/app/components/core/AiContentSidebar/helper.js:912
 msgid "Do you have any opening hours you want to display?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:934
+#: react-src/app/components/core/AiContentSidebar/helper.js:918
 msgid "Share your opening hours."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: react-src/app/components/core/AiContentSidebar/helper.js:934
+#: react-src/app/components/core/AiContentSidebar/helper.js:918
 msgid "We stay open from 08:00 AM to 06:00 PM (GMT+6)"
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/AiContentSidebar/helper.js:922
+msgid "Do you want to change the language for content generation? By default, we generate content in English."
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/AiContentSidebar/helper.js:931
+msgid "Here you can change your content language or can click skip to keep the default language."
+msgstr ""
+
+#: assets/js/templately.js:1
+#: react-src/app/components/core/AiContentSidebar/helper.js:934
+msgid "English, Spanish, French, German, etc."
 msgstr ""
 
 #: assets/js/templately.js:1
