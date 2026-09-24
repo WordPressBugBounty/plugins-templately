@@ -2,7 +2,7 @@
 
 namespace Templately\Core;
 
-use Templately\API\Profile;
+use Templately\Modules\Auth\REST\Profile;
 use Templately\Utils\Base;
 use Templately\Utils\Options;
 
@@ -68,7 +68,57 @@ class Migrator extends Base {
 			Profile::get_instance()->sync();
 		}
 
+		$this->cleanup_gutenberg_elementor_meta();
+
 		$this->options->update_option( '_templately_migrate', TEMPLATELY_VERSION );
+	}
+
+	/**
+	 * One-time cleanup: a bug mapped EVERY `templately_library` template to an Elementor
+	 * document type regardless of platform (the mapping gated on the CPT, not the
+	 * template's platform). Elementor therefore adopted GUTENBERG templates as Elementor
+	 * documents and persisted Elementor meta onto them (`_elementor_edit_mode=builder`,
+	 * `_elementor_template_type`, ...), so they reported `is_built_with_elementor() === true`
+	 * and surfaced Elementor's "Edit with Elementor" UI for a Gutenberg post. The mapping is
+	 * now platform-gated (ThemeBuilder::modify_template_type); strip the already-persisted
+	 * Elementor meta from Gutenberg-platform templates so they are no longer treated as
+	 * Elementor documents. Runs once (own flag), independent of the version gates above.
+	 */
+	private function cleanup_gutenberg_elementor_meta(){
+		$flag = '_templately_cleaned_gutenberg_elementor_meta';
+
+		if ( $this->options->get_option( $flag ) ) {
+			return;
+		}
+
+		global $wpdb;
+
+		$post_ids = $wpdb->get_col( $wpdb->prepare(
+			"SELECT p.ID FROM {$wpdb->posts} p
+			 INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID
+			 WHERE p.post_type = %s AND pm.meta_key = %s AND pm.meta_value = %s",
+			'templately_library',
+			'_templately_template_platform',
+			'gutenberg'
+		) );
+
+		// Pure-Elementor document meta that must not live on a Gutenberg template.
+		$meta_keys = [
+			'_elementor_edit_mode',
+			'_elementor_template_type',
+			'_elementor_data',
+			'_elementor_version',
+			'_elementor_page_settings',
+			'_elementor_css',
+		];
+
+		foreach ( (array) $post_ids as $post_id ) {
+			foreach ( $meta_keys as $meta_key ) {
+				delete_post_meta( (int) $post_id, $meta_key );
+			}
+		}
+
+		$this->options->update_option( $flag, time() );
 	}
 
 }

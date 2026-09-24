@@ -10,18 +10,6 @@ use function get_current_user_id;
 
 class Options extends Base {
 	/**
-	 * Current User Id
-	 * @var integer
-	 */
-	private $current_user;
-
-	/**
-	 * User has any api?
-	 * @var boolean
-	 */
-	private $has_api;
-
-	/**
 	 * Pin every derived read/write to the acting user, bypassing the
 	 * global-login fallback in user_id().
 	 *
@@ -30,31 +18,36 @@ class Options extends Base {
 	private $force_current_user = false;
 
 	/**
-	 * Automatically invoked and set up the properties.
-	 */
-	public function __construct(){
-		$this->current_user = get_current_user_id();
-		$this->has_api      = ! empty( $this->get( 'api_key', '', $this->current_user ) );
-	}
-
-	/**
 	 * Get the current user ID.
 	 *
-	 * `get_current_user_id()` can still be 0 when this singleton is built — a
-	 * wp-cli run before `wp_set_current_user()`, or a request whose auth has not
-	 * been resolved yet. Caching that 0 for the rest of the request made every
-	 * derived write bail in `can_write()`, so a connect could answer "Site
-	 * connected successfully" and persist nothing. Re-read while it is still
-	 * unknown; a resolved id is never overwritten.
+	 * Resolved live on every call rather than cached at construction time:
+	 * `Options` is a request-lifetime singleton (`Base::get_instance()`), and
+	 * something in Templately's own bootstrap (e.g. `Admin`/`Settings`)
+	 * constructs it during `plugins_loaded` — before WordPress resolves the
+	 * REST Application-Password current user (which only happens later, when
+	 * the REST server actually dispatches the route). Caching `
+	 * get_current_user_id()` at construction froze it at `0` for the rest of
+	 * the request on any headless (non-cookie) REST/MCP call, so every later
+	 * `Options` read looked up user `0`'s meta instead of the real acting
+	 * user's — reporting "session expired" even for a genuinely connected
+	 * account. `get_current_user_id()` is itself cheap (it just reads WP
+	 * core's own already-resolved `$current_user` global), so there is no
+	 * reason to cache it a second time here.
 	 *
 	 * @return int
 	 */
 	public function current_user_id(): int {
-		if ( $this->current_user <= 0 ) {
-			$this->current_user = get_current_user_id();
-		}
+		return get_current_user_id();
+	}
 
-		return $this->current_user;
+	/**
+	 * Whether the current user has an API key set — computed live for the
+	 * same reason as {@see current_user_id()}, not cached.
+	 *
+	 * @return boolean
+	 */
+	private function has_api(): bool {
+		return ! empty( $this->get( 'api_key', '', $this->current_user_id() ) );
 	}
 
 	/**
@@ -62,11 +55,11 @@ class Options extends Base {
 	 * @return boolean
 	 */
 	public function link_account(): bool {
-		return $this->who_am_i() === 'link' && ! $this->has_api;
+		return $this->who_am_i() === 'link' && ! $this->has_api();
 	}
 
 	public function unlink_account(): bool {
-		return ( $this->who_am_i() === 'link' || $this->who_am_i() === 'local' ) && $this->has_api;
+		return ( $this->who_am_i() === 'link' || $this->who_am_i() === 'local' ) && $this->has_api();
 	}
 
 	/**
@@ -75,12 +68,13 @@ class Options extends Base {
 	 */
 	public function who_am_i(): string {
 		$_who_am_i = 'local';
+		$current_user = $this->current_user_id();
 
-		if( $this->is_global() > 0 && $this->is_global() === $this->current_user_id() ) {
+		if( $this->is_global() > 0 && $this->is_global() === $current_user ) {
 			$_who_am_i = 'global';
 		}
 
-		if( $this->is_global() > 0 && $this->is_global() !== $this->current_user_id() ) {
+		if( $this->is_global() > 0 && $this->is_global() !== $current_user ) {
 			$_who_am_i = 'link';
 		}
 
@@ -115,13 +109,21 @@ class Options extends Base {
 		$_who_am_i = $this->who_am_i();
 
 		if( ! empty( $_SERVER['REQUEST_URI'] ) ) {
-			$parse_uri = explode( '/', substr( $_SERVER['REQUEST_URI'], 0, strpos( $_SERVER['REQUEST_URI'], '?' ) ) );
-			if( $_who_am_i === 'link' && array_pop( $parse_uri ) === 'login' ) {
+			// FR-003: in 'link' mode the login-endpoint override targets the
+			// current user so they can store their own credentials. Detect it
+			// with a substring match on '/login' so REST paths such as
+			// `/wp-json/templately/v1/login` are covered — including requests
+			// with NO query string, which the former last-path-segment check
+			// (substr up to '?', which collapses to '' when there is no '?')
+			// never matched. `strpos(...) !== false` keeps the PHP 7.4 floor
+			// (`str_contains()` is PHP 8.0+).
+			$uri = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) );
+			if( $_who_am_i === 'link' && strpos( $uri, '/login' ) !== false ) {
 				return $this->current_user_id();
 			}
 		}
 
-		if( $_who_am_i === 'link' && $this->has_api ) {
+		if( $_who_am_i === 'link' && $this->has_api() ) {
 			return $this->current_user_id();
 		}
 
@@ -171,13 +173,7 @@ class Options extends Base {
 	public function set( $key, $value, $user_id = null ): bool {
 		$key = '_templately_' . $key;
 
-		$updated = $this->update_user_meta( $user_id, $key, $value );
-
-		if( $key === '_templately_api_key' && $updated ) {
-			$this->has_api = true;
-		}
-
-		return $updated;
+		return $this->update_user_meta( $user_id, $key, $value );
 	}
 
 	/**
@@ -190,7 +186,10 @@ class Options extends Base {
 	public function get( $key, $default = false, $user_id = null ){
 		$key = '_templately_' . $key;
 		$_user_meta = $this->get_user_meta( $user_id, $key, true );
-		return ! empty( $_user_meta ) ? $_user_meta : $default;
+		// '' (get_user_meta) and false (get_user_option) are the MISSING sentinels —
+		// but 0, '0' and [] are legitimate stored values and must not collapse to
+		// the default (the same falsy-swallow bug fixed in API::get_param()).
+		return ( '' === $_user_meta || false === $_user_meta ) ? $default : $_user_meta;
 	}
 
 	/**
@@ -201,11 +200,7 @@ class Options extends Base {
 	 */
 	public function remove( string $key ): Options {
 		$key = '_templately_' . $key;
-		$updated = $this->delete_user_meta( $key );
-
-		if( $key === '_templately_api_key' && $updated ) {
-			$this->has_api = false;
-		}
+		$this->delete_user_meta( $key );
 
 		return $this;
 	}

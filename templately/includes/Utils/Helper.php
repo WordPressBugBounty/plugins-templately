@@ -3,7 +3,8 @@
 namespace Templately\Utils;
 
 use Elementor\Plugin;
-use Templately\Core\Importer\Utils\Utils;
+use Templately\Modules\FullSiteImport\Utils\Utils;
+use Templately\Utils\Response\ResponseNormalizer;
 use WP_Error;
 use WP_REST_Response;
 use function get_plugins;
@@ -23,8 +24,53 @@ class Helper extends Base {
 	 * @return bool True if development API should be used
 	 */
 	public static function is_dev_api(){
-		// Only check TEMPLATELY_DEV_API constant - no fallback mechanisms
+		// Developer OVERRIDE: a PHP constant can't be redefined at runtime, so when the
+		// override is explicitly unlocked (`templately_developer_override` option), the
+		// saved developer setting takes priority over the wp-config constant. Read
+		// directly (no Developer-class dependency — that module is dev-only) and OFF by
+		// default, so production behaviour is unchanged (constant-only).
+		if ( get_option( 'templately_developer_override', false ) ) {
+			$settings = get_option( 'templately_developer_settings', [] );
+			if ( is_array( $settings ) && array_key_exists( 'TEMPLATELY_DEV_API', $settings ) ) {
+				return (bool) $settings['TEMPLATELY_DEV_API'];
+			}
+		}
 		return defined( 'TEMPLATELY_DEV_API' ) && constant( 'TEMPLATELY_DEV_API' );
+	}
+
+	/**
+	 * The singular post-type label for the content currently being viewed — i.e. what a
+	 * conditioned header/footer/single/archive template is decorating on this request
+	 * ("Post" on a single post, "Page" on a page, "Product" on a shop/product). Null when
+	 * there's no meaningful post type (e.g. 404). Shared so BOTH theme-builder admin bars
+	 * (Elementor `DocumentManager::filter_admin_bar_labels` + Gutenberg `AdminBar`) badge
+	 * the same way — the pill reads the post type, not the template type.
+	 *
+	 * @return string|null
+	 */
+	public static function current_context_post_type_label(): ?string {
+		$post_type = '';
+
+		if ( is_singular() ) {
+			$post_type = get_post_type( get_queried_object_id() );
+		} elseif ( function_exists( 'is_shop' ) && is_shop() ) {
+			$post_type = 'product';
+		} elseif ( is_post_type_archive() ) {
+			$post_type = get_query_var( 'post_type' );
+			if ( is_array( $post_type ) ) {
+				$post_type = reset( $post_type );
+			}
+		} elseif ( is_home() ) {
+			$post_type = 'post';
+		}
+
+		if ( empty( $post_type ) ) {
+			return null;
+		}
+
+		$object = get_post_type_object( $post_type );
+
+		return $object ? $object->labels->singular_name : null;
 	}
 
 	/**
@@ -117,7 +163,7 @@ class Helper extends Base {
 	/**
 	 * A URL on the public Templately website, honouring the dev domain.
 	 *
-	 * The PHP counterpart of `react-src/utils/helper.js#webURL`. A hard-coded
+	 * The PHP counterpart of `react-src/utils/helper.ts#webURL`. A hard-coded
 	 * `https://templately.com/...` sends a site running against the dev API to
 	 * the live site, where its account does not exist — so build every out-link
 	 * through this instead.
@@ -156,6 +202,66 @@ class Helper extends Base {
 	}
 
 	/**
+	 * Resolve the requesting host platform ('templately' | 'ai-builder' | ...),
+	 * forwarded to the cloud as the `x-templately-requested-platform` header so the
+	 * cloud can scope behaviour per host (e.g. waive the pack-purchase gate for the
+	 * AI Builder onboarding). Resolution order:
+	 *   1. the incoming `X-Templately-Requested-Platform` HTTP header — a host (e.g.
+	 *      ai-builder) sets it ONCE via an apiFetch middleware / fetch header, so no
+	 *      per-call body param is needed;
+	 *   2. the `requested_platform` request param (back-compat with explicit callers);
+	 *   3. the `templately_requested_platform` filter (programmatic override);
+	 *   4. the fallback (default 'templately').
+	 *
+	 * @param string $fallback Value when nothing else resolves.
+	 * @return string
+	 */
+	public static function get_requested_platform( $fallback = 'templately' ) {
+		$platform = '';
+		if ( ! empty( $_SERVER['HTTP_X_TEMPLATELY_REQUESTED_PLATFORM'] ) ) {
+			$platform = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_TEMPLATELY_REQUESTED_PLATFORM'] ) );
+			// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading a host marker, not acting on form data.
+		} elseif ( isset( $_REQUEST['requested_platform'] ) ) {
+			$platform = sanitize_text_field( wp_unslash( $_REQUEST['requested_platform'] ) );
+			// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		}
+
+		if ( '' === $platform ) {
+			$platform = $fallback;
+		}
+
+		return apply_filters( 'templately_requested_platform', $platform );
+	}
+
+	/**
+	 * Resolve the entry-point/source marker for the current request — which surface
+	 * initiated the flow (admin SPA, editor toolbar, editor add-section, …). Mirrors
+	 * get_requested_platform(): incoming `X-Templately-Source` header →
+	 * `$_REQUEST['templately_source']` → filter. Empty string means "unknown" and is
+	 * NOT forwarded to the cloud. Values are engagement telemetry only — never branch
+	 * behaviour on them.
+	 *
+	 * @param string $fallback Value when nothing else resolves.
+	 * @return string
+	 */
+	public static function get_request_source( $fallback = '' ) {
+		$source = '';
+		if ( ! empty( $_SERVER['HTTP_X_TEMPLATELY_SOURCE'] ) ) {
+			$source = sanitize_key( wp_unslash( $_SERVER['HTTP_X_TEMPLATELY_SOURCE'] ) );
+			// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading a telemetry marker, not acting on form data.
+		} elseif ( isset( $_REQUEST['templately_source'] ) ) {
+			$source = sanitize_key( wp_unslash( $_REQUEST['templately_source'] ) );
+			// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		}
+
+		if ( '' === $source ) {
+			$source = $fallback;
+		}
+
+		return apply_filters( 'templately_request_source', $source );
+	}
+
+	/**
 	 * Make a unified API request to Templately API
 	 *
 	 * @param string $method HTTP method (GET or POST)
@@ -185,15 +291,32 @@ class Helper extends Base {
 			$headers['Content-Type'] = 'application/json';
 		}
 
-		// Resolve requested platform: $_REQUEST wins (frontend-supplied), then caller's extra_headers, then default.
-		if ( isset( $_REQUEST['requested_platform'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$extra_headers['x-templately-requested-platform'] = sanitize_text_field( wp_unslash( $_REQUEST['requested_platform'] ) );
-		} elseif ( ! isset( $extra_headers['x-templately-requested-platform'] ) ) {
-			$extra_headers['x-templately-requested-platform'] = 'templately';
+		// Resolve the requesting host platform centrally. A caller-supplied extra_headers
+		// value still wins (explicit override); otherwise resolve from the incoming
+		// header / request param / filter (see Helper::get_requested_platform).
+		if ( ! isset( $extra_headers['x-templately-requested-platform'] ) ) {
+			$extra_headers['x-templately-requested-platform'] = self::get_requested_platform();
+		}
+
+		// Entry-point marker (engagement telemetry). A URL QUERY PARAM, not a header:
+		// the cloud's ordinary access logs capture the request URL, so the marker is
+		// countable with zero cloud-side code. No separate tracking calls are ever
+		// made (wp.org policy) — this only annotates requests that happen anyway.
+		// Only appended when known; absent means "unknown", not an error.
+		if ( '' !== self::get_request_source() ) {
+			$api_url = add_query_arg( 'tl_source', self::get_request_source(), $api_url );
 		}
 
 		// Merge additional headers
 		$headers = array_merge($headers, $extra_headers);
+
+		// A request the HTTP layer is allowed to spend $timeout seconds on can still
+		// be killed by PHP's OWN max_execution_time, which is 30s on a great many
+		// hosts. When that happens there is no WP_Error and no response to inspect:
+		// PHP fatals mid-request, WordPress answers with its HTML "critical error"
+		// page, and a JSON client renders that markup as if it were content. Give
+		// PHP enough runway for the timeout we are about to ask for.
+		self::extend_time_limit( $timeout );
 
 		$args = [
 			'timeout' => $timeout,
@@ -226,6 +349,49 @@ class Helper extends Base {
 	}
 
 	/**
+	 * GET a Templately API endpoint and return the NORMALIZED result (spec 043).
+	 *
+	 * This is the REST twin of `Http::post()`. Prefer it over
+	 * `make_api_get_request()`: that one hands back the raw `wp_remote_*` array and
+	 * leaves every caller to invent its own "did this fail?" check — which is how
+	 * the plugin ended up reading one server ten different ways.
+	 *
+	 * Side-effects (verification / disconnection) are already applied by
+	 * `make_api_request()`, so the normalizer is told to skip them rather than
+	 * repeat the work.
+	 *
+	 * @param string $endpoint      API endpoint path (e.g. 'v2/import/info/pack/123').
+	 * @param array  $query_params  Query parameters.
+	 * @param array  $extra_headers Additional headers.
+	 * @param int    $timeout       Seconds.
+	 * @param array  $options       Normalizer options (e.g. [ 'raw' => true ] for binary).
+	 * @return \Templately\Utils\Response\RemoteResponse
+	 */
+	public static function api_get( $endpoint, $query_params = [], $extra_headers = [], $timeout = 30, $options = [] ) {
+		return ResponseNormalizer::normalize(
+			self::make_api_get_request( $endpoint, $query_params, $extra_headers, $timeout ),
+			array_merge( [ 'side_effects' => false ], $options )
+		);
+	}
+
+	/**
+	 * POST to a Templately API endpoint and return the NORMALIZED result (spec 043).
+	 *
+	 * @param string $endpoint      API endpoint path.
+	 * @param array  $body          Request body.
+	 * @param array  $extra_headers Additional headers.
+	 * @param int    $timeout       Seconds.
+	 * @param array  $options       Normalizer options.
+	 * @return \Templately\Utils\Response\RemoteResponse
+	 */
+	public static function api_post( $endpoint, $body = [], $extra_headers = [], $timeout = 30, $options = [] ) {
+		return ResponseNormalizer::normalize(
+			self::make_api_post_request( $endpoint, $body, $extra_headers, $timeout ),
+			array_merge( [ 'side_effects' => false ], $options )
+		);
+	}
+
+	/**
 	 * Make a GET request to Templately API
 	 *
 	 * @param string $endpoint API endpoint path (e.g., 'v2/import/pack/123')
@@ -237,9 +403,18 @@ class Helper extends Base {
 	public static function make_api_get_request($endpoint, $query_params = [], $extra_headers = [], $timeout = 30) {
 		$api_url = self::get_api_url($endpoint);
 
-		// Add query parameters if provided
+		// Add query parameters if provided.
+		//
+		// `http_build_query()`, NOT `add_query_arg()`: the latter does not encode the values
+		// it is given (only the ones already on the URL, via its own `urlencode_deep`), so a
+		// value carrying `&` silently became two parameters and a value carrying `#` truncated
+		// the rest of the query into a fragment the server never sees. Every param here comes
+		// from somewhere a user can type — an image search term, a business description, a hex
+		// colour — so that is not a theoretical shape. It also flattens arrays as `k[0]=…`,
+		// which is what PHP on the other end parses back into an array.
 		if (!empty($query_params)) {
-			$api_url = add_query_arg($query_params, $api_url);
+			$separator = false === strpos($api_url, '?') ? '?' : '&';
+			$api_url  .= $separator . http_build_query($query_params, '', '&', PHP_QUERY_RFC3986);
 		}
 
 		return self::make_api_request('GET', $api_url, [], $extra_headers, $timeout);
@@ -257,6 +432,35 @@ class Helper extends Base {
 	public static function make_api_post_request($endpoint, $body = [], $extra_headers = [], $timeout = 30) {
 		$api_url = self::get_api_url($endpoint);
 		return self::make_api_request('POST', $api_url, $body, $extra_headers, $timeout);
+	}
+
+	/**
+	 * Ensure PHP will not cut the process short before an HTTP call of $timeout
+	 * seconds can finish.
+	 *
+	 * Only ever RAISES the limit, and only when the configured one is too small;
+	 * a host that has already granted more keeps it. `max_execution_time` of 0
+	 * means "no limit" (CLI, WP-Cron on some setups) and needs nothing. When the
+	 * host has disabled `set_time_limit()`, `function_exists()` is false and we
+	 * leave the request to take its chances rather than emit a warning.
+	 *
+	 * @param int $timeout Seconds the pending HTTP request may take.
+	 * @return void
+	 */
+	private static function extend_time_limit( $timeout ) {
+		$limit = (int) ini_get( 'max_execution_time' );
+
+		if ( $limit <= 0 || ! function_exists( 'set_time_limit' ) ) {
+			return;
+		}
+
+		// The margin covers everything around the call that also runs on this
+		// clock: building the payload, and the response handling afterwards.
+		$needed = (int) $timeout + 30;
+
+		if ( $needed > $limit ) {
+			@set_time_limit( $needed ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- host may refuse; the request still proceeds.
+		}
 	}
 
 	/**
@@ -319,6 +523,31 @@ class Helper extends Base {
 	}
 
 	/**
+	 * Flip the stored user's `is_verified` flag on.
+	 *
+	 * Extracted for spec 043 so the normalizer can apply the same side-effect
+	 * when verification arrives in the response BODY (the connect mutation)
+	 * rather than in the `X-Templately-Verified` header.
+	 *
+	 * @return array the (possibly updated) user option; empty when no user is stored.
+	 */
+	public static function mark_user_verified() {
+		$options = Options::get_instance();
+		$user    = $options->get('user');
+
+		if (empty($user) || !is_array($user)) {
+			return [];
+		}
+
+		if (empty($user['is_verified'])) {
+			$user['is_verified'] = true;
+			$options->set('user', $user);
+		}
+
+		return $user;
+	}
+
+	/**
 	 * Check for X-Templately-Verified header and update user verification status
 	 *
 	 * @param array|WP_Error $response The HTTP response array from wp_remote_get/wp_remote_post
@@ -333,22 +562,11 @@ class Helper extends Base {
 		// Retrieve the X-Templately-Verified header
 		$verification_header = wp_remote_retrieve_header($response, 'X-Templately-Verified');
 
-		// Check if header exists and has a truthy value
+		// Check if header exists and has a truthy value.
+		// An empty/absent header means "no change" — never "unverified" (043 D6).
 		if (!empty($verification_header) && filter_var($verification_header, FILTER_VALIDATE_BOOLEAN)) {
 			try {
-				// Get current user data
-				$options = Options::get_instance();
-				$user = $options->get('user');
-
-				// Only update if user data exists and is not already verified
-				if (!empty($user) && is_array($user) && empty($user['is_verified'])) {
-					// Set verification flag
-					$user['is_verified'] = true;
-
-					// Save updated user data
-					$options->set('user', $user);
-
-				}
+				$user = self::mark_user_verified();
 
 				if (!empty($user['is_verified'])){
 					if(!headers_sent()){
@@ -477,14 +695,30 @@ class Helper extends Base {
 	 * @return WP_Error
 	 */
 	public static function error($error_code, $error_message, $endpoint = '', $status = 500, $additional_data = []) {
-		$additional_data['status'] = $status;
+		// The status reaches WP's REST server as `data.status` and decides the HTTP
+		// code. A STRING there ("404") makes WP fall back to 500, so a caller that
+		// passed a numeric string got the wrong status on the wire.
+		$additional_data['status'] = (int) $status;
+
+		// An array message is field-level validation detail, not a sentence. Left in
+		// `message` it renders as "Array" to the user; routed to `fields` it is
+		// structured data the client can attach to the right input (FR-007).
+		if (is_array($error_message)) {
+			$additional_data['fields'] = array_merge(
+				isset($additional_data['fields']) && is_array($additional_data['fields']) ? $additional_data['fields'] : [],
+				$error_message
+			);
+			$error_message = __('Please correct the highlighted fields.', 'templately');
+		}
 		if (! empty($endpoint)) {
 			$additional_data['endpoint'] = $endpoint;
 		}
-		// Add browser padding to avoid browsers not serving small JSON responses
-		$padding_length = 512;
-		$additional_data['browser_padding'] = str_repeat(' ', $padding_length);
-
+		// Small-response browser padding is NOT added here any more (043 FR-008a).
+		// It used to staple 512 bytes into every error's data bag unconditionally,
+		// which put a junk field inside the response contract and padded bodies
+		// that were never small enough to need it. `RestEnvelope` now applies it
+		// once, centrally, only below the size threshold, and as a header — so the
+		// body stays exactly the shape the schema describes.
 		return new WP_Error($error_code, $error_message, $additional_data);
 	}
 
@@ -556,11 +790,12 @@ class Helper extends Base {
 		$trace = debug_backtrace(); // phpcs:ignore PHPCompatibility.FunctionUse.ArgumentFunctionsReportCurrentValue.NeedsInspection
 		$file = $trace[0]['file'];
 		$line = $trace[0]['line'];
-		trigger_error("Call to undefined method $class::$method() in $file on line $line", E_USER_ERROR);
+		trigger_error( esc_html( "Call to undefined method $class::$method() in $file on line $line" ), E_USER_ERROR ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error
 	}
 
 	/**
-	 * Printing Error Logs in debug.log file.
+	 * Write a line to Templately's dedicated log file (uploads/templately/log/),
+	 * NOT the site-wide debug.log — see {@see \Templately\Utils\Log\LogFile}.
 	 *
 	 * @param mixed $log The data to log
 	 * @param string $context Optional context for categorizing log entries
@@ -574,16 +809,50 @@ class Helper extends Base {
 			return;
 		}
 
-		// Only log if WP_DEBUG_LOG is enabled
-		if (!defined('WP_DEBUG_LOG') || !WP_DEBUG_LOG) {
+		// The default sink is WP_DEBUG_LOG-gated; additional sinks subscribed to
+		// the `templately_log` action see entries regardless (a capture module
+		// must not depend on the file gate). Skip the formatting work entirely
+		// when nobody would receive the entry.
+		$gate_open = defined('WP_DEBUG_LOG') && WP_DEBUG_LOG;
+		if (!$gate_open && !has_action('templately_log')) {
 			return;
 		}
 
 		// Format the log message
 		$formatted_message = self::format_log_message($log, $context, $level);
 
-		// Write to error log
-		error_log($formatted_message);
+		/**
+		 * Fan-out: every subscribed module receives every entry (http-inspector
+		 * capture, dev console, telemetry…). Listeners are independent sinks —
+		 * this is how MULTIPLE loggers coexist without replacing each other.
+		 *
+		 * @param string $formatted_message The full formatted line.
+		 * @param mixed  $log               The raw payload passed to log().
+		 * @param string $context           Context label.
+		 * @param string $level             debug|info|warning|error.
+		 */
+		do_action('templately_log', $formatted_message, $log, $context, $level);
+
+		if (!$gate_open) {
+			return;
+		}
+
+		/**
+		 * The DEFAULT sink, replaceable/decoratable: a filter receives the
+		 * current sink callable and may return a wrapper around it (decorator —
+		 * filter priority defines wrap order) or a substitute. Core's default is
+		 * the dedicated uploads log file (error_log fallback inside). Note:
+		 * entries logged before a module boots (e.g. Modules_Manager discovery
+		 * notices) necessarily use the core default.
+		 *
+		 * @param callable $sink function( string $formatted_line ): void
+		 */
+		$sink = apply_filters('templately_log_sink', [Log\LogFile::class, 'write']);
+		if (is_callable($sink)) {
+			$sink($formatted_message);
+		} else {
+			Log\LogFile::write($formatted_message);
+		}
 	}
 
 	/**
@@ -614,10 +883,17 @@ class Helper extends Base {
 	}
 
 	public static function should_flush() {
-		if (isset($_REQUEST['is_lightspeed']) && $_REQUEST['is_lightspeed'] === 'true') {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a read-only capability probe, not a state change.
+		$is_lightspeed = isset($_REQUEST['is_lightspeed']) ? sanitize_text_field(wp_unslash($_REQUEST['is_lightspeed'])) : '';
+		if ('true' === $is_lightspeed) {
 			return false;
 		}
-		return (!defined('TEMPLATELY_IGNORE_FLUSH_ALL') || !TEMPLATELY_IGNORE_FLUSH_ALL) && strpos($_SERVER['SERVER_SOFTWARE'], 'LiteSpeed') === false;
+
+		// SERVER_SOFTWARE is not guaranteed to be set — some SAPIs (and CLI) omit
+		// it entirely, and passing null to strpos() is a fatal on PHP 8.1+.
+		$server_software = isset($_SERVER['SERVER_SOFTWARE']) ? sanitize_text_field(wp_unslash($_SERVER['SERVER_SOFTWARE'])) : '';
+
+		return (!defined('TEMPLATELY_IGNORE_FLUSH_ALL') || !TEMPLATELY_IGNORE_FLUSH_ALL) && strpos($server_software, 'LiteSpeed') === false;
 	}
 
 	public static function get_block_by_name($blocks, $search) {
@@ -706,16 +982,36 @@ class Helper extends Base {
 	 * @return bool True if the script should exit, false otherwise.
 	 */
 	public static function fsi_should_exit() {
-		if (defined('TEMPLATELY_START_TIME') && ini_get('max_execution_time')) {
-			$max_time = ini_get('max_execution_time');
-			$elapsed  = microtime(true) - TEMPLATELY_START_TIME;
-			$delay    = max(5, $max_time * 20 / 100);
-
-			// Check if elapsed time is close to max execution time
-			if ($max_time - $elapsed <= $delay) {
-				return ['max_time' => $max_time, 'elapsed' => $elapsed, 'delay' => $delay];
-			}
+		if (!defined('TEMPLATELY_START_TIME')) {
+			return false;
 		}
+
+		$max_time = (int) ini_get('max_execution_time');
+		$elapsed  = microtime(true) - TEMPLATELY_START_TIME;
+
+		if ($max_time <= 0) {
+			// The import request calls set_time_limit(0), which zeroes
+			// max_execution_time — but gateways (FPM, LiteSpeed, nginx proxies)
+			// still kill the request on THEIR clock, typically at 60s. With no
+			// PHP limit to lean on, budget against a wall-clock ceiling instead
+			// so runners keep chunking gracefully (and persisting their
+			// backup_attributes) instead of dying mid-loop to a 504.
+			$budget = (int) apply_filters('templately_fsi_request_time_budget', 25);
+
+			if ($budget > 0 && $elapsed >= $budget) {
+				return ['max_time' => $budget, 'elapsed' => $elapsed, 'delay' => 0];
+			}
+
+			return false;
+		}
+
+		$delay = max(5, $max_time * 20 / 100);
+
+		// Check if elapsed time is close to max execution time
+		if ($max_time - $elapsed <= $delay) {
+			return ['max_time' => $max_time, 'elapsed' => $elapsed, 'delay' => $delay];
+		}
+
 		return false;
 	}
 
@@ -744,6 +1040,40 @@ class Helper extends Base {
 	 * @param [type] $defaults
 	 * @return array
 	 */
+	/**
+	 * Returns true when the current WordPress site is running on a private/loopback
+	 * host where an external API server cannot push callbacks (localhost, *.local,
+	 * *.test, RFC-1918 addresses). Used as a fallback when the remote API does not
+	 * return an explicit is_local_site flag.
+	 */
+	public static function is_local_site(): bool {
+		$host = (string) parse_url( get_option( 'siteurl' ), PHP_URL_HOST );
+		// Strip port if present (e.g. "localhost:8888")
+		$host = (string) preg_replace( '/:\d+$/', '', $host );
+
+		if ( in_array( $host, [ 'localhost', '127.0.0.1', '::1' ], true ) ) {
+			return true;
+		}
+		// Common local/dev TLDs that no public DNS resolves (an external API server
+		// cannot push callbacks to them): .local/.test (mDNS/RFC-6761), .tst (the
+		// WPDeveloper sandbox), .localhost, .dev.
+		// `substr()` rather than `str_ends_with()`: the plugin advertises WordPress 5.0 /
+		// PHP 7.2, `str_ends_with()` is PHP 8.0+, and core only polyfills it from WP 5.9 —
+		// so the call fatals on a host inside our own advertised floor.
+		foreach ( [ '.local', '.test', '.tst', '.localhost' ] as $suffix ) {
+			if ( substr( $host, - strlen( $suffix ) ) === $suffix ) {
+				return true;
+			}
+		}
+		// RFC-1918 private ranges
+		if ( preg_match( '/^192\.168\./', $host )
+			|| preg_match( '/^10\./', $host )
+			|| preg_match( '/^172\.(1[6-9]|2[0-9]|3[01])\./', $host ) ) {
+			return true;
+		}
+		return false;
+	}
+
 	public static function recursive_wp_parse_args($args, $defaults) {
 		$args     = (array) $args;
 		$defaults = (array) $defaults;

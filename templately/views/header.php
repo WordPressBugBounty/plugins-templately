@@ -4,9 +4,9 @@
 
 <div class="templately-header">
     <div class="templately-header-left">
-        <h1><?php echo __( 'Templately', 'templately' ); ?></h1>
+        <h1><?php echo esc_html__( 'Templately', 'templately' ); ?></h1>
     </div>
     <div class="templately-header-right">
-        <?php echo sprintf( '%s: %s', __( 'Version', 'templately' ), TEMPLATELY_VERSION ); ?>
+        <?php echo esc_html( sprintf( '%s: %s', __( 'Version', 'templately' ), TEMPLATELY_VERSION ) ); ?>
     </div>
 </div>

@@ -5,13 +5,15 @@ use Exception;
 use PriyoMukul\WPNotice\Notices;
 use PriyoMukul\WPNotice\Utils\CacheBank;
 use PriyoMukul\WPNotice\Utils\NoticeRemover;
-use Templately\API\Login;
-use Templately\Core\Importer\FullSiteImport;
+use Templately\Modules\Auth\REST\Login;
+use Templately\Modules\FullSiteImport\FullSiteImport;
+use Templately\Admin\Roles;
+use Templately\Core\Capabilities;
 use Templately\Utils\Base;
 use Templately\Utils\Helper;
 use Templately\Utils\Options;
-use Templately\Core\Platform\Elementor;
-use Templately\Core\Platform\Gutenberg;
+use Templately\Modules\ElementorIntegration\Platform\Elementor;
+use Templately\Modules\GutenbergIntegration\Platform\Gutenberg;
 
 class Admin extends Base {
 
@@ -39,7 +41,9 @@ class Admin extends Base {
 
 		add_filter( 'plugin_action_links_' . TEMPLATELY_PLUGIN_BASENAME, [$this, 'handleActionLinks'], 10, 2 );
 
-		add_action( 'admin_footer', [$this, 'my_custom_footer_html'] );
+		// Post-import feedback mount point moved to
+		// modules/post-import-feedback/Widget.php::render_mount_point() (spec 027) —
+		// hooked independently on admin_footer.
 
 		// Remove OLD notice from 1.0.0 (if other WPDeveloper plugin has notice)
 		NoticeRemover::get_instance( '1.0.0' );
@@ -81,7 +85,12 @@ class Admin extends Base {
 			'show_in_menu'       => false,
 			'query_var'          => true,
 			'rewrite'            => [ 'slug' => 'templately-library' ],
+			// Kept in sync with the theme-builder module's own registration of this
+			// same post type (modules/theme-builder/Source.php) — whichever runs last
+			// wins, so both must carry the administrator-only capability map.
 			'capability_type'    => 'post',
+			'capabilities'       => Roles::builder_post_type_capabilities(),
+			'map_meta_cap'       => true,
 			'has_archive'        => true,
 			'hierarchical'       => false,
 			'menu_position'      => 10,
@@ -104,7 +113,7 @@ class Admin extends Base {
 	public function scripts( $hook = '' ) {
 		$allowed_hooks = apply_filters(
 			'templately_admin_enqueue_allowed_hooks',
-			[ 'index.php', 'edit.php', 'plugins.php', 'toplevel_page_templately', 'elementor', 'gutenberg', 'templately_page_templately_settings' ],
+			[ 'index.php', 'edit.php', 'toplevel_page_templately', 'elementor', 'gutenberg', 'templately_page_templately_settings' ],
 			$hook
 		);
 
@@ -149,46 +158,9 @@ class Admin extends Base {
 
 		if('index.php' === $hook){
 			// need separate condition so we can return if page is index.php
-
-			$is_complete = get_user_meta(get_current_user_id(), 'templately_fsi_complete', true);
-			if($is_complete && $is_complete !== 'done' && !wp_is_mobile()){
-				$user  = Options::get_instance()->get('user');
-				$email = isset($user['email']) ? $user['email'] : '';
-
-				templately()->assets->enqueue( 'templately', 'css/dashboard-style.css', [] );
-				templately()->assets->enqueue( 'templately', 'js/dashboard.js', [], true );
-				templately()->assets->localize( 'templately', 'templately', [
-					'email' => $email,
-					'nonce' => wp_create_nonce( 'templately_nonce' ),
-				] );
-
-			}
-			return;
-		}
-
-		if ( 'plugins.php' === $hook ) {
-			templately()->assets->enqueue(
-				'templately-inter',
-				set_url_scheme( '//fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap' )
-			);
-			/**
-			 * plugins.php is not our screen, so the survey gets the scoped Tailwind
-			 * build rather than css/tailwind.css. The unscoped bundle is compiled
-			 * with `important: true` and no layer, so its utilities outranked
-			 * wp-admin's own rules — `.inline` beat `.notice.inline` and `.hidden`,
-			 * which collapsed the update notices in every plugin row into coloured
-			 * slivers and revealed the hidden auto-update error placeholders.
-			 * css/tailwind-survey.css carries the same rules prefixed with
-			 * `.templately-scope`, the container the modal mounts into.
-			 */
-			templately()->assets->enqueue( 'templately-tailwind-survey', 'css/tailwind-survey.css', [ 'templately-inter' ] );
-			templately()->assets->enqueue( 'templately-deactivate-survey', 'css/deactivate-survey-style.css', [ 'templately-tailwind-survey' ] );
-			templately()->assets->enqueue( 'templately', 'js/deactivate-survey.js', [ 'regenerator-runtime' ], true );
-			templately()->assets->localize( 'templately', 'templatelyDeactivateSurvey', [
-				'nonce'          => wp_create_nonce( 'templately_nonce' ),
-				'pluginBasename' => TEMPLATELY_PLUGIN_BASENAME,
-				'reasons'        => DeactivationSurvey::get_reasons_for_js(),
-			] );
+			// Post-import feedback widget enqueue/localize moved to
+			// modules/post-import-feedback/Widget.php (spec 027) — hooked independently
+			// on admin_enqueue_scripts.
 			return;
 		}
 
@@ -222,6 +194,20 @@ class Admin extends Base {
 		$script_dependencies = ['regenerator-runtime'];
 		$_localize_handle    = 'templately';
 		$_current_screen     = 'templately';
+
+		// The webpack "commons" chunk (splitChunks) holds the react-src core + vendor code SHARED
+		// across the main bundle AND every module bundle — extracted once instead of duplicated
+		// into each. It MUST load before any of them. Making the main 'templately' handle depend
+		// on it means every module bundle (which depends on 'templately') gets it transitively, in
+		// the right order. Its own .asset.php lists no deps (DEWP doesn't attribute externals to
+		// shared chunks), so declare the WordPress script globals its shared code references here.
+		if ( file_exists( TEMPLATELY_PATH . 'assets/js/templately-commons.js' ) ) {
+			templately()->assets->register( 'templately-commons', 'js/templately-commons.js', [
+				'react', 'react-dom', 'react-jsx-runtime', 'wp-element', 'wp-hooks', 'wp-i18n',
+				'wp-api-fetch', 'wp-url', 'wp-data', 'wp-components', 'lodash',
+			], true );
+			$script_dependencies[] = 'templately-commons';
+		}
 
 		if ( $hook === 'elementor' || $hook === 'gutenberg' ) {
 			$_current_screen       = $hook;
@@ -261,11 +247,47 @@ class Admin extends Base {
 
 		wp_enqueue_media();
 		templately()->assets->enqueue( 'templately', 'js/templately.js', $script_dependencies, true );
-		templately()->assets->enqueue( 'templately', 'css/templately.css', ['templately-dmsans', 'templately-inter'] );
+		// splitChunks moves the shared component CSS into the commons chunk's stylesheet
+		// (templately-commons.css) and leaves the per-entry templately.css empty/absent. Register
+		// the shared CSS under the SAME 'templately' style handle so every stylesheet that depends
+		// on it (templately-tailwind, templately-admin) still resolves — WP won't enqueue a style
+		// whose dependency handle is unregistered. Fall back to templately.css if a build didn't
+		// split (no commons chunk).
+		$main_css = file_exists( TEMPLATELY_PATH . 'assets/css/templately-commons.css' ) ? 'css/templately-commons.css' : 'css/templately.css';
+		templately()->assets->enqueue( 'templately', $main_css, ['templately-dmsans', 'templately-inter'] );
+
 		$tailwind_hooks = apply_filters( 'templately_tailwind_hooks', [ 'toplevel_page_templately', 'elementor', 'gutenberg', 'templately_page_templately_settings', 'edit.php' ] );
 		if ( in_array( $hook, $tailwind_hooks, true ) ) {
 			templately()->assets->enqueue( 'templately-tailwind', 'css/tailwind.css', ['templately', 'templately-inter'] );
 		}
+
+		// MODULE STYLES. @wordpress/scripts splits extracted CSS by ORIGIN, not by feature:
+		// `{entry}.css` holds CSS reached from a stylesheet entry point, while
+		// `style-{entry}.css` holds CSS `import`ed from JS. Every module's SCSS is imported from
+		// its own index (e.g. modules/auth/assets/js/index.tsx imports ../scss/style.scss), so
+		// with the modules folded into the `templately` graph ALL of it now lands in
+		// style-templately.css — a file nothing enqueued.
+		//
+		// This is the regression that shipped the sign-in screen completely unstyled: the header
+		// and banner came from templately.css and looked fine, so the page rendered but the
+		// module-owned views did not. Before the merge these styles were emitted per module to
+		// assets/css/modules/*.css and picked up by enqueue_module_assets()'s glob; that glob is
+		// gone, and this is its replacement.
+		//
+		// ORDER MATTERS, and this must stay AFTER the Tailwind enqueue. The retired glob ran at
+		// the very end of this method — after Tailwind — so module rules beat Tailwind utilities
+		// on equal specificity. Enqueueing it earlier silently inverts that: the AI sidebar chat
+		// bubble lost its overflow-wrap to a Tailwind utility and long URLs broke out of the
+		// bubble (caught by 020-ai-chat-bubble-overflow.spec.js, not by eye).
+		if ( file_exists( TEMPLATELY_PATH . 'assets/css/style-templately.css' ) ) {
+			templately()->assets->enqueue( 'templately-modules', 'css/style-templately.css', [ 'templately' ] );
+		}
+
+		// Module assets are no longer enqueued separately: every feature module compiles into
+		// the 'templately' bundle via react-src/generated/moduleManifest.ts (Constitution XIII).
+		// The former enqueue_module_assets() globbed assets/js/modules/*.js and loaded all of
+		// them unconditionally wherever this ran, so folding them into the main handle is a
+		// parity change, not a scope change.
 
 		/**
 		 * @var Elementor|Gutenberg $platform
@@ -304,10 +326,6 @@ class Admin extends Base {
 			'signed_as_global'        => Login::signed_as_global(),
 			'current_screen'          => $_current_screen,
 			'can_fsi'                 => current_user_can('install_plugins') && current_user_can('install_themes'),
-			// Account-level administration: the Subscription screen. Mirrors the
-			// subscription branch of `Checkout::checkout()`, so the sidebar can hide
-			// it for non-admins rather than route them to a 403.
-			'can_manage_account'      => current_user_can( 'manage_options' ),
 			'post_type'               => get_post_type(),
 			'has_elementor'           => rest_sanitize_boolean( is_plugin_active( 'elementor/elementor.php' ) ),
 			'has_elementor_pro'       => rest_sanitize_boolean( is_plugin_active( 'elementor-pro/elementor-pro.php' ) ),
@@ -320,12 +338,22 @@ class Admin extends Base {
 			'is_free_user'            => $global_user === false || isset( $global_user['plan'] ) && $global_user['plan'] == 'free',
 			'is_disconnected'         => ! empty( $global_user['is_disconnected'] ),
 			'tour_status'             => Options::get_instance()->get( 'tour_status', [] ),
+			// Host-capability map (spec 053) — the ONE delivery point for every
+			// Templately bundle (admin SPA and editor surfaces all localize here).
+			// Always sourced from the registry, never hand-built (FR-025).
+			'caps'                    => Capabilities::get_instance()->get_map(),
+			// Mirrors the account-scoped server gate so the client can hide what it
+			// would only be 403'd for: Subscription (a plan purchase is made FOR the
+			// account, and Checkout gates `subscription` on `manage_options`).
+			// Hidden rather than shown-and-refused — offering a button that cannot
+			// work is worse than not offering it.
+			'can_manage_account'      => current_user_can( 'manage_options' ),
 			// Which Templately site the plugin talks to. `templatelyDeveloper.dev_api`
 			// carries the same flag, but only when developer mode is on and only from
 			// its own script handle — so anything rendered before that handle runs (the
 			// footer CTA, for one) linked to the live site while the plugin was pointed
 			// at dev. Kept here, on the main localized object, `webURL()` is right from
-			// the first paint. See `react-src/utils/helper.js#webURL`.
+			// the first paint. See `react-src/utils/helper.ts#webURL`.
 			'dev_api'                 => Helper::is_dev_api(),
 		], $templately );
 
@@ -514,7 +542,7 @@ class Admin extends Base {
 			);
 			$holiday_text .= sprintf(
 				'<button class="button button-link dismiss-btn" data-dismiss="true">%1$s</button>',
-				__('No, I\'ll Pay Full Price Later', 'templately'),
+				__('No, I\'ll Pay Full Price Later', 'templately')
 			);
 			$holiday_text .= "</div>";
 
@@ -549,14 +577,27 @@ class Admin extends Base {
 	public function admin_menu() {
 		// TODO: Role Management
 
-		add_menu_page( 'Templately', 'Templately', 'delete_posts', 'templately', '', templately()->assets->icon( 'logos/logo-icon.svg' ), '58.7' );
+		// 58.7 is the TOP-LEVEL slot: a float is correct and always has been
+		// there, and the fractional part is what keeps Templately from
+		// colliding with another plugin sitting at the same integer position.
+		add_menu_page( 'Templately', 'Templately', 'delete_posts', 'templately', '', templately()->assets->icon( 'logos/logo-icon.svg' ), 58.7 );
 
+		// The submenu calls pass NO position on purpose. `58.7` was copied down
+		// from the top-level slot, where it never meant anything — a submenu
+		// $position is an index within THIS menu, and 58.7 is past the end of a
+		// four-item list, so every WordPress we support already just appended.
+		// It was not merely useless though: before WP 6.0, $position had to be
+		// an int (`is_int()`, not `is_numeric()` — a float fails it too), so
+		// each call emitted `_doing_it_wrong` on every admin load of a
+		// WP_DEBUG site inside the advertised floor (readme: WP 5.0) and then
+		// discarded the value anyway. Omitting it appends — verified identical
+		// ordering on WP 5.9 and 7.0 — and is silent on every version.
 		add_submenu_page( 'templately', 'Templately', 'Template Library', 'delete_posts', 'templately', [
 			$this,
 			'display'
-		], '58.7' );
+		] );
 
-		add_submenu_page( 'templately', 'Theme Builder', 'Theme Builder', 'delete_posts', 'edit.php?post_type=templately_library', '', '58.7' );
+		add_submenu_page( 'templately', 'Theme Builder', 'Theme Builder', Roles::CAP_BUILDER, 'edit.php?post_type=templately_library', '' );
 
 		// add_submenu_page( 'templately', 'Settings', 'Settings', 'administrator', 'templately-settings', [
 		// 	Settings::get_instance(),
@@ -566,7 +607,7 @@ class Admin extends Base {
 
 	public function display() {
 		Helper::views( 'template-library', [
-			'show_grid_skeleton' => $this->is_template_library_path(),
+			'show_grid_skeleton' => self::is_template_library_path(),
 		] );
 	}
 
@@ -574,15 +615,21 @@ class Admin extends Base {
 	 * Whether the current `?path=` targets the template-library grid
 	 * (`TemplatesTypeLayout`, e.g. `elementor/packs`) — the only route the
 	 * pre-mount skeleton's card grid actually matches. Every other route
-	 * (`clouds/*`, `downloads`, `favourites`, `subscription`,
+	 * (`clouds/*`, `downloads`, `favourites`, `manage-sites`, `subscription`,
 	 * `purchased-items`, `ai-sites`, `settings/*`, item-detail pages, and
 	 * Saved Templates) gets a generic shell instead, so a hard reload doesn't
 	 * flash the wrong page shape before React mounts. See
 	 * views/template-library.php.
 	 *
+	 * Public + static (it was private on the pre-modular branch) purely so the
+	 * path parsing can be unit-tested on its own: it reads nothing but `$_GET`
+	 * and touches no instance state, so there is nothing for an Admin instance
+	 * to contribute, and constructing one would register every admin hook.
+	 *
 	 * @return bool
 	 */
-	private function is_template_library_path() {
+	public static function is_template_library_path() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing hint for a skeleton; no state is changed.
 		$path = isset( $_GET['path'] ) ? sanitize_text_field( wp_unslash( $_GET['path'] ) ) : '';
 
 		if ( $path === '' ) {
@@ -591,7 +638,7 @@ class Admin extends Base {
 
 		$segments = array_values( array_filter( explode( '/', trim( $path, '/' ) ) ) );
 
-		$non_library_prefixes = [ 'clouds', 'downloads', 'favourites', 'subscription', 'purchased-items', 'ai-sites', 'settings' ];
+		$non_library_prefixes = [ 'clouds', 'downloads', 'favourites', 'manage-sites', 'subscription', 'purchased-items', 'ai-sites', 'settings' ];
 
 		if ( in_array( $segments[0] ?? '', $non_library_prefixes, true ) ) {
 			return false;
@@ -610,10 +657,10 @@ class Admin extends Base {
 	 */
 	public static function has_no_elementor() {
 		$plugin_url  = \wp_nonce_url( \self_admin_url( 'update.php?action=install-plugin&amp;plugin=elementor' ), 'install-plugin_elementor' );
-		$button_text = 'Install Elementor';
+		$button_text = __( 'Install Elementor', 'templately' );
 		if ( isset( Helper::get_plugins()['elementor/elementor.php'] ) ) {
 			$plugin_url  = \wp_nonce_url( 'plugins.php?action=activate&amp;plugin=elementor/elementor.php', 'activate-plugin_elementor/elementor.php' );
-			$button_text = 'Activate Elementor';
+			$button_text = __( 'Activate Elementor', 'templately' );
 		}
 		$output = '<div class="notice notice-error">';
 		$output .= sprintf(
@@ -623,10 +670,10 @@ class Admin extends Base {
 			__( 'Elementor', 'templately' ),
 			__( 'plugin to be installed and activated. Please install Elementor to continue.', 'templately' ),
 			esc_url( $plugin_url ),
-			__( $button_text, 'templately' )
+			$button_text
 		);
 		$output .= '</div>';
-		echo $output;
+		echo wp_kses_post( $output );
 	}
 
 	public function header() {
@@ -648,26 +695,5 @@ class Admin extends Base {
 
 		$links[] = $settingsLink;
 		return $links;
-	}
-
-
-	public function my_custom_footer_html() {
-		global $current_screen;
-
-		if ( ! $current_screen ) {
-			return false;
-		}
-
-		if($current_screen->id !== 'dashboard'){
-			return false;
-		}
-
-		$is_complete = get_user_meta(get_current_user_id(), 'templately_fsi_complete', true);
-
-		if($is_complete && $is_complete !== 'done' && !wp_is_mobile()):
-			?>
-				<div id="templately-fsi-feedback"></div>
-			<?php
-		endif;
 	}
 }

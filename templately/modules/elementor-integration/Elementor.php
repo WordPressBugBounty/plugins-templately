@@ -1,0 +1,231 @@
+<?php
+
+namespace Templately\Modules\ElementorIntegration;
+
+use WP_Error;
+use function wp_parse_args;
+use function current_user_can;
+use Elementor\Core\Settings\Page\Model;
+
+use Elementor\Plugin as ElementorPlugin;
+use Elementor\TemplateLibrary\Source_Local as ElementorLocal;
+use Templately\Modules\FullSiteImport\Utils\Utils;
+
+class Elementor extends ElementorLocal {
+	/**
+	 * Get template data.
+	 *
+	 * @inheritDoc
+	 *
+	 * @param array $args Custom template arguments.
+	 *
+	 * @return array Remote Template data.
+	 */
+	public function get_data( array $args ) {
+		Utils::add_gd_editor_filter();
+		ElementorPlugin::$instance->editor->set_edit_mode( true );
+
+		// Ensure the Pro-promotion child-type fix is active for every import path (not just FSI),
+		// otherwise saving a template that uses an unavailable Elementor Pro widget (e.g.
+		// nested-carousel) fatals while Elementor resolves its nested children. See
+		// \Templately\Modules\ElementorIntegration\Platform\Elementor::filter_child_type().
+		\Templately\Modules\ElementorIntegration\Platform\Elementor::register_child_type_filter();
+
+		$args['content'] = $this->replace_elements_ids( $args['content'] );
+		$args['content'] = $this->process_export_import_content( $args['content'], 'on_import' );
+
+		$args['content'] = $this->iterate_data(
+			$args['content'], function( $element_data ) {
+				// A widget with null/missing widgetType causes get_widget_types(null) to return ALL
+				// registered widgets as an array. The subsequent get_default_args() call then crashes
+				// with "Call to a member function get_default_args() on array". Guard early.
+				if ( 'widget' === ( $element_data['elType'] ?? '' ) && ! isset( $element_data['widgetType'] ) ) {
+					return null;
+				}
+
+				try {
+					$element = ElementorPlugin::$instance->elements_manager->create_element_instance( $element_data );
+				} catch ( \Throwable $e ) {
+					return null;
+				}
+
+				// If the widget/element doesn't exist, e.g. a deactivated plugin's widget
+				if ( ! $element ) {
+					return null;
+				}
+
+				return $element_data;
+			}
+		);
+
+		if (!isset($args['page_settings'])) {
+			$args['page_settings'] = array();
+		}
+		if(!isset($args['page_settings']["template"])){
+			$args['page_settings']["template"] = "elementor_header_footer";
+		}
+
+//		$post_id  = false; // FIXME: need to check later on.
+//		$document = ElementorPlugin::$instance->documents->get( $post_id );
+//		if ( $document ) {
+//			$args['content'] = $document->get_elements_raw_data( $args['content'], true );
+//		}
+		return $args;
+	}
+
+	public function import_in_library( $data ) {
+		if ( empty( $data ) ) {
+			return new WP_Error( 'file_error', 'Invalid File' );
+		}
+
+		$content = $data['content'];
+
+		if ( ! is_array( $content ) ) {
+			return new WP_Error( 'file_error', 'Invalid File' );
+		}
+
+		// type is already resolved by Platform::resolve_library_type() before reaching here.
+		// Validate it exists; fall back to 'page_single' if somehow unregistered.
+		$type             = $data['type'] ?? 'page_single';
+		$registered_types = templately()->theme_builder::$templates_manager->get_template_types();
+		if ( ! isset( $registered_types[ $type ] ) ) {
+			$type = 'page_single';
+		}
+
+		$factory = new \Templately\Modules\ThemeBuilder\Factory\TemplateFactory( 'elementor' );
+
+		$template = $factory->create( $type, [
+			'post_title'  => $data['title'],
+			'post_status' => 'publish',
+			'post_type'   => 'templately_library',
+		] );
+
+		if ( is_wp_error( $template ) ) {
+			return $template;
+		}
+
+		$template->import( array_merge( $data, [
+			'import_settings' => [
+				'title' => $data['title'],
+				'type'  => $type,
+			]
+		] ) );
+
+		$post_id = $template->get_main_id();
+
+		return [
+			'template_id' => $post_id,
+			'edit_link'   => get_edit_post_link( $post_id, 'internal' ),
+			'url'         => get_permalink( $post_id ),
+		];
+	}
+
+	public function create_page( $template_data ){
+		$page_settings = $this->page_settings( $template_data );
+
+		$defaults = [
+			'post_title'   => isset( $template_data['page_title'] ) ? $template_data['page_title'] : 'Templately: ' . $template_data['title'],
+			'page_settings' => $page_settings,
+			'status' => current_user_can( 'publish_posts' ) ? 'publish' : 'pending',
+		];
+
+		$template_data = wp_parse_args( $template_data, $defaults );
+
+		// Elementor has no 'block' document type; map it to 'section' (saved section).
+		$doc_type = ( 'block' === $template_data['type'] ) ? 'section' : $template_data['type'];
+
+		$document = ElementorPlugin::$instance->documents->create(
+			$doc_type,
+			[
+				'post_title' => $template_data['post_title'],
+				'post_status' => $template_data['status'],
+				'post_type' => 'page',
+			]
+		);
+
+		if ( is_wp_error( $document ) ) {
+			/**
+			 * @var WP_Error $document
+			 */
+			return $document;
+		}
+
+		$document->save( [
+			'elements' => $template_data['content'],
+			'settings' => $page_settings,
+		] );
+
+		return $document->get_main_id();
+	}
+
+	/**
+	 * @param $template_data
+	 * @noinspection DuplicatedCode
+	 *
+	 * @return array
+	 */
+	private function page_settings( $template_data ) {
+		$page_settings = [];
+
+		if (!isset($template_data['page_settings'])) {
+			$template_data['page_settings'] = array();
+		}
+
+		if(!isset($template_data['page_settings']["template"])){
+			$template_data['page_settings']["template"] = "elementor_header_footer";
+		}
+
+		$page = new Model([
+			'id' => 0,
+			'settings' => $template_data['page_settings'],
+		]);
+
+		$page_settings_data = $this->process_element_export_import_content($page, 'on_import');
+
+		if (!empty($page_settings_data['settings'])) {
+			$page_settings = $page_settings_data['settings'];
+		}
+
+		return $page_settings;
+	}
+
+	/**
+	 * Iterate data.
+	 *
+	 * Accept any type of Elementor data and a callback function. The callback
+	 * function runs recursively for each element and his child elements.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @param array    $data_container Any type of elementor data.
+	 * @param callable $callback       A function to iterate data by.
+	 * @param array    $args           Array of args pointers for passing parameters in & out of the callback
+	 *
+	 * @return mixed Iterated data.
+	 */
+	public function iterate_data( $data_container, $callback, $args = [] ) {
+		if ( isset( $data_container['elType'] ) ) {
+			if ( ! empty( $data_container['elements'] ) ) {
+				$data_container['elements'] = $this->iterate_data( $data_container['elements'], $callback, $args );
+			}
+
+			return call_user_func( $callback, $data_container, $args );
+		}
+
+		foreach ( $data_container as $element_key => $element_value ) {
+			$element_data = $this->iterate_data( $data_container[ $element_key ], $callback, $args );
+
+			if ( null === $element_data ) {
+				unset($data_container[ $element_key ]);
+				continue;
+			}
+
+			$data_container[ $element_key ] = $element_data;
+		}
+
+		return array_values($data_container);
+	}
+
+}
+

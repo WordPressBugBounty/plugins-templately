@@ -2,7 +2,7 @@
 
 namespace Templately\Utils;
 
-use Templately\Core\Module;
+use Templately\Core\Platform_Registry;
 use Templately\Core\Platform;
 
 abstract class Base {
@@ -67,7 +67,7 @@ abstract class Base {
 	 * @return Platform|null
 	 */
 	public function platform( $id ){
-		$platform = Module::get_instance()->active( $id );
+		$platform = Platform_Registry::get_instance()->active( $id );
 		if( ! is_null( $platform ) ) {
 			return $platform;
 		}

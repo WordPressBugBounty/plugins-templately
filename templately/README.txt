@@ -5,7 +5,7 @@ Tags: templates, elementor template, Gutenberg template, landing page, WoCommerc
 Requires at least: 5.0
 Tested up to: 7.1
 Requires PHP: 7.2
-Stable tag: 3.7.5
+Stable tag: 3.8.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -153,8 +153,26 @@ Visit [WPDeveloper](https://wpdeveloper.com/) to learn more about how to do bett
 
 
 == Changelog ==
+= 3.8.0 - 23-09-2026 =
+Added: Browse and insert Templately designs from the block inserter and new-page pattern chooser.
+Added: View required plugins on the canvas and install and activate them with one click.
+Added: Auto-install Essential Addons Pro and Essential Blocks Pro during import when included in your subscription.
+Improved: Rebuilt plugin architecture for faster loading and more reliable imports in both editors.
+Improved: Faster template browsing, filtering and search, with selections kept across navigation.
+Improved: Faster imports by downloading multiple images at once.
+Fixed: “Attempt recovery” notices on imported blocks from different plugin versions.
+Fixed: Navigation menus not being assigned correctly after import.
+Fixed: Duplicate navigation items after import.
+Fixed: Overlapping headings after Gutenberg imports by keeping the pack’s typography.
+Fixed: Multiple imports running at the same time in one session.
+Few minor bug fixes and improvements.
+
+= 3.7.6 - 31-08-2026 =
+Fixed: Elementor installation issue during template import.
+Few minor bug fixes and improvements
+
 = 3.7.5 - 25-08-2026 =
-Improved: AI Template import process for faster site creation. 
+Improved: AI Template import process for faster site creation.
 Few minor bug fixes and improvements
 
 = 3.7.4 - 20-08-2026 =
@@ -213,7 +231,7 @@ Improved: Logout handling for expired authentication tokens.
 Few minor bug fixes and improvements.
 
 = 3.6.5 - 24-05-2026 =
-Fixed: Previous AI conversation was appearing above the resumed Templately site chat history.
+Hot Fix: Previous AI conversation was appearing above the resumed Templately site chat history.
 Few minor bug fixes and improvements.
 
 = 3.6.4 - 24-05-2026 =

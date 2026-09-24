@@ -1,7 +1,10 @@
 <?php
 namespace Templately\Utils;
 
-use Templately\API\Login;
+use Templately\Modules\Auth\REST\Login;
+use Templately\Utils\Response\ErrorCode;
+use Templately\Utils\Response\ResponseNormalizer;
+use Templately\Utils\Response\RetryPolicy;
 use WP_Error;
 
 class Http extends Base {
@@ -217,13 +220,40 @@ public function google_auth_url($redirect_to = '', $current_url = '') {
             ] )
         ];
 
-        $retryCount = 0;
-        $maxRetries = defined('TEMPLATELY_HTTP_RETRY') ? TEMPLATELY_HTTP_RETRY : 3;
-        $args       = wp_parse_args( $args, $_default_args );
-        do {
-            $response = wp_remote_post( $this->url(), $args );
-            $retryCount++;
-        } while ( is_wp_error( $response ) && $retryCount < $maxRetries );
+        $args = wp_parse_args( $args, $_default_args );
+
+        // 043 / PRD PHP-1 — the retry decision moved to RetryPolicy.
+        //
+        // This loop retried on WP_Error only, and with NO DELAY: three requests
+        // within milliseconds at a server that had just failed to answer one. It
+        // also treated every HTTP status as final, so a 502 from a restarting
+        // gateway was never retried at all. RetryPolicy adds the transient
+        // statuses and a jittered backoff.
+        $attempt    = 0;
+        $maxRetries = defined( 'TEMPLATELY_HTTP_RETRY' ) ? (int) TEMPLATELY_HTTP_RETRY : RetryPolicy::MAX_ATTEMPTS;
+
+        // Entry-point marker (engagement telemetry). A URL QUERY PARAM so the cloud's
+        // access logs capture it with zero cloud-side code — never a GraphQL argument
+        // (unknown arguments fail GraphQL validation; a query param on the endpoint
+        // URL is ignored by the resolver). Appended here, NOT in url(): url() also
+        // feeds google_auth_url(), which must stay clean.
+        $request_url = $this->url();
+        if ( '' !== Helper::get_request_source() ) {
+            $request_url = add_query_arg( 'tl_source', Helper::get_request_source(), $request_url );
+        }
+
+        while ( true ) {
+            $response = wp_remote_post( $request_url, $args );
+
+            if ( $attempt + 1 >= $maxRetries || ! RetryPolicy::should_retry( $response, $attempt ) ) {
+                break;
+            }
+
+            RetryPolicy::wait( $attempt );
+            $attempt++;
+        }
+
+        $retryCount = $attempt + 1;
 
         if ( defined( 'TEMPLATELY_DEBUG_LOG' ) && TEMPLATELY_DEBUG_LOG ) {
             Helper::log( 'Retry Count: ' . $retryCount );
@@ -243,93 +273,35 @@ public function google_auth_url($redirect_to = '', $current_url = '') {
      * @return mixed
      */
     private function maybeErrors( &$response, $args = [] ) {
-        if ( $response instanceof WP_Error ) {
-            return $response; // Return WP_Error, if it is an error.
-        }
+        // 043 FR-003 — every shape the cloud can return is classified in ONE
+        // place now. The hand-rolled cascade this replaced grew a branch per
+        // discovered shape and still disagreed with the equivalent cascade in
+        // `Helper::make_api_request()`; see the 28 captured fixtures in
+        // `specs/043-core-api-response-contract/fixtures/`.
+        $normalized = ResponseNormalizer::normalize( $response, [
+            'endpoint' => $this->endpoint,
+        ] );
 
-        // Check for verification header before processing response body
-        Helper::check_verification_header( $response );
-        Helper::check_site_disconnection( $response );
-
-        $response_code    = wp_remote_retrieve_response_code( $response );
-        $response_message = wp_remote_retrieve_response_message( $response );
-
-        /**
-         * Retrieve Data from Response Body.
-         */
-        $response = json_decode( wp_remote_retrieve_body( $response ), true );
-        /**
-         * If the graphql hit with any error.
-         */
-        if ( ! empty( $response['errors'] ) ) {
-            if ( defined( 'TEMPLATELY_DEBUG_LOG' ) && TEMPLATELY_DEBUG_LOG ) {
-                Helper::log( 'ERROR: ' );
-                Helper::log( $response['errors'] );
-                Helper::log( 'END ERROR' );
-            }
-            if ( is_array( $response['errors'] ) ) {
-                $wp_error = new WP_Error;
-                array_walk( $response['errors'], function ( $error ) use ( &$wp_error ) {
-                    if ( isset( $error['message'] ) ) {
-                        if ( $error['message'] === 'validation' ) {
-                            array_walk( $error['extensions'], function ( $_error, $_error_key ) use ( &$wp_error ) {
-                                if ( $_error_key == 'validation' ) {
-                                    array_walk( $_error, function ( $v_error, $key ) use ( &$wp_error ) {
-                                        $wp_error->add( "{$key}_error", $v_error[0] );
-                                    } );
-                                }
-                            } );
-                        } else {
-                            $error_data = [];
-                            if(!empty($error["extensions"]["statusText"])) {
-                                $error_data["statusText"] = $error["extensions"]["statusText"];
-                            }
-                            if ( isset( $error['debugMessage'] ) ) {
-                                $wp_error->add( 'templately_graphql_error', $error['debugMessage'] );
-                            } else {
-                                $wp_error->add( 'templately_graphql_error', $error['message'], $error_data );
-                            }
-                        }
-                    }
-                } );
-
-                if( $wp_error->get_error_code() === 'templately_graphql_error' ) {
-                    if( $wp_error->get_error_message() == 'Unauthorized' ) {
-                        $global_user = Login::get_instance()->delete();
-
-                        return [
-                            'redirect' => true,
-                            'url' => 'sign-in',
-                            'user' => $global_user,
-                        ];
-                    }
-                }
-
-                return $wp_error;
-            }
-        } elseif ( ! empty( $response['status'] ) && $response['status'] === 'error' ) {
+        if ( $normalized->is_error() ) {
+            $error = $normalized->error();
 
             if ( defined( 'TEMPLATELY_DEBUG_LOG' ) && TEMPLATELY_DEBUG_LOG ) {
-                Helper::log( 'ERROR: ' );
-                Helper::log( $response );
-                Helper::log( 'END ERROR' );
+                Helper::log( 'ERROR: ' . $error->code() . ' — ' . $error->message() );
             }
 
-            $error_data = [];
-            if ( ! empty( $response['statusText'] ) ) {
-                $error_data['statusText'] = $response['statusText'];
+            // An expired session still tears down the stored login — but it now
+            // ALSO returns a real error. It used to return a plain array
+            // (`['redirect' => true, …]`), which every `is_wp_error()` caller
+            // read as SUCCESS and happily passed on as a payload. That is the
+            // INV-2 class of bug this contract exists to remove.
+            if ( ErrorCode::AUTH_EXPIRED === $error->code() || ErrorCode::INVALID_API_KEY === $error->code() ) {
+                Login::get_instance()->delete();
             }
 
-            $error_message = ! empty( $response['message'] ) ? $response['message'] : __( 'Unknown error occurred', 'templately' );
-
-            return new WP_Error( 'templately_api_error', $error_message, $error_data );
+            return $error;
         }
 
-        $_response = isset( $response['data'][$this->endpoint] ) ? $response['data'][$this->endpoint] : [];
-        // {"data":{"connectWithApiKey":{"status":"error","message":"Invalid API key.","user":null}}}
-        if ( ! empty( $response['status'] ) && $response['status'] === 'error' ) {
-
-        }
+        $_response = $normalized->payload();
 
         if ( defined( 'TEMPLATELY_DEBUG_LOG' ) && TEMPLATELY_DEBUG_LOG ) {
             Helper::log( 'RESPONSE: ' );
@@ -339,4 +311,5 @@ public function google_auth_url($redirect_to = '', $current_url = '') {
 
         return $_response;
     }
+
 }

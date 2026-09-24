@@ -5,8 +5,10 @@
  * Description: The Best Templates Cloud for Elementor & Gutenberg. Get access to stunning templates, WorkSpace, Cloud Library & many more.
  * Plugin URI: https://templately.com
  * Author: Templately
- * Version: 3.7.5
+ * Version: 3.8.0
  * Author URI: https://templately.com/
+ * Requires at least: 5.0
+ * Requires PHP: 7.2
  * Text Domain: templately
  * Domain Path: /languages
  */

@@ -2,182 +2,313 @@
 
 namespace Templately\Utils;
 
-use WPDeveloper\PageCacheSafety\Detector;
-
 /**
- * The caching solution Templately offers on the import dependency screen.
+ * The caching plugin Templately offers on the import dependency screen.
  *
- * Everything vendor-specific about the recommended plugin — its file, slug, display details,
- * option names and the settings it should come up with — is confined to the constants at the
- * top of this class. Nothing else in the plugin names it. Swapping the recommendation for a
- * different caching plugin is an edit to this block and its INITIAL_SETTINGS map; no caller
- * changes.
+ * Templately owns the OFFER — whether to put a row on the screen, and how often.
+ * It does not own what the plugin comes up as. Claiming the install is one option
+ * write immediately before activation:
  *
- * Two jobs: decide whether to offer a caching solution at all, and — only once the user has
- * left the row ticked and it has actually installed — leave it configured the way the offer
- * implied.
+ *     update_option( 'xspeed_installed_by', 'templately' );
+ *
+ * xSpeed reads that on its own activation and picks its own profile — every Free
+ * feature off, page caching on when nothing else owns it and refused when something
+ * does — and skips its own setup wizard so it does not interrupt ours. No settings
+ * writes from here, no enable call, no rollback path.
+ *
+ * A plain option rather than a constant or a filter because it is written at a moment
+ * when none of xSpeed's code has loaded and none can be relied on to exist.
+ *
+ * See docs/guides/installing-from-another-plugin.md in the xSpeed repo. This class
+ * replaced a copy-vendored detector that decided the cache question here and wrote
+ * xSpeed's settings by hand; that directory is deleted upstream, not versioned up.
  */
 class Caching {
 
 	/**
-	 * The recommended plugin. The display fields are what the user sees on the dependency
-	 * row and are deliberately the plugin's real name and listing, so the row says what it
-	 * installs.
+	 * The plugin we offer, and the Pro build that ships beside it.
+	 *
+	 * Named here rather than read from xSpeed because every question below has to be
+	 * answerable on a site where xSpeed does not exist. `XSpeed\Host` is the supported
+	 * API for everything else, but it only exists once xSpeed is active.
 	 */
-	const PLUGIN_FILE = 'xspeed/xspeed.php';
-	const PLUGIN_SLUG = 'xspeed';
-	const PLUGIN_NAME = 'xSpeed Cache';
-	const PLUGIN_ICON = 'https://ps.w.org/xspeed/assets/icon-256x256.png';
-	const PLUGIN_LINK = 'https://wordpress.org/plugins/xspeed/';
+	const PLUGIN_FILE     = 'xspeed/xspeed.php';
+	const PRO_PLUGIN_FILE = 'xspeed-pro/xspeed-pro.php';
+	const PLUGIN_SLUG     = 'xspeed';
+	const PLUGIN_NAME     = 'xSpeed Cache';
+	const PLUGIN_ICON     = 'https://ps.w.org/xspeed/assets/icon-256x256.png';
+	const PLUGIN_LINK     = 'https://wordpress.org/plugins/xspeed/';
 
 	/**
-	 * Where the recommended plugin keeps its settings.
+	 * The one-shot trigger that tells xSpeed a host installed it.
+	 *
+	 * A trigger, not a record: activation spends it, moving the value where
+	 * Host::installed_by() reads it afterwards.
+	 */
+	const INSTALLED_BY_OPTION = 'xspeed_installed_by';
+
+	/** Our slug, as xSpeed records it. */
+	const INSTALLER_SLUG = 'templately';
+
+	/**
+	 * Where xSpeed keeps its settings. Read only to answer "has this site had xSpeed
+	 * before" — an option row outlives plugin deletion, and it is still the user's
+	 * answer about a plugin we would otherwise re-offer.
 	 */
 	const SETTINGS_OPTION = 'xspeed_options';
-	const MODULE_PREFIX   = 'xspeed_module_';
 
 	/**
-	 * The option its activation sets to force a first-run setup wizard redirect. Written
-	 * unconditionally on activation and consumed on the next admin_init.
+	 * What xSpeed needs to run. Templately's own floor is lower, and an install that
+	 * cannot activate is worse than an offer never made.
 	 */
-	const WIZARD_REDIRECT_OPTION = 'xspeed_redirect_to_onboarding';
+	const REQUIRES_WP  = '6.0';
+	const REQUIRES_PHP = '7.4';
 
 	/**
 	 * When the suggestion was first put in front of this site, as a Unix timestamp.
 	 *
-	 * The offer is made once. A user who ticked it has the plugin; a user who unticked it
-	 * said no, and asking again on their next import is nagging. Delete this option to offer
-	 * it again — that is the supported reset, for support staff and for testing.
-	 *
-	 * Site-scoped rather than per-user: whether this site wants a page cache is a fact about
-	 * the site, and a second administrator should not be re-asked a question the first one
-	 * already answered.
+	 * Site-scoped rather than per-user: whether this site wants a page cache is a fact
+	 * about the site, and a second administrator should not be re-asked a question the
+	 * first one already answered. Delete this option to offer it again — that is the
+	 * supported reset, for support staff and for testing.
 	 */
 	const OFFER_SHOWN_OPTION = 'templately_caching_offer_shown';
 
 	/**
 	 * How long after the first showing the row keeps appearing.
 	 *
-	 * Without this, "once" would mean once per HTTP request rather than once per user. The
-	 * dependency step re-fetches whenever the wizard is reopened or the user steps back and
-	 * forward, so a flag set on first render would make the row vanish underneath someone
-	 * who was still deciding about it. Inside the window the answer is unchanged; after it,
-	 * the offer is spent.
+	 * The dependency step re-fetches whenever the wizard is reopened or the user steps
+	 * back and forward, so a flag set on first render would make the row vanish
+	 * underneath someone still deciding about it.
 	 */
 	const OFFER_GRACE = 1800;
 
 	/**
-	 * Version floors, pinned rather than read from plugins_api().
+	 * How long before a declined offer may be made again.
 	 *
-	 * The recommended plugin asks for more than Templately advertises (readme.txt:
-	 * WordPress 5.0, PHP 7.2), and Installer::check_compatibility() turns a mismatch into a
-	 * hard failure of the import's plugin step — so a pre-ticked row on an older site is a
-	 * broken import, not a declined suggestion. Fetching the real numbers per request would
-	 * mean a network call on a screen the user is already waiting on. The cost of pinning
-	 * them is that a floor change needs a matching edit here.
+	 * The ONLY suppression that expires, and it only ever applies to a decline. Every
+	 * other reason to withhold the row is permanent by construction and outlives this
+	 * window: the plugin is on disk (free or Pro), its settings are here, or the site
+	 * cannot run it. Accepting installs the plugin, so an accepted offer is never made
+	 * twice either.
 	 */
-	const REQUIRES_WP  = '6.0';
-	const REQUIRES_PHP = '7.4';
+	const OFFER_COOLDOWN = MONTH_IN_SECONDS;
 
 	/**
-	 * The settings a Templately-installed caching plugin should come up with.
+	 * The cross-plugin record of what this site already decided about xSpeed.
 	 *
-	 * The whole desired end state, not a list of things to switch off, because pre-writing
-	 * SETTINGS_OPTION suppresses whatever first-run path the plugin otherwise uses to seed
-	 * these. Browser caching defaults to `false` in its own schema and was only ever on
-	 * because of that path — so leaving it out here silently turned it off. Anything wanted
-	 * on has to be said out loud.
+	 * Shared, not ours: EmbedPress, Essential Addons and Templately all offer the same
+	 * plugin, and each one keeping its own answer means a user who says no three times
+	 * has said no once as far as any of them can tell. Namespaced `wpdeveloper_` after
+	 * `wpdeveloper_plugins_data`, the convention the shared notice library already
+	 * uses, and deliberately OUTSIDE the `xspeed_` namespace — xSpeed's uninstall.php
+	 * deletes every option it owns, so a decision stored there would be erased by the
+	 * very act it is meant to remember.
 	 *
-	 * Page caching is the only thing Templately switches on. The row the user ticked offered
-	 * a page cache, so that is what they get — browser caching, minification, lazy loading,
-	 * resource hints and the rest all stay off, whatever the plugin would have enabled for
-	 * itself.
+	 * Shape, all keys optional to a reader:
 	 *
-	 * Every module is written explicitly, including the ones that would be off anyway.
-	 * Measured against 1.2.0 with no rows written at all: lazy, resource-hints, fonts and
-	 * preloader come up ON — their schema defaults are true — so writing those is what turns
-	 * them off. gzip, minify and browser-cache come up off, but only because pre-writing
-	 * SETTINGS_OPTION happens to suppress the plugin's first-run seeding; a normal install
-	 * brings all three up ON. Leaning on that side effect is what silently re-enabled browser
-	 * caching once already, so the redundant rows stay.
+	 *     [
+	 *       'offered_by' => 'templately',   // slug of whoever last put the offer up
+	 *       'offered_at' => 1757462400,     // when it went up
+	 *       'outcome'    => 'offered',      // see below
+	 *       'outcome_at' => 1757462400,
+	 *     ]
 	 *
-	 * Deliberately absent, and left exactly as the plugin sets them: its GDPR consent
-	 * requirement, its Cloudflare purge behaviour, and its object-cache flag. None is an
-	 * optimisation, and for the first of them off would be the wrong answer. A blanket
-	 * "everything except browser caching" rule would have caught all three, and would
-	 * silently swallow whatever module the plugin ships next. The cost of naming them is
-	 * that a future opt-in-by-default optimisation has to be added here by hand.
+	 * `outcome` is one of:
 	 *
-	 * Keys are module slugs, values the fields written to MODULE_PREFIX . <slug>. Verified
-	 * against the recommended plugin at 1.2.0.
+	 * - `offered`  — the row went out; nobody has answered yet.
+	 * - `accepted` — a host installed it. Written immediately before activation.
+	 * - `declined` — the user said no in a way that was meant to stick (a dismissed
+	 *                promo, a "never show again"). Templately never writes it: its own
+	 *                decline is the local timer above, which expires. A host with a
+	 *                permanent opt-out control should write it there.
+	 * - `removed`  — accepted, then taken off the site. NOT stored: it is derived, so
+	 *                a deletion performed outside any of our code is still seen. The
+	 *                name exists so a reader can talk about the state.
+	 *
+	 * Terminal outcomes are terminal. Nothing here re-offers past one.
+	 *
+	 * @see docs/guides/installing-from-another-plugin.md in the xSpeed repo.
 	 */
-	const INITIAL_SETTINGS = array(
-		'browser-cache'  => array(
-			'enabled' => false,
-		),
-		'gzip'           => array(
-			'gzip_enabled' => false,
-		),
-		'minify'         => array(
-			'minify_html' => false,
-			'minify_css'  => false,
-		),
-		'lazy'           => array(
-			'lazy_images'            => false,
-			'lazy_iframes'           => false,
-			'lazy_videos'            => false,
-			'add_missing_dimensions' => false,
-		),
-		'resource-hints' => array(
-			'enabled'     => false,
-			'lcp_preload' => false,
-			'preconnect'  => false,
-		),
-		'fonts'          => array(
-			'font_display_swap' => false,
-		),
-		'preloader'      => array(
-			'warm_on_publish' => false,
-		),
-	);
+	const OFFER_RECORD_OPTION = 'wpdeveloper_xspeed_offer';
 
 	/**
-	 * Present on disk at all, active or not.
+	 * On disk at all, active or not — free or Pro.
+	 *
+	 * Presence, not activation. A site that has it has decided about it, including a
+	 * user who installed it and switched it off, and re-offering that is nagging.
+	 * Offering Free to a site running Pro would be worse still: a downgrade.
 	 */
 	public static function is_installed(): bool {
-		return isset( Helper::get_plugins()[ self::PLUGIN_FILE ] );
-	}
+		$plugins = Helper::get_plugins();
 
-	public static function is_active(): bool {
-		return Helper::is_plugin_active( self::PLUGIN_FILE );
+		return isset( $plugins[ self::PLUGIN_FILE ] ) || isset( $plugins[ self::PRO_PLUGIN_FILE ] );
 	}
 
 	/**
-	 * Whether the suggestion has already had its turn, grace window elapsed.
+	 * Has xSpeed ever run here? Its settings row survives deactivation and deletion.
+	 */
+	public static function has_settings(): bool {
+		return false !== get_option( self::SETTINGS_OPTION, false );
+	}
+
+	public static function is_supported(): bool {
+		global $wp_version;
+
+		return version_compare( (string) $wp_version, self::REQUIRES_WP, '>=' )
+			&& version_compare( PHP_VERSION, self::REQUIRES_PHP, '>=' );
+	}
+
+	/**
+	 * Whether the suggestion has already had its turn.
+	 *
+	 * A window rather than a permanent flag. Inside OFFER_GRACE the row keeps showing.
+	 * Past OFFER_COOLDOWN the answer has aged out and may be asked again. Between the
+	 * two, it is spent.
 	 */
 	public static function has_been_offered(): bool {
 		$shown = (int) get_option( self::OFFER_SHOWN_OPTION, 0 );
 
-		return $shown > 0 && ( time() - $shown ) > self::OFFER_GRACE;
+		if ( $shown <= 0 ) {
+			return false;
+		}
+
+		$age = time() - $shown;
+
+		return $age > self::OFFER_GRACE && $age < self::OFFER_COOLDOWN;
 	}
 
 	/**
-	 * Record that the row went out. First writing wins, so the grace window is measured from
-	 * the first showing rather than being pushed forward by every re-render.
+	 * Record that the row went out.
+	 *
+	 * Re-arms only once the previous showing has aged out. Rewriting on every re-render
+	 * would mean the offer never expires, and the wizard re-fetches this step often.
 	 */
 	public static function mark_offered() {
-		if ( ! get_option( self::OFFER_SHOWN_OPTION ) ) {
+		$shown = (int) get_option( self::OFFER_SHOWN_OPTION, 0 );
+
+		if ( $shown <= 0 || ( time() - $shown ) >= self::OFFER_COOLDOWN ) {
 			update_option( self::OFFER_SHOWN_OPTION, time(), false );
+			self::record_offer();
+
+			return;
 		}
+
+		// The row is up but the clock is already running, so the shared record has
+		// nothing new to learn — except on a site that was mid-window when this
+		// release landed, where it does not exist yet. Writing it on every fetch
+		// would stamp `offered_at` with the current second forever, and a sibling
+		// pacing itself off that field would never see the offer age out.
+		if ( '' === self::outcome() ) {
+			self::record_offer();
+		}
+	}
+
+	/**
+	 * The shared record, always an array so callers can read it without guarding.
+	 */
+	public static function offer_record(): array {
+		$record = get_option( self::OFFER_RECORD_OPTION, array() );
+
+		return is_array( $record ) ? $record : array();
+	}
+
+	/**
+	 * Note in the shared record that the row went out.
+	 *
+	 * Never downgrades an answer. A site that already accepted or declined has told us
+	 * something; putting it back to `offered` because the row rendered again would lose
+	 * that, and the row should not have rendered in the first place.
+	 */
+	public static function record_offer() {
+		$record = self::offer_record();
+
+		if ( in_array( self::outcome(), array( 'accepted', 'declined' ), true ) ) {
+			return;
+		}
+
+		$record['offered_by'] = self::INSTALLER_SLUG;
+		$record['offered_at'] = time();
+		$record['outcome']    = 'offered';
+		$record['outcome_at'] = time();
+
+		update_option( self::OFFER_RECORD_OPTION, $record, false );
+	}
+
+	/**
+	 * Write a terminal answer into the shared record.
+	 *
+	 * @param string $outcome `accepted` or `declined`.
+	 */
+	public static function record_outcome( string $outcome ) {
+		if ( ! in_array( $outcome, array( 'accepted', 'declined' ), true ) ) {
+			return;
+		}
+
+		$record = self::offer_record();
+
+		if ( empty( $record['offered_by'] ) ) {
+			$record['offered_by'] = self::INSTALLER_SLUG;
+			$record['offered_at'] = time();
+		}
+
+		$record['outcome']    = $outcome;
+		$record['outcome_at'] = time();
+
+		update_option( self::OFFER_RECORD_OPTION, $record, false );
+	}
+
+	/**
+	 * The recorded outcome, or '' when nobody has written a usable one.
+	 *
+	 * Scalar-guarded because three plugins write this row and only one of them is
+	 * this file. A nested array would otherwise be cast to the string 'Array' — a
+	 * PHP notice, which the test rig turns into an exception and WP_DEBUG_DISPLAY
+	 * prints into the REST response.
+	 */
+	public static function outcome(): string {
+		$record = self::offer_record();
+
+		if ( ! isset( $record['outcome'] ) || ! is_scalar( $record['outcome'] ) ) {
+			return '';
+		}
+
+		return (string) $record['outcome'];
+	}
+
+	/**
+	 * Has this site already answered the question, whoever asked it?
+	 *
+	 * The check that makes the offer survive a deletion. `accepted` plus an absent
+	 * plugin is a user who installed it and then took it off — the clearest "no" a
+	 * user can give, and the one every other guard here misses, because deleting a
+	 * plugin runs its uninstaller: `xspeed_options` goes with it, so has_settings()
+	 * forgets, and OFFER_COOLDOWN then re-offers a month later. Derived rather than
+	 * stored so a deletion done from the Plugins screen — with none of our code
+	 * running — still counts.
+	 */
+	public static function was_answered(): bool {
+		$outcome = self::outcome();
+
+		if ( 'declined' === $outcome ) {
+			return true;
+		}
+
+		if ( 'accepted' === $outcome ) {
+			return ! self::is_installed();
+		}
+
+		return false;
 	}
 
 	/**
 	 * The dependency row, in the same shape as every other entry on that screen.
 	 *
-	 * `installed` is always false and not worth deriving: the offer is withheld outright
-	 * when the plugin is on disk at all, so anything reaching here is a fresh install. false
-	 * is also what keeps the checkbox enabled, which is the point of offering it. `mustHave`
-	 * is omitted — this is a suggestion, not a requirement.
+	 * The name, icon and link are the real plugin's: the user is agreeing to install a
+	 * specific thing and should be able to see and check what it is. `installed` is
+	 * always false — the offer is withheld outright when the plugin is present — and
+	 * false is what keeps the checkbox enabled. `mustHave` is omitted: a suggestion,
+	 * not a requirement.
 	 */
 	public static function dependency_entry(): array {
 		return array(
@@ -192,210 +323,77 @@ class Caching {
 	}
 
 	/**
-	 * Whether to offer a caching solution alongside whatever the pack itself asked for.
+	 * Whether to offer the caching plugin alongside whatever the pack itself asked for.
 	 *
-	 * Three conditions, cheapest first. The first two are Templately's own, and the shared
-	 * detector cannot answer either:
+	 * Deliberately not conditional on anything already owning the page cache. xSpeed
+	 * installs beside another cache plugin and stands down from the cache itself — that
+	 * is its decision, made at its own activation, and asking it here would only be
+	 * asking on an earlier request than the one that matters.
 	 *
-	 * - Already offered once. See OFFER_SHOWN_OPTION.
-	 * - Already on disk. We only ever offer to put it there. A site that has it — running or
-	 *   not — has made its own decision about that plugin, and a row for something already
-	 *   sitting in wp-content is noise.
-	 * - Version floors, per the constants above.
+	 * Cheapest checks first, and the order is load-bearing:
 	 *
-	 * Only then the detector, which is the sole authority on whether anything owns the page
-	 * cache. The order is load-bearing, not incidental: the detector deliberately does not
-	 * catalogue the plugin we recommend — it answers "is anything *else* here", from a site
-	 * where that plugin may not be installed at all. An active copy with page caching
-	 * switched off leaves no drop-in, matches no catalogue entry, and classifies as
-	 * `unclaimed`. Consult the detector first and you offer users a plugin they already run.
-	 *
-	 * Read-only throughout: deciding installs, activates, and configures nothing.
+	 * - Can this user even accept? The dependency screen is readable at `delete_posts`,
+	 *   so a contributor can open the wizard; installing needs `install_plugins`.
+	 *   Without this they would spend the site's one offer on themselves.
+	 * - Already answered, by us or by any sibling plugin. Permanent, and checked ahead
+	 *   of our own timer because it outranks it: OFFER_GRACE keeps the row up for half
+	 *   an hour, which was long enough to install xSpeed, delete it, and be offered it
+	 *   again in the same sitting.
+	 * - Already offered, within the window.
+	 * - Already present — free or Pro — or already carrying xSpeed's settings.
+	 * - The site can run it.
 	 */
 	public static function should_offer(): bool {
+		if ( ! Helper::current_user_can( 'install_plugins' ) ) {
+			return false;
+		}
+
+		if ( self::was_answered() ) {
+			return false;
+		}
+
 		if ( self::has_been_offered() ) {
 			return false;
 		}
 
-		if ( self::is_installed() ) {
-			return false;
-		}
-
-		global $wp_version;
-
-		if ( version_compare( $wp_version, self::REQUIRES_WP, '<' )
-			|| version_compare( PHP_VERSION, self::REQUIRES_PHP, '<' ) ) {
-			return false;
-		}
-
-		self::load_detector();
-
-		return Detector::is_field_clear();
+		return ! self::is_installed()
+			&& ! self::has_settings()
+			&& self::is_supported();
 	}
 
 	/**
-	 * Load the vendored page-cache detector.
+	 * Claim the install, so xSpeed comes up as a host install rather than a hand one.
 	 *
-	 * Copy-vendored from xSpeed Free: WPDevelopers/xspeed, branch
-	 * feat/portable-page-cache-detector (PR #297), page-cache-safety/, at commit
-	 * 2565b33fc90be8c3dae90aa1f0f1dd1f53339f14.
+	 * Call immediately before activating, and never speculatively. It is a one-shot
+	 * trigger that changes what activation does, not a record of intent — an install
+	 * that dies between this and the activation arms the NEXT activation on the site,
+	 * whoever starts it.
 	 *
-	 * That repo is the source of truth. Fixes go THERE and get re-copied here — never
-	 * patched in place, or the parity test that keeps every copy honest stops meaning
-	 * anything. Required at the point of use rather than at boot so it costs nothing on any
-	 * other request; its own class_exists() wrapper makes it safe for another plugin on the
-	 * same site to carry its own copy.
+	 * Also settles the shared record at `accepted`. Written here rather than after a
+	 * successful activation on purpose: an install that got this far has been agreed
+	 * to, and an activation that then fails still leaves files on disk. Recording the
+	 * answer is what stops the site being asked again once those files are removed.
 	 */
-	public static function load_detector() {
-		require_once TEMPLATELY_PATH . 'includes/Vendor/page-cache-safety/class-page-cache-safety.php';
+	public static function claim_install() {
+		update_option( self::INSTALLED_BY_OPTION, self::INSTALLER_SLUG, false );
+
+		self::record_outcome( 'accepted' );
 	}
 
 	/**
-	 * Write the settings the plugin should come up with, BEFORE it is activated.
+	 * What the install came up as, for reporting. Null when xSpeed is not active or is
+	 * older than the release that introduced the API.
 	 *
-	 * This is the primary mechanism, and the ordering is the whole trick. Its activation
-	 * reads what is already stored rather than stamping over it:
+	 * `conflict-safe` is a success, not a failure: it means another plugin was already
+	 * caching and xSpeed stood down, which is the designed outcome.
 	 *
-	 * - Each module seeds its option row only when one does not already exist, so a row we
-	 *   wrote first survives activation untouched.
-	 * - Its cache drop-in restore runs during activation and, finding the page-cache flag
-	 *   already true, installs `advanced-cache.php` and writes the `WP_CACHE` constant
-	 *   itself — through the plugin's own supported path, on its own schedule.
-	 *
-	 * Verified at 1.2.0: with only this pre-write and no post-install step at all, the site
-	 * comes up with page caching live, browser caching on, and every other front-end
-	 * optimisation off.
-	 *
-	 * Doing it this way sidesteps the trap the post-install approach fell into. The plugin's
-	 * settings manager resolves modules through a registry that is empty for a plugin
-	 * activated part-way through the request — it returns without writing and without
-	 * complaining. These are plain update_option() calls that need none of its code to be
-	 * loaded, because at this point none of it is.
-	 *
-	 * Called immediately before activation so a failed download never leaves rows behind; if
-	 * activation itself fails, forget_settings() takes them back out.
+	 * @return array|null
 	 */
-	public static function prepare_settings() {
-		update_option( self::SETTINGS_OPTION, array( 'cache_enabled' => true ) );
-
-		foreach ( self::INITIAL_SETTINGS as $slug => $values ) {
-			update_option( self::MODULE_PREFIX . $slug, $values );
-		}
-	}
-
-	/**
-	 * Undo prepare_settings() when the install did not survive to activation.
-	 *
-	 * Leaving these rows on a site that has no caching plugin is litter, and worse, a
-	 * page-cache flag sitting there would tell a LATER hand-install to bring up caching the
-	 * user never asked for.
-	 */
-	public static function forget_settings() {
-		delete_option( self::SETTINGS_OPTION );
-
-		foreach ( array_keys( self::INITIAL_SETTINGS ) as $slug ) {
-			delete_option( self::MODULE_PREFIX . $slug );
-		}
-	}
-
-	/**
-	 * Finish the job after a successful, Templately-driven activation.
-	 *
-	 * Only for an install Templately performed. Deliberately not hooked to `activated_plugin`:
-	 * that fires when the user activates the plugin themselves from the Plugins screen, and
-	 * reconfiguring their site off the back of an action they took elsewhere would be exactly
-	 * the overreach this feature is trying not to commit.
-	 *
-	 * Two jobs left, because pre-writing cannot cover either:
-	 *
-	 * - The setup-wizard redirect, which activation arms unconditionally.
-	 * - A safety net for page caching. The pre-write should already have caused the plugin to
-	 *   install its drop-in; if it did not, enable it the long way rather than leave the user
-	 *   with a cache plugin that caches nothing.
-	 *
-	 * Nothing here may break the import. A caching plugin that installed but did not
-	 * configure is a worse outcome than one that did, and a far better one than a failed
-	 * import.
-	 */
-	public static function configure_after_install() {
-		if ( ! self::is_active() ) {
-			return;
+	public static function install_status() {
+		if ( ! class_exists( '\XSpeed\Host' ) ) {
+			return null;
 		}
 
-		self::suppress_setup_wizard();
-
-		if ( ! self::page_cache_is_live() ) {
-			self::enable_page_cache();
-		}
-	}
-
-	/**
-	 * Drop the one-time wizard redirect the activation hook just armed.
-	 *
-	 * The one thing pre-writing cannot prevent: the flag is set unconditionally on
-	 * activation, so it has to be cleared afterwards.
-	 *
-	 * The user came here to import a template. Bouncing them into another plugin's setup
-	 * wizard on their next wp-admin page load is not what they asked for. The wizard stays in
-	 * that plugin's own menu and can be run whenever they like — this cancels only the forced
-	 * redirect, and deliberately does not mark onboarding "complete", which would be a claim
-	 * about something the user never did.
-	 */
-	private static function suppress_setup_wizard() {
-		delete_option( self::WIZARD_REDIRECT_OPTION );
-	}
-
-	/**
-	 * Whether page caching actually took effect, rather than merely being requested.
-	 *
-	 * The stored flag on its own proves nothing — it is the drop-in and the constant that
-	 * make WordPress serve from cache, and either can be missing if the filesystem or
-	 * wp-config.php refused the write.
-	 */
-	private static function page_cache_is_live(): bool {
-		$options = get_option( self::SETTINGS_OPTION, array() );
-
-		return ! empty( $options['cache_enabled'] )
-			&& file_exists( WP_CONTENT_DIR . '/advanced-cache.php' )
-			&& defined( 'WP_CACHE' ) && WP_CACHE;
-	}
-
-	/**
-	 * Fallback: switch page caching on the long way.
-	 *
-	 * Only reached when the pre-write did not take — the drop-in restore declined, or the
-	 * drop-in / wp-config.php write failed. The happy path never comes here.
-	 *
-	 * The page-cache flag cannot simply be written: the plugin's own settings manager rejects
-	 * that key by name, because the flag is what drives the drop-in install and the
-	 * wp-config.php edit. A bare write leaves a site claiming a cache it does not have —
-	 * which the very detector that decided to offer it would then read as `unknown-occupied`.
-	 * The toggle does the drop-in and the constant; the settings write after it persists the
-	 * flag, mirroring the plugin's own REST handler.
-	 *
-	 * That REST route is its documented entry point and would be the tidier call, but it is
-	 * unreachable here: the plugin was activated part-way through THIS request, so
-	 * `rest_api_init` has already fired and its routes are not registered. These static calls
-	 * are the same code that route runs.
-	 */
-	private static function enable_page_cache() {
-		if ( ! class_exists( '\XSpeed\Cache' ) || ! class_exists( '\XSpeed\Settings' ) ) {
-			return;
-		}
-
-		try {
-			$state = \XSpeed\Cache::toggle( true );
-			\XSpeed\Settings::update( array( 'cache_enabled' => ! empty( $state['enabled'] ) ) );
-		} catch ( \Throwable $e ) {
-			// A failed cache switch-on must never take the import down with it.
-			Helper::log( 'Page cache could not be enabled: ' . $e->getMessage() );
-			return;
-		}
-
-		// The site's cache state just changed under the detector's feet. Anything asking
-		// again in this request must not get the pre-install answer back from its memo.
-		if ( class_exists( '\WPDeveloper\PageCacheSafety\Detector' ) ) {
-			Detector::invalidate();
-		}
+		return \XSpeed\Host::status();
 	}
 }

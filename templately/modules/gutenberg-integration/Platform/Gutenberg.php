@@ -1,0 +1,341 @@
+<?php
+namespace Templately\Modules\GutenbergIntegration\Platform;
+
+use Templately\Modules\FullSiteImport\Utils\Utils;
+use Templately\Modules\GutenbergIntegration\Utils\GutenbergHelper;
+use Templately\Modules\GutenbergIntegration\Utils\GutenbergSettingsMerger;
+use Templately\Core\Platform;
+use Templately\Core\Platform_Registry;
+use Templately\Utils\Helper;
+use Templately\Utils\Options;
+
+use WP_Error;
+use function get_permalink;
+use function get_edit_post_link;
+use function wp_insert_post;
+use function wp_slash;
+use Templately\Utils\Response\AjaxResponder;
+use Templately\Utils\Response\ErrorCode;
+use function wp_unslash;
+use function wp_update_post;
+use function json_decode;
+
+class Gutenberg extends Platform {
+    /**
+     * Platform ID
+     * @var string
+     */
+    private $id = 'gutenberg';
+
+    /**
+     * Is gutenberg is active or not
+     * @var boolean
+     */
+    public $is_gutenberg_active = false;
+
+
+
+    /**
+     * Initializing the platform and add it to module.
+     */
+    public function __construct(){
+        Platform_Registry::get_instance()->add( (object) [
+            'id' => $this->id,
+            'object' => $this
+        ]);
+
+
+        $this->hooks();
+    }
+
+    /**
+     * Initializing Hooks
+     * @return void
+     */
+    public function hooks(){
+        add_action( 'enqueue_block_editor_assets', [ $this, 'scripts' ] );
+        add_action( 'admin_footer', [ $this, 'print_admin_js_template' ] );
+        // DEPRECATED SHIM (FR-003 / FR-020): the toolbar-visibility toggle migrated to the
+        // REST route PUT/POST /templately/v1/gutenberg/visibility (REST/Visibility.php). This
+        // ajax action is kept registered because the caller is browser-cached JS — an open
+        // editor tab (or a soft reload served stale gutenberg.js) would still POST here after
+        // the REST route ships. Same option key + normalization as the REST handler.
+        add_action( 'wp_ajax_update_gutenberg_hide_buttons', [ $this, 'update_gutenberg_hide_buttons' ] ); // Register AJAX action
+
+        // FSI platform seams (spec 025/033). full-site-import resolves its Gutenberg
+        // import helper + settings merger through these filters instead of importing
+        // this module directly — this breaks the full-site-import <-> gutenberg-integration
+        // cycle. Both fire at AJAX/runner time, long after plugins_loaded boots all modules.
+        add_filter( 'templately_fsi_json_helper', function ( $helper, $platform ) {
+            return 'gutenberg' === $platform ? new GutenbergHelper() : $helper;
+        }, 10, 2 );
+        add_filter( 'templately_fsi_merge_settings', function ( $content, $settings ) {
+            return GutenbergSettingsMerger::merge( $content, $settings );
+        }, 10, 2 );
+    }
+
+    /**
+     * Assets Enqueueing
+     * @return void
+     */
+    public function scripts(){
+        $this->is_gutenberg_active = true;
+        templately()->assets->enqueue( 'templately-gutenberg', 'css/gutenberg.css' );
+        templately()->assets->enqueue( 'templately-tailwind', 'css/tailwind.css', ['templately-gutenberg'] );
+        templately()->assets->enqueue( 'templately-gutenberg', 'js/gutenberg.js' );
+        // The AI editor chat bundle (041) enqueues itself off this same
+        // `enqueue_block_editor_assets` action from modules/ai-editor/module.php
+        // — this module does not own that asset.
+        templately()->admin->scripts( 'gutenberg' );
+    }
+
+    /**
+     * 	Templately Button and Wrapper for Gutenberg
+     *
+     * @since 2.0.0
+     *
+     * @return void
+     */
+    public function print_admin_js_template() {
+        if ( ! $this->is_gutenberg_active ) {
+            return;
+        }
+        $post_type = apply_filters( 'templately_cloud_push_post_type', get_post_type());
+
+        ?>
+        <div id="templately-gutenberg"></div>
+        <script id="templately-gutenberg-button-switch-mode" type="text/html">
+            <div id="templately-gutenberg-buttons">
+                <button id="templately-gutenberg-button" type="button" class="button button-primary button-large gutenberg-add-templately-button">
+                    <i class="templately-icon" aria-hidden="true"></i>
+                    <?php echo esc_html__( 'Templately', 'templately' ); ?>
+                </button>
+                <button id="templately-cloud-push" type="button" class="button button-primary button-large">
+                    <i class="templately-cloud-icon" aria-hidden="true"></i>
+                    <?php echo esc_html( sprintf( __( 'Save %s in Templately', 'templately' ), $post_type ) ); ?>
+                </button>
+            </div>
+        </script>
+        <?php
+    }
+
+    /**
+     * Determine Active UI Theme
+     * @return string
+     */
+    public function ui_theme(){
+        return 'light';
+    }
+
+    /**
+     * Creating a gutenberg page
+     *
+     * @param integer $id
+     * @param string $title
+     * @param Import $importer
+     *
+     * @since 2.0.0
+     *
+     * @return array|WP_Error array on success, WP_Error on failure.
+     */
+
+
+
+
+
+
+
+	public function create_page( $id, $title, $importer = null, $settings = [] ){
+		$post_data = $inserted_ID = $importer->get_content( $id, 'gutenberg' );
+
+		if( is_wp_error( $inserted_ID ) ) {
+			return $inserted_ID;
+		}
+
+		if ( ! empty( $settings ) && ! empty( $inserted_ID['content'] ) && is_string( $inserted_ID['content'] ) ) {
+			$inserted_ID['content'] = GutenbergSettingsMerger::merge( $inserted_ID['content'], $settings );
+			$post_data['content'] = $inserted_ID['content'];
+		}
+
+		if ( ! empty( $inserted_ID['content'] ) ) {
+			$inserted_ID = wp_insert_post( array (
+				'post_status'  => 'draft',
+				'post_type'    => 'page',
+				'post_title'   => $title,
+				'post_content' => wp_slash($inserted_ID['content']),
+			) );
+		}
+
+		if ( is_wp_error( $inserted_ID ) ) {
+			return Helper::error(
+				'import_failed',
+				$inserted_ID->get_error_message(),
+				'import/page',
+				$inserted_ID->get_error_code()
+			);
+		}
+
+		if($inserted_ID){
+			$post_data['content'] = Utils::import_and_replace_attachments($post_data['content'], $inserted_ID);
+
+			// Update the post content with the processed images
+			$updated_post = array(
+				'ID'           => $inserted_ID,
+				'post_content' => wp_slash($post_data['content']),
+			);
+			wp_update_post($updated_post);
+
+			/**
+			 * Block markup has just been written to a post that nobody has opened in an editor.
+			 *
+			 * A template carries the markup its AUTHORING site's block plugins produced, so on a
+			 * site running a different version Gutenberg's `save()` comparison fails and the page
+			 * opens with "Attempt recovery" — exactly the full-site-import case, minus the
+			 * session. modules/block-recovery listens here.
+			 *
+			 * @param int[]  $post_ids Posts that now hold imported block markup.
+			 * @param string $context  Which import produced them.
+			 */
+			do_action( 'templately_blocks_imported', [ (int) $inserted_ID ], 'single' );
+		}
+
+		return [
+			'post_id'             => $inserted_ID,
+			'edit_link'           => get_edit_post_link( $inserted_ID, 'internal' ),
+			'visit'               => get_permalink( $inserted_ID )
+		];
+	}
+
+    /**
+     * Inserts a template into the Gutenberg editor.
+     *
+     * @param mixed $data
+     * @param int $postId
+     * @param array $settings
+     * @return array
+     */
+    public function insert($data, $postId = 0, $settings = []) {
+        if ( ! empty( $settings ) && is_array( $settings ) && ! empty( $data['content'] ) && is_string( $data['content'] ) ) {
+            $data['content'] = GutenbergSettingsMerger::merge( $data['content'], $settings );
+        }
+
+        $data['content'] = Utils::import_and_replace_attachments(
+            $data['content'],
+            $postId,
+            [
+                'attachment_timeout'  => 8,
+                'attachment_retries'  => 0,
+                'attachment_deadline' => microtime( true ) + 20,
+            ]
+        );
+
+        return $data;
+    }
+
+	/**
+	 * Import template to Templately Library
+	 *
+	 * @param integer $id
+	 * @param Import $importer
+	 * @param array $settings
+	 *
+	 * @return array|WP_Error array on success, WP_Error on failure.
+	 */
+	public function import_in_library( $id, $importer = null, $settings = [], $template_type = '', $item_type = '' ) {
+		$template_data = $importer->get_content( $id, 'gutenberg', 'remote' );
+
+		if ( is_wp_error( $template_data ) ) {
+			return $template_data;
+		}
+
+		if ( ! empty( $settings ) && ! empty( $template_data['content'] ) && is_string( $template_data['content'] ) ) {
+			$template_data['content'] = GutenbergSettingsMerger::merge( $template_data['content'], $settings );
+		}
+
+		// Handle attachment replacements before saving
+		$template_data['content'] = Utils::import_and_replace_attachments( $template_data['content'], 0 );
+
+		// Frontend-provided template_type (from item details API) takes precedence over
+		// whatever the fetched content JSON reports.
+		if ( ! empty( $template_type ) ) {
+			$template_data['template_type'] = $template_type;
+		}
+
+		// Resolve the correct Builder Type using template_type before passing to the importer.
+		try {
+			$type = static::resolve_library_type( $template_data );
+		} catch ( \InvalidArgumentException $e ) {
+			return Helper::error( 'unsupported_template_type', $e->getMessage(), 'import', 400 );
+		}
+
+		$factory = new \Templately\Modules\ThemeBuilder\Factory\TemplateFactory( 'gutenberg' );
+
+		$template = $factory->create( $type, [
+			'post_title'  => $template_data['title'],
+			'post_status' => 'publish',
+			'post_type'   => 'templately_library',
+		] );
+
+		if ( is_wp_error( $template ) ) {
+			return $template;
+		}
+
+		$template->import( array_merge( $template_data, [
+			'import_settings' => [
+				'title' => $template_data['title'],
+				'type'  => $type,
+			]
+		] ) );
+
+		$post_id = $template->get_main_id();
+
+		// Companion content for archive/fluent types — same side effects (Shop page,
+		// page_for_posts, LearnDash courses slug, fluent single-page template) the FSI
+		// Templates runner performs when importing these template types.
+		Utils::create_companion_content( $type, $template_data['title'] ?? '', 'gutenberg' );
+
+		// Mark user as having imported a template
+		Options::get_instance()->set( 'has_imported_template', true );
+
+		return [
+			'post_id'   => $post_id,
+			'edit_link' => get_edit_post_link( $post_id, 'internal' ),
+			'visit'     => get_permalink( $post_id ),
+		];
+	}
+
+    /**
+     * DEPRECATED SHIM — AJAX handler to update the option `templately-gutenberg-hide-buttons`.
+     *
+     * Superseded by the REST route PUT/POST /templately/v1/gutenberg/visibility
+     * ({@see \Templately\Modules\GutenbergIntegration\REST\Visibility}). Retained only for
+     * browser-cached editor bundles still calling the old admin-ajax action; new code and the
+     * current frontend use the REST route. Behavior kept byte-identical (same site-wide option
+     * key, same nonce/capability gate, same 'yes'/'no' normalization).
+     */
+    public function update_gutenberg_hide_buttons() {
+        // Check nonce for security
+        check_ajax_referer( 'templately_nonce', 'nonce' );
+
+        // Nonce alone authenticates the request but not authorization — gate the
+        // option write on a real capability so a low-privilege logged-in user
+        // (e.g. subscriber) can't toggle this global editor option.
+        if ( ! current_user_can( 'edit_posts' ) ) {
+            AjaxResponder::error( ErrorCode::FORBIDDEN );
+            return;
+        }
+
+        // Get the new value from the AJAX request
+        $hide_buttons = isset($_GET['hide_buttons']) ? sanitize_text_field($_GET['hide_buttons']) : '';
+
+        // Update the option
+        update_option('templately-gutenberg-hide-buttons', $hide_buttons);
+
+        $hide_buttons = get_option('templately-gutenberg-hide-buttons', 'no');
+        $hide_buttons = $hide_buttons === 'yes' ? 'yes' : 'no';
+        // Send a response back to the JavaScript
+        AjaxResponder::success( [
+            'hide_buttons' => $hide_buttons,
+        ] );
+    }
+}

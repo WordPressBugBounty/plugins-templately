@@ -11,11 +11,13 @@ use WP_REST_Response;
 use Templately\Utils\Base;
 use Templately\Utils\Http;
 use Templately\Utils\Plan;
-use Templately\Core\Module;
+use Templately\Core\Platform_Registry;
 use function call_user_func;
 
 use Templately\Utils\Helper;
 use Templately\Utils\Options;
+use Templately\Modules\Auth\REST\Login;
+use Templately\Utils\Response\Envelope;
 use function register_rest_route;
 
 /**
@@ -42,7 +44,7 @@ abstract class API extends Base {
 		/**
 		 * Registering as a submodule of the API module
 		 */
-		Module::get_instance()->add( (object) [
+		Platform_Registry::get_instance()->add( (object) [
             'object' => $this
         ], 'API' );
 	}
@@ -108,16 +110,50 @@ abstract class API extends Base {
 	 */
 	public function get_param( $param, $default = '', $sanitizer = 'sanitize_text_field' ) {
 		$_value = $this->request->get_param( $param );
-		if ( ! empty( $_value ) ) {
-			if( is_callable($sanitizer) && ! is_array( $_value ) ) {
-				return call_user_func_array( $sanitizer, [ $_value ] );
-			} elseif ( is_array( $_value ) && is_callable($sanitizer) ) {
-				return array_map( $sanitizer, $_value );
-			}
-			return $_value;
+
+		// An ABSENT param — or an explicitly empty string — falls back to the default.
+		//
+		// This used to guard with `! empty()`, which is ALSO false for `0`, `'0'`,
+		// `false` and `[]`. Those are legitimate values a caller may have sent
+		// deliberately: a page number of 0, an explicit `false` flag, an empty array
+		// meaning "clear the selection". They were silently replaced by the default,
+		// and the endpoint could not tell "not sent" from "sent as zero".
+		//
+		// Empty string stays a fallback on purpose — callers like
+		// `get_param( 'search', '' )` rely on it, and "" carries no information a
+		// missing param does not.
+		if ( null === $_value || '' === $_value ) {
+			return $default;
 		}
 
-		return $default;
+		return self::sanitize_recursive( $_value, $sanitizer );
+	}
+
+	/**
+	 * Apply a sanitizer through nested arrays.
+	 *
+	 * `array_map( $sanitizer, $value )` only reached the FIRST level, so a nested
+	 * array left its inner values untouched.
+	 *
+	 * @param mixed           $value
+	 * @param callable|string $sanitizer
+	 * @return mixed
+	 */
+	private static function sanitize_recursive( $value, $sanitizer ) {
+		if ( ! is_callable( $sanitizer ) ) {
+			return $value;
+		}
+
+		if ( is_array( $value ) ) {
+			return array_map(
+				function ( $item ) use ( $sanitizer ) {
+					return self::sanitize_recursive( $item, $sanitizer );
+				},
+				$value
+			);
+		}
+
+		return call_user_func( $sanitizer, $value );
 	}
 
 	/**
@@ -174,27 +210,17 @@ abstract class API extends Base {
             $_additional_data['endpoint'] = $endpoint;
         }
 
-        // Delete user logged meta data — pinned to the acting user, otherwise
-		// Options::user_id() resolves a linked user to the global-login
-		// administrator and clears the administrator's session instead.
-		$options = $this->utils('options');
-		$options->use_current_user( true );
+        // One definition of "logged out" (043 / PRD PHP-1). This used to remove its
+        // own list of FIVE keys while Login removed EIGHT, so a session expiring
+        // through this path left `global_login`, `total_download_counts` and
+        // `templates_in_clouds` behind — stale data from the previous account, in a
+        // state that was neither logged in nor logged out.
+		Login::force_logout();
 
-		try {
-			$options
-				->remove('user')
-				->remove('favourites')
-				->remove('reviews')
-				->remove('cloud_activity')
-				->remove('api_key');
-
-			if( $options->who_am_i() === 'global' ) {
-				$options->remove_global_login();
-			}
-		} finally {
-			$options->use_current_user( false );
-		}
-
+		// The code stays `invalid_api_key`: it is an outward contract several
+		// callers still branch on, and RestEnvelope already maps it to
+		// AUTH_EXPIRED on the wire. Changing it here would buy nothing and break
+		// those callers.
 		return new WP_Error( 'invalid_api_key', $message, $_additional_data );
 	}
 
@@ -242,19 +268,20 @@ abstract class API extends Base {
 	}
 
 	/**
-	 * Enhanced success response wrapper that automatically adds success flag and wraps data
+	 * The canonical success envelope (spec 043 / FR-001).
 	 *
-	 * @param $data mixed The data to be wrapped in the response
+	 * Replaces the former `successWithData()`, which hand-rolled the same
+	 * `{ success, data }` shape in one place while the rest of the plugin
+	 * invented its own. The shape now comes from `Envelope`, which is what the
+	 * schema and both language halves are tested against.
+	 *
+	 * @param mixed $data The payload.
+	 * @param array $meta Optional metadata (pagination, timings, …).
 	 *
 	 * @return WP_REST_Response
 	 */
-	public function successWithData( $data ) {
-		$enhanced_response = [
-			'success' => true,
-			'data' => $data
-		];
-
-		return $this->success( $enhanced_response );
+	public function envelope( $data, $meta = [] ) {
+		return $this->success( Envelope::success( $data, $meta ) );
 	}
 	/**
 	 * @param $error_code string
@@ -275,5 +302,58 @@ abstract class API extends Base {
 	 */
 	public function get_plan( $plan = 'all' ) {
 		return Plan::get( $plan );
+	}
+
+	/**
+	 * 026/FR-003/D5 — the standard AI-generation response envelope.
+	 *
+	 * Every generation endpoint emits `{ success, terminal, code, message }`. The
+	 * client's retry logic keys off `terminal` ONLY: `terminal:true` ⇒ stop,
+	 * `terminal:false` ⇒ keep polling. `code` is for diagnostics/messages.
+	 *
+	 * The envelope is ADDITIVE — the existing payload ($extra: process_id,
+	 * templates, is_local_site, status, …) is merged in, so current consumers
+	 * keep reading their fields while gaining the uniform terminal/code signal.
+	 *
+	 * Code taxonomy:
+	 *   ok              terminal, success   — content ready / action succeeded
+	 *   pending         retryable, success  — accepted, still working
+	 *   not_ready       retryable, success  — content not on disk yet; keep polling
+	 *   invalid_process terminal, failure   — unknown/expired process id
+	 *   unauthorized    terminal, failure   — api_key/user mismatch
+	 *   remote_failed   terminal, failure   — remote AI service terminal failure
+	 *   expired         terminal, failure   — process/session past retention
+	 *   internal_error  terminal, failure   — unexpected server error
+	 *
+	 * @param string $code    one of the taxonomy slugs
+	 * @param string $message human, i18n
+	 * @param array  $extra   existing payload fields to merge (envelope keys win)
+	 * @return array
+	 */
+	public static function ai_envelope( $code, $message = '', $extra = [] ) {
+		return array_merge( (array) $extra, [
+			'success'  => self::ai_code_is_success( $code ),
+			'terminal' => self::ai_code_is_terminal( $code ),
+			'code'     => $code,
+			'message'  => $message,
+		] );
+	}
+
+	/**
+	 * Whether the client should STOP retrying for this code (FR-003).
+	 * `pending` / `not_ready` are the polling states. `internal_error` is also
+	 * non-terminal (mirroring AI_INTERNAL_ERROR's retryable=true in the
+	 * registry — the fold invariant is terminal === !retryable): transient
+	 * manifest/session races produce it, and a single occurrence was killing a
+	 * paid, still-running generation. The client poll is attempt-capped, so a
+	 * genuinely permanent internal error still terminates, just later.
+	 */
+	public static function ai_code_is_terminal( $code ) {
+		return ! in_array( $code, [ 'pending', 'not_ready', 'internal_error' ], true );
+	}
+
+	/** Whether this code represents a non-error response (FR-003). */
+	public static function ai_code_is_success( $code ) {
+		return in_array( $code, [ 'ok', 'pending', 'not_ready' ], true );
 	}
 }

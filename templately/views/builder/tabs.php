@@ -4,7 +4,7 @@
 			/**
 			 * @var array $template_types
 			 */
-			$__type = isset($_GET['type']) ? $_GET['type'] : 'all';
+			$__type = isset($_GET['type']) ? sanitize_key(wp_unslash($_GET['type'])) : 'all';
 			foreach ( $template_types as $typename => $type ) {
 				$classes = esc_attr( $typename );
 				$classes .= $__type === $typename ? ' active' : '';

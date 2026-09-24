@@ -1,0 +1,27 @@
+{
+	// The tsc GATE's project (scripts/build/typecheck.js), NOT the editor's.
+	//
+	// tsconfig.json is the default project every editor picks up, so it has to
+	// include test files — otherwise the language server treats them as loose
+	// files, drops `paths`/`jsx`/`types`, and paints every `describe`/`expect`
+	// red while CI stays green. That split is what this file exists to keep.
+	//
+	// The gate checks what SHIPS. Test code is looser on purpose — untyped
+	// mocks, `as any` doubles, partial fixtures — and running the gate over it
+	// surfaced ~300 errors that are noise against "did a production wiring
+	// break". Baselining those would have made the baseline meaningless, so the
+	// excludes moved here instead of being deleted.
+	//
+	// Keep this list in sync with anything added to tsconfig.json's include.
+	"extends": "./tsconfig.json",
+	"exclude": [
+		"react-src/**/__tests__/**",
+		"react-src/**/*.test.ts",
+		"react-src/**/*.test.tsx",
+		"modules/**/__tests__/**",
+		"modules/**/*.test.ts",
+		"modules/**/*.test.tsx",
+		"modules/**/tests/**",
+		"modules/**/node_modules/**"
+	]
+}

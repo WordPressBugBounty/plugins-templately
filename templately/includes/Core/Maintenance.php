@@ -16,6 +16,10 @@ class Maintenance {
 		register_uninstall_hook( TEMPLATELY_PLUGIN_BASENAME, [ __CLASS__, 'uninstall' ] );
 		register_deactivation_hook( TEMPLATELY_PLUGIN_BASENAME, [ __CLASS__, 'deactivation' ] );
 		add_action( 'admin_init', [ __CLASS__, 'maybe_redirect_templately' ] );
+
+		// Runtime capability hooks — setup() only ever runs on activation, so the
+		// administrator grant needs a home that runs on every request.
+		Roles::init();
 	}
 
 	/**
