@@ -9,8 +9,6 @@ use Templately\Modules\FullSiteImport\Runners\BaseRunner;
 use Templately\Modules\FullSiteImport\Utils\Utils;
 use Templately\Modules\FullSiteImport\Utils\SessionData;
 use Templately\Utils\Helper;
-use Templately\Modules\ProPluginProvisioning\Catalog as ProPluginCatalog;
-use Templately\Modules\ProPluginProvisioning\Module as ProPluginModule;
 use Templately\Utils\Installer;
 
 class Dependencies extends BaseRunner {
@@ -142,11 +140,6 @@ class Dependencies extends BaseRunner {
 			// $this->before_install_hook();
 
 			// Sort plugins to ensure pro plugins are activated after free versions.
-			//
-			// The Essential Blocks pair was added with spec 059: Templately can now install
-			// Essential Blocks Pro itself, so the ordering that was previously academic (the
-			// pro edition was never installed by us) became load-bearing. A pro add-on
-			// activated before its free base loads against an absent parent.
 			$plugin_order = [
 				'elementor/elementor.php',
 				'elementor-pro/elementor-pro.php',
@@ -187,44 +180,23 @@ class Dependencies extends BaseRunner {
 				$plugin_status      = Installer::get_instance()->install($dependency);
 
 				if (!$plugin_status['success']) {
-					/**
-					 * A pro plugin Templately offered to obtain, and could not (spec 059).
-					 *
-					 * This is NOT a failed installation. It means the user's subscription does
-					 * not cover the plugin — which was also true before this feature existed,
-					 * when Templately never even tried and the import ran on regardless. So it
-					 * must not be reported as an error and must not stop the import, even for a
-					 * pack that marks the dependency required (FR-008a).
-					 *
-					 * The exemption is deliberately narrow: it reaches only the two plugins in
-					 * the provisioning catalog, and only when the refusal is `pro_plugin`. A
-					 * genuine install failure of the same plugin (no disk space, no filesystem
-					 * credentials) carries a different code and still behaves as before, as does
-					 * every required free dependency.
-					 */
-					$is_unobtainable_pro = ( 'pro_plugin' === ( $plugin_status['code'] ?? '' ) )
-						&& self::provisioning_is_live()
-						&& ProPluginCatalog::is_provisionable( $dependency );
-
 					$error_message = 'Installation Failed: ' . $dependency['name'];
 					if (!empty($plugin_status['message'])) {
 						$error_message .= ' (' . $plugin_status['message'] . ')';
 					}
 
-					if ( ! $is_unobtainable_pro ) {
-						$this->sse_message([
-							'position' => 'plugin',
-							'action'   => 'updateLog',
-							'status'   => 'error',
-							'message'  => $error_message,
-							'type'     => "plugin_{$dependency['plugin_original_slug']}",
-							'progress' => 0
-						]);
+					$this->sse_message([
+						'position' => 'plugin',
+						'action'   => 'updateLog',
+						'status'   => 'error',
+						'message'  => $error_message,
+						'type'     => "plugin_{$dependency['plugin_original_slug']}",
+						'progress' => 0
+					]);
 
-						if (isset($dependency['mustHave']) && $dependency['mustHave']) {
-							$this->removeLog('plugin');
-							throw new FatalErrorException($error_message);
-						}
+					if (isset($dependency['mustHave']) && $dependency['mustHave']) {
+						$this->removeLog('plugin');
+						throw new FatalErrorException($error_message);
 					}
 
 					$results['failed'][] = [
@@ -232,12 +204,6 @@ class Dependencies extends BaseRunner {
 						'slug'    => $dependency['slug'],
 						'link'    => $dependency['link'] ?? '',
 						'message' => $plugin_status['message'] ?? '',
-						// Lets the completion screen tell "we could not get this for you"
-						// apart from "installing this went wrong". Deliberately NOT a verdict
-						// on entitlement: the same refusal covers a timeout, an unreachable
-						// host, a missing zip extension and a plan that does not include the
-						// plugin, and nothing here can tell them apart (spec 059 FR-007).
-						'reason'  => $is_unobtainable_pro ? 'not_available' : 'install_failed',
 					];
 				} else {
 					$_installed_plugins++;
@@ -331,25 +297,6 @@ class Dependencies extends BaseRunner {
 		// Additional verification: Check if installed plugins are actually active
 		if ( ! empty( $data['plugins'] ) && is_array( $data['plugins'] ) ) {
 			foreach ( $data['plugins'] as $plugin ) {
-				// A pro plugin Templately offered to obtain and could not is exempt here for
-				// the same reason it is exempt from the install failure above (spec 059
-				// FR-008a): not owning it is not a broken import, and before that spec
-				// Templately never installed it and never stopped for it either. Without
-				// this, the exemption granted in install_plugins() would be re-imposed two
-				// steps later, in a fresh request, with a less helpful message.
-				//
-				// Narrow on purpose, and narrower than the install-loop check: a refusal
-				// leaves NOTHING on disk, so a catalog plugin that IS on disk yet inactive
-				// did not fail provisioning — it failed activation, which is a real
-				// failure and still stops the import.
-				if (
-					self::provisioning_is_live()
-					&& ProPluginCatalog::is_provisionable( $plugin )
-					&& ! is_dir( WP_PLUGIN_DIR . '/' . dirname( (string) ( $plugin['plugin_file'] ?? '' ) ) )
-				) {
-					continue;
-				}
-
 				// Only check mustHave plugins
 				if ( isset( $plugin['mustHave'] ) && $plugin['mustHave'] ) {
 					if ( ! is_plugin_active( $plugin['plugin_file'] ) ) {
@@ -362,18 +309,6 @@ class Dependencies extends BaseRunner {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Whether the pro-plugin-provisioning feature is actually on.
-	 *
-	 * `class_exists()` is not enough — the autoloader namespace is registered for
-	 * DISABLED modules too. What a disabled module never does is add its listener, and
-	 * the exemptions in this runner must switch off with it, or "behaves exactly as
-	 * before when disabled" (spec 059 FR-025) is false in the one place it matters.
-	 */
-	private static function provisioning_is_live(): bool {
-		return class_exists( ProPluginModule::class ) && ProPluginModule::is_live();
 	}
 
 	private function install_themes($request_params) {

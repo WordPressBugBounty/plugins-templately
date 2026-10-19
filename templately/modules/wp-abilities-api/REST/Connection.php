@@ -12,8 +12,11 @@
  *  - mints a WordPress Application Password for the current admin (the Basic-Auth
  *    credential the adapter's HTTP transport needs), returned base64-encoded and
  *    shown once;
- *  - installs + activates the separately-distributed "MCP Adapter" plugin
- *    (wp.org if it ever lands there, else the GitHub latest-release built asset).
+ *  - installs + activates the separately-distributed "MCP Adapter" plugin,
+ *    from WordPress.org ONLY. There is no GitHub fallback (removed 2026-10-15):
+ *    WordPress.org plugin guideline 8 forbids a plugin from installing software
+ *    from outside the directory, so when wp.org has no listing the endpoint says
+ *    so and the user uploads the zip themselves on the Upload Plugin screen.
  *
  * The BUILT-IN server needs none of this — it has no external plugin to install
  * and issues its own credentials. Its connection management is a separate
@@ -37,11 +40,11 @@ class Connection extends Base {
 	/** Main-file path of the MCP Adapter plugin (folder/main-file). */
 	const ADAPTER_PLUGIN_FILE = 'mcp-adapter/mcp-adapter.php';
 
-	/** wp.org slug — tried first (not published there today, kept forward-compatible). */
+	/** wp.org slug, the ONLY source this endpoint installs from (not published there today). */
 	const ADAPTER_WPORG_SLUG = 'mcp-adapter';
 
-	/** GitHub latest-release API — the canonical distribution (ships a built `mcp-adapter.zip`). */
-	const ADAPTER_GH_RELEASES = 'https://api.github.com/repos/WordPress/mcp-adapter/releases/latest';
+	/** Where the user gets the zip themselves while the plugin is not on wp.org. Linked, never fetched. */
+	const ADAPTER_RELEASES_PAGE = 'https://github.com/WordPress/mcp-adapter/releases/latest';
 
 	public function __construct() {
 		add_filter( 'templately_admin_localized_data', [ $this, 'inject_localized_data' ] );
@@ -69,6 +72,8 @@ class Connection extends Base {
 			'wp_user'                 => $user->user_login,
 			'is_ssl'                  => is_ssl(),
 			'docs_url'                => 'https://github.com/WordPress/mcp-adapter#readme',
+			'releases_url'            => self::ADAPTER_RELEASES_PAGE,
+			'upload_url'              => self_admin_url( 'plugin-install.php?tab=upload' ),
 		];
 
 		return $data;
@@ -264,10 +269,14 @@ class Connection extends Base {
 	}
 
 	/**
-	 * Resolve a downloadable MCP Adapter zip: wp.org first (forward-compatible),
-	 * then the GitHub latest-release built asset (the canonical source today).
-	 * The GitHub *source* archive is intentionally avoided — it omits the bundled
-	 * `vendor/` deps the plugin needs; only the release ASSET zip is complete.
+	 * Resolve a downloadable MCP Adapter zip from WordPress.org, and nowhere else.
+	 *
+	 * There used to be a GitHub latest-release fallback here. It was removed on
+	 * 2026-10-15: WordPress.org plugin guideline 8 forbids a plugin from installing
+	 * software from outside the directory, whatever the host. While the adapter is
+	 * not listed on wp.org the endpoint answers `templately_mcp_not_on_wporg` and the
+	 * tab tells the user to download the release zip and upload it themselves. Do
+	 * not reintroduce a download from GitHub or any other host.
 	 *
 	 * @return array{url:string,source:string}|WP_Error
 	 */
@@ -284,50 +293,14 @@ class Connection extends Base {
 			return [ 'url' => $info->download_link, 'source' => 'wordpress.org' ];
 		}
 
-		// NOTE: this is GitHub's API, not the Templately cloud, so it deliberately
-		// does NOT go through ResponseNormalizer (spec 043). That normalizer maps
-		// Templately's `statusText` vocabulary, applies the site
-		// verification/disconnection side-effects and returns Templately error
-		// codes — none of which mean anything for a foreign host. Handled locally
-		// and on purpose; a future "route everything through the normalizer" sweep
-		// should skip this one.
-		$response = wp_remote_get(
-			self::ADAPTER_GH_RELEASES,
-			[
-				'timeout' => 20,
-				'headers' => [
-					'Accept'     => 'application/vnd.github+json',
-					'User-Agent' => 'Templately/' . ( defined( 'TEMPLATELY_VERSION' ) ? TEMPLATELY_VERSION : '1.0.0' ),
-				],
-			]
-		);
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		$code = wp_remote_retrieve_response_code( $response );
-		if ( 200 !== (int) $code ) {
-			return new WP_Error(
-				'templately_mcp_github_http',
-				sprintf( __( 'Could not reach GitHub to download the MCP Adapter (HTTP %d).', 'templately' ), (int) $code ),
-				[ 'status' => 502 ]
-			);
-		}
-
-		$body   = json_decode( wp_remote_retrieve_body( $response ), true );
-		$assets = ( is_array( $body ) && isset( $body['assets'] ) && is_array( $body['assets'] ) ) ? $body['assets'] : [];
-		foreach ( $assets as $asset ) {
-			$asset_name = $asset['name'] ?? '';
-			$asset_url  = $asset['browser_download_url'] ?? '';
-			if ( $asset_url && '.zip' === substr( strtolower( $asset_name ), -4 ) ) {
-				return [ 'url' => $asset_url, 'source' => 'github' ];
-			}
-		}
-
 		return new WP_Error(
-			'templately_mcp_no_asset',
-			__( 'No downloadable MCP Adapter release was found on GitHub.', 'templately' ),
-			[ 'status' => 502 ]
+			'templately_mcp_not_on_wporg',
+			__( 'The MCP Adapter plugin is not available on WordPress.org yet. Download its release zip and upload it under Plugins → Add New → Upload Plugin, then activate it and reload this page.', 'templately' ),
+			[
+				'status'       => 404,
+				'releases_url' => self::ADAPTER_RELEASES_PAGE,
+				'upload_url'   => self_admin_url( 'plugin-install.php?tab=upload' ),
+			]
 		);
 	}
 

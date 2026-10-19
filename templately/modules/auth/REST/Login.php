@@ -11,11 +11,18 @@ use Templately\Utils\Response\ResponseNormalizer;
 
 class Login extends API {
 	/**
-	 * The plan-catalog cache key. Versioned with the FIELD SET of the query in
-	 * `pricing()`, not with a release: a wider query under the old key would keep
-	 * serving the narrower cached answer for up to a week.
+	 * Cache keys `pricing()` USED to write. The catalog is no longer cached (see
+	 * `pricing()`), and any payload left under these keys by an older build is
+	 * stale by definition, a plan's price or the bundle set can change at any
+	 * time on the cloud, and a week-old copy showed a catalog without the bundle
+	 * plans and with outdated prices (2026-10-15). Each is deleted on the next
+	 * fetch so nothing can read it back.
 	 */
-	const PRICING_TRANSIENT = 'templately_subscriptions_v3';
+	const LEGACY_PRICING_TRANSIENTS = [
+		'templately_subscriptions',
+		'templately_subscriptions_v2',
+		'templately_subscriptions_v3',
+	];
 
     public function permission_check( WP_REST_Request $request ) {
 		$this->request = $request;
@@ -57,17 +64,21 @@ class Login extends API {
         ];
     }
 
+	/**
+	 * The plan catalog, fetched from the cloud on EVERY call, never cached.
+	 *
+	 * It used to sit in a week-long transient. Prices, coupons and the set of
+	 * plans on offer (the bundle plans in particular) are decided on the cloud and
+	 * change without a plugin release, and a cached copy served the Subscription
+	 * screen a catalog with no bundle plans and outdated prices for up to a week
+	 * after the cloud had moved on. Versioning the key with the FIELD SET only
+	 * covered the plugin's own query changing, not the catalog itself. The page
+	 * is opened rarely and the answer is small, so the request is cheap; RTK
+	 * Query on the client still dedupes concurrent reads within one page load.
+	 */
 	public function pricing(){
-		// Transient key is versioned ON PURPOSE. The field set below widened, and
-		// the cache lives for a WEEK — without a new key every site that had
-		// visited the Subscription screen recently would keep serving the old,
-		// narrow payload and the plan grid would stay full of dashes. Bump the
-		// suffix whenever the query changes. (_v3: `is_bundle` + `plugins`, so
-		// the Subscription screen can tell a bundle plan from a regular one.)
-		$data = get_transient( self::PRICING_TRANSIENT );
-
-		if( is_array( $data ) && ! empty( $data ) ) {
-			return $data;
+		foreach ( self::LEGACY_PRICING_TRANSIENTS as $key ) {
+			delete_transient( $key );
 		}
 
 		// Field set drives the Subscription screen's plan comparison grid, so it
@@ -77,14 +88,11 @@ class Login extends API {
 		// without them every bundle renders as one more column under its raw
 		// admin name — "Gutenberg PRO bundle", nine of them on the live catalog.
 		$query = 'id, price, name, slug, discounted_price, type, sites, coupon, my_cloud_items, pro_items, workspace, fsi_limit, ai_credit, description, is_bundle, plugins{ id, name, plugin_original_slug }';
-		$response = $this->http()->query(
+
+		return $this->http()->query(
 			'subscriptionPlans',
 			$query
 		)->post();
-
-		set_transient( self::PRICING_TRANSIENT, $response, WEEK_IN_SECONDS );
-
-		return $response;
 	}
 
     public function login() {

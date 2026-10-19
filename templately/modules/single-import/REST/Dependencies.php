@@ -28,6 +28,16 @@ class Dependencies extends API {
 	/** Guards against concurrent wizards each firing their own wordpress.org check. */
 	const UPDATE_CHECK_LOCK = 'plugin_update_check_lock';
 
+	/**
+	 * Essential Addons Pro and Essential Blocks Pro. When one is on disk but inactive,
+	 * the dialog asks the user to activate it themselves instead of activating it,
+	 * the same as the full-site wizard. Mirrors `react-src/utils/platformProPlugin.ts`.
+	 */
+	const PLATFORM_PRO_FILES = [
+		'essential-addons-elementor/essential_adons_elementor.php',
+		'essential-blocks-pro/essential-blocks-pro.php',
+	];
+
 	public function __construct() {
 		parent::__construct();
 
@@ -115,6 +125,7 @@ class Dependencies extends API {
 			$elementor_plugin->slug        = 'elementor';
 			$elementor_plugin->is_pro      = false;
 			$elementor_plugin->is_active   = Helper::is_plugin_active( 'elementor/elementor.php' );
+			$elementor_plugin->is_installed = isset( $_plugins['elementor/elementor.php'] );
 
 			$_inactive_plugins[] = $elementor_plugin;
 		}
@@ -131,6 +142,9 @@ class Dependencies extends API {
 				}
 
 				$dependency->is_active = Helper::is_plugin_active( $dependency->plugin_file );
+				// On disk at all: the dialog's button says "Proceed" rather than "Install"
+				// when every row it will act on only needs activating.
+				$dependency->is_installed = isset( $_plugins[ $dependency->plugin_file ] );
 
 				if( isset( $dependency->plugin_original_slug ) ) {
 					$dependency->slug = $dependency->plugin_original_slug;
@@ -139,8 +153,14 @@ class Dependencies extends API {
 
 				if ( $dependency->is_pro ) {
 					if ( isset( $_plugins[ $dependency->plugin_file ] ) ) {
-						unset( $dependency->is_pro );
-						$dependency->message = __( 'You have the plugin installed.', 'templately' );
+						if ( ! $dependency->is_active && in_array( $dependency->plugin_file, self::PLATFORM_PRO_FILES, true ) ) {
+							// Keep `is_pro` so the row stays a Pro row (crown, never activated
+							// by Templately) and the notice says "installed but not active".
+							$dependency->installed_inactive = true;
+						} else {
+							unset( $dependency->is_pro );
+							$dependency->message = __( 'You have the plugin installed.', 'templately' );
+						}
 					}
 				}
 				$_inactive_plugins[] = $dependency;
@@ -286,6 +306,11 @@ class Dependencies extends API {
 					$plugin_obj['installed'] = true;
 					$new_dependency_list[] = $plugin_obj;
 				} else {
+					// On disk but switched off: the wizard asks the user to activate a Pro
+					// plugin like this one instead of pointing them at a download.
+					if ( $plugin ) {
+						$plugin_obj['installed_inactive'] = true;
+					}
 					$new_dependency_list[] = $plugin_obj;
 					$new_required_plugins[] = $plugin_obj;
 				}

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-08T05:28:25+00:00\n"
+"POT-Creation-Date: 2026-10-19T06:32:10+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: templately\n"
@@ -17,19 +17,19 @@ msgstr ""
 #. Plugin Name of the plugin
 #. Author of the plugin
 #: templately.php
-#: includes/Core/Admin.php:662
+#: includes/Core/Admin.php:668
 #: modules/block-patterns/PatternRegistrar.php:341
 #: modules/gutenberg-integration/Platform/Gutenberg.php:111
 #: modules/mcp-server/Auth/OAuth/ConsentScreen.php:617
 #: modules/mcp-server/Auth/OAuth/ConsentScreen.php:625
 #: modules/site-editor-views/Fields.php:97
-#: modules/theme-builder/ThemeBuilder.php:274
+#: modules/theme-builder/ThemeBuilder.php:279
 #: modules/wp-abilities-api/Adapters/AbilitiesBridge.php:59
 #: modules/wp-abilities-api/Adapters/McpAdapterBridge.php:86
 #: views/header.php:7
 #: assets/js/elementor.js:1
-#: assets/js/templately.js:11
-#: assets/js/templately.js:13
+#: assets/js/templately.js:12
+#: assets/js/templately.js:14
 msgid "Templately"
 msgstr ""
 
@@ -65,197 +65,197 @@ msgstr ""
 msgid "Site successfully migrated. You can now import templates."
 msgstr ""
 
-#: includes/Core/Admin.php:53
+#: includes/Core/Admin.php:54
 msgctxt "Post type general name"
 msgid "Theme Builders"
 msgstr ""
 
-#: includes/Core/Admin.php:54
+#: includes/Core/Admin.php:55
 msgctxt "Post type singular name"
 msgid "Theme Builder"
 msgstr ""
 
-#: includes/Core/Admin.php:55
+#: includes/Core/Admin.php:56
 msgctxt "Admin Menu text"
 msgid "Theme Builder"
 msgstr ""
 
-#: includes/Core/Admin.php:56
+#: includes/Core/Admin.php:57
 msgctxt "Add New on Toolbar"
 msgid "Book"
 msgstr ""
 
-#: includes/Core/Admin.php:57
+#: includes/Core/Admin.php:58
 msgid "Add New"
 msgstr ""
 
-#: includes/Core/Admin.php:58
-#: assets/js/templately.js:22
+#: includes/Core/Admin.php:59
+#: assets/js/templately.js:30
 msgid "Add New Template"
 msgstr ""
 
-#: includes/Core/Admin.php:59
+#: includes/Core/Admin.php:60
 msgid "New Template"
 msgstr ""
 
-#: includes/Core/Admin.php:60
-#: assets/js/templately.js:19
+#: includes/Core/Admin.php:61
+#: assets/js/templately.js:17
 msgid "Edit Template"
 msgstr ""
 
-#: includes/Core/Admin.php:61
-#: assets/js/templately.js:16
-#: assets/js/templately.js:19
+#: includes/Core/Admin.php:62
+#: assets/js/templately.js:14
+#: assets/js/templately.js:17
 msgid "View Template"
 msgstr ""
 
-#: includes/Core/Admin.php:62
+#: includes/Core/Admin.php:63
 msgid "All Templates"
 msgstr ""
 
-#: includes/Core/Admin.php:63
-#: assets/js/templately.js:16
+#: includes/Core/Admin.php:64
+#: assets/js/templately.js:14
 msgid "Search Templates"
 msgstr ""
 
-#: includes/Core/Admin.php:64
+#: includes/Core/Admin.php:65
 msgid "Parent Templates:"
 msgstr ""
 
-#: includes/Core/Admin.php:65
+#: includes/Core/Admin.php:66
 msgid "No templates found."
 msgstr ""
 
-#: includes/Core/Admin.php:66
+#: includes/Core/Admin.php:67
 msgid "No templates found in Trash."
 msgstr ""
 
-#: includes/Core/Admin.php:67
+#: includes/Core/Admin.php:68
 msgctxt "Overrides the “Featured Image” phrase for this post type. Added in 4.3"
 msgid "Template Cover Image"
 msgstr ""
 
-#: includes/Core/Admin.php:68
+#: includes/Core/Admin.php:69
 msgctxt "Overrides the “Set featured image” phrase for this post type. Added in 4.3"
 msgid "Set cover image"
 msgstr ""
 
-#: includes/Core/Admin.php:69
+#: includes/Core/Admin.php:70
 msgctxt "Overrides the “Remove featured image” phrase for this post type. Added in 4.3"
 msgid "Remove cover image"
 msgstr ""
 
-#: includes/Core/Admin.php:70
+#: includes/Core/Admin.php:71
 msgctxt "Overrides the “Use as featured image” phrase for this post type. Added in 4.3"
 msgid "Use as cover image"
 msgstr ""
 
-#: includes/Core/Admin.php:71
+#: includes/Core/Admin.php:72
 msgctxt "The post type archive label used in nav menus. Default “Post Archives”. Added in 4.4"
 msgid "Template archives"
 msgstr ""
 
-#: includes/Core/Admin.php:73
+#: includes/Core/Admin.php:74
 msgctxt "Overrides the “Uploaded to this post”/”Uploaded to this page” phrase (used when viewing media attached to a post). Added in 4.4"
 msgid "Uploaded to this template"
 msgstr ""
 
-#: includes/Core/Admin.php:74
+#: includes/Core/Admin.php:75
 msgctxt "Screen reader text for the filter links heading on the post type listing screen. Default “Filter posts list”/”Filter pages list”. Added in 4.4"
 msgid "Filter templates list"
 msgstr ""
 
-#: includes/Core/Admin.php:75
+#: includes/Core/Admin.php:76
 msgctxt "Screen reader text for the pagination heading on the post type listing screen. Default “Posts list navigation”/”Pages list navigation”. Added in 4.4"
 msgid "Templates list navigation"
 msgstr ""
 
-#: includes/Core/Admin.php:76
+#: includes/Core/Admin.php:77
 msgctxt "Screen reader text for the items list heading on the post type listing screen. Default “Posts list”/”Pages list”. Added in 4.4"
 msgid "Templates list"
 msgstr ""
 
-#: includes/Core/Admin.php:403
+#: includes/Core/Admin.php:409
 #, php-format
 msgid "We hope you're enjoying %s! Could you please do us a favor and give us a review on %s to help us spread the word and boost our motivation?"
 msgstr ""
 
-#: includes/Core/Admin.php:412
+#: includes/Core/Admin.php:418
 msgid "Sure, you deserve it!"
 msgstr ""
 
-#: includes/Core/Admin.php:416
+#: includes/Core/Admin.php:422
 #: assets/js/post-import-feedback.js:1
 msgid "I already did"
 msgstr ""
 
-#: includes/Core/Admin.php:423
-#: includes/Core/Admin.php:503
+#: includes/Core/Admin.php:429
+#: includes/Core/Admin.php:509
 msgid "Maybe Later"
 msgstr ""
 
-#: includes/Core/Admin.php:435
+#: includes/Core/Admin.php:441
 msgid "I need help"
 msgstr ""
 
-#: includes/Core/Admin.php:439
+#: includes/Core/Admin.php:445
 msgid "Never show again"
 msgstr ""
 
-#: includes/Core/Admin.php:497
+#: includes/Core/Admin.php:503
 msgid "Upgrade To Pro Now"
 msgstr ""
 
-#: includes/Core/Admin.php:526
+#: includes/Core/Admin.php:532
 msgid "Get"
 msgstr ""
 
-#: includes/Core/Admin.php:527
+#: includes/Core/Admin.php:533
 msgid "Templately PRO"
 msgstr ""
 
-#: includes/Core/Admin.php:528
+#: includes/Core/Admin.php:534
 msgid "with up to 60% OFF & unlock 6500+ ready WordPress templates to power up web design in 2025."
 msgstr ""
 
-#: includes/Core/Admin.php:534
+#: includes/Core/Admin.php:540
 msgid "GET PRO Lifetime Access"
 msgstr ""
 
-#: includes/Core/Admin.php:539
+#: includes/Core/Admin.php:545
 msgid "No, I'll Pay Full Price Later"
 msgstr ""
 
-#: includes/Core/Admin.php:654
+#: includes/Core/Admin.php:660
 msgid "Install Elementor"
 msgstr ""
 
-#: includes/Core/Admin.php:657
+#: includes/Core/Admin.php:663
 msgid "Activate Elementor"
 msgstr ""
 
-#: includes/Core/Admin.php:663
+#: includes/Core/Admin.php:669
 msgid "requires"
 msgstr ""
 
-#: includes/Core/Admin.php:664
+#: includes/Core/Admin.php:670
 #: modules/full-site-import/Runners/ElementorContent.php:25
-#: modules/single-import/REST/Dependencies.php:111
-#: assets/js/templately.js:19
-#: assets/js/templately.js:21
-#: assets/js/templately.js:22
+#: modules/single-import/REST/Dependencies.php:123
+#: assets/js/templately.js:17
+#: assets/js/templately.js:29
+#: assets/js/templately.js:30
 msgid "Elementor"
 msgstr ""
 
-#: includes/Core/Admin.php:665
+#: includes/Core/Admin.php:671
 msgid "plugin to be installed and activated. Please install Elementor to continue."
 msgstr ""
 
-#: includes/Core/Admin.php:687
+#: includes/Core/Admin.php:693
 msgid "Open settings page"
 msgstr ""
 
-#: includes/Core/Admin.php:688
+#: includes/Core/Admin.php:694
 msgid "Templates Library"
 msgstr ""
 
@@ -271,64 +271,64 @@ msgstr ""
 #: includes/Utils/Base.php:42
 #: modules/template-browsing/REST/Items.php:429
 #: assets/js/templately.js:1
-#: assets/js/templately.js:20
-#: assets/js/templately.js:27
-#: assets/js/templately.js:28
+#: assets/js/templately.js:18
+#: assets/js/templately.js:35
+#: assets/js/templately.js:36
 msgid "Something went wrong."
 msgstr ""
 
-#: includes/Utils/Helper.php:702
+#: includes/Utils/Helper.php:711
 msgid "Please correct the highlighted fields."
 msgstr ""
 
-#: includes/Utils/Installer.php:63
-#: modules/single-import/REST/Dependencies.php:47
+#: includes/Utils/Installer.php:60
+#: modules/single-import/REST/Dependencies.php:59
 msgid "Sorry, you do not have permission to install a plugin."
 msgstr ""
 
-#: includes/Utils/Installer.php:164
+#: includes/Utils/Installer.php:128
 msgid "Failed to install plugin"
 msgstr ""
 
-#: includes/Utils/Installer.php:179
+#: includes/Utils/Installer.php:138
 msgid "Sorry, you do not have permission to activate a plugin."
 msgstr ""
 
-#: includes/Utils/Installer.php:228
+#: includes/Utils/Installer.php:195
 msgid "Sorry, you do not have permission to update plugins."
 msgstr ""
 
-#: includes/Utils/Installer.php:246
+#: includes/Utils/Installer.php:213
 msgid "This plugin is not installed on the site."
 msgstr ""
 
-#: includes/Utils/Installer.php:282
+#: includes/Utils/Installer.php:278
 msgid "The update could not be completed. Please update this plugin from the Plugins screen."
 msgstr ""
 
-#: includes/Utils/Installer.php:333
+#: includes/Utils/Installer.php:358
 msgid "Theme is already active"
 msgstr ""
 
-#: includes/Utils/Installer.php:338
+#: includes/Utils/Installer.php:363
 msgid "Function themes_api does not exist"
 msgstr ""
 
-#: includes/Utils/Installer.php:368
+#: includes/Utils/Installer.php:393
 msgid "Failed to install theme"
 msgstr ""
 
-#: includes/Utils/Installer.php:383
-#: includes/Utils/Installer.php:467
+#: includes/Utils/Installer.php:408
+#: includes/Utils/Installer.php:498
 msgid "Failed to activate theme"
 msgstr ""
 
-#: includes/Utils/Installer.php:394
+#: includes/Utils/Installer.php:419
 #, php-format
 msgid "The plugin requires PHP version %s or higher. You are running version %s."
 msgstr ""
 
-#: includes/Utils/Installer.php:403
+#: includes/Utils/Installer.php:428
 #, php-format
 msgid "The plugin requires WordPress version %s or higher. You are running version %s."
 msgstr ""
@@ -342,7 +342,8 @@ msgid "This account is not active. Please contact support."
 msgstr ""
 
 #: includes/Utils/Response/ErrorCode.php:220
-#: assets/js/templately.js:30
+#: assets/js/deactivation-survey.js:1
+#: assets/js/templately.js:38
 msgid "This site is not connected to Templately. Please log in again."
 msgstr ""
 
@@ -369,7 +370,8 @@ msgid "Validation failed."
 msgstr ""
 
 #: includes/Utils/Response/ErrorCode.php:233
-#: assets/js/templately.js:30
+#: assets/js/deactivation-survey.js:1
+#: assets/js/templately.js:38
 msgid "You appear to be offline. Check your connection and try again."
 msgstr ""
 
@@ -415,9 +417,10 @@ msgid "A critical error occurred on your website while processing this request. 
 msgstr ""
 
 #: includes/Utils/Response/ErrorCode.php:253
-#: modules/ai-fsi/REST/AIContent.php:1262
-#: modules/ai-fsi/REST/AIContent.php:1264
-#: assets/js/templately.js:30
+#: modules/ai-fsi/REST/AIContent.php:1321
+#: modules/ai-fsi/REST/AIContent.php:1323
+#: assets/js/deactivation-survey.js:1
+#: assets/js/templately.js:38
 msgid "The request could not be completed."
 msgstr ""
 
@@ -621,209 +624,209 @@ msgstr ""
 msgid "Invalid content ids."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:365
-#: modules/ai-fsi/REST/AIContent.php:1317
+#: modules/ai-fsi/REST/AIContent.php:385
+#: modules/ai-fsi/REST/AIContent.php:1376
 msgid "Invalid response."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:435
+#: modules/ai-fsi/REST/AIContent.php:455
 msgid "The content is being generated in the queue"
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:528
+#: modules/ai-fsi/REST/AIContent.php:581
 msgid "AI preview generation did not complete."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:536
+#: modules/ai-fsi/REST/AIContent.php:589
 msgid "Template must be a non-empty array with content_id as keys."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:584
+#: modules/ai-fsi/REST/AIContent.php:637
 #, php-format
 msgid "Processed %d templates: %d successful, %d failed."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:614
+#: modules/ai-fsi/REST/AIContent.php:667
 msgid "Pack ID or ID parameter is required."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:641
+#: modules/ai-fsi/REST/AIContent.php:694
 msgid "No XML content found in API response."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:648
+#: modules/ai-fsi/REST/AIContent.php:701
 msgid "Failed to parse XML content."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:657
+#: modules/ai-fsi/REST/AIContent.php:710
 #, php-format
 msgid "Found %d attachments."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:661
+#: modules/ai-fsi/REST/AIContent.php:714
 msgid "An unexpected error occurred while fetching attachments."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:682
+#: modules/ai-fsi/REST/AIContent.php:735
 msgid "Failed to create temporary file."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:689
+#: modules/ai-fsi/REST/AIContent.php:742
 msgid "Failed to write XML content to temporary file."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:837
+#: modules/ai-fsi/REST/AIContent.php:890
 msgid "Prompt is required for tagline generation."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:860
-#: modules/ai-fsi/REST/AIContent.php:928
+#: modules/ai-fsi/REST/AIContent.php:913
+#: modules/ai-fsi/REST/AIContent.php:981
 msgid "Failed to generate tagline."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:876
-#: modules/ai-fsi/REST/AIContent.php:888
-#: modules/ai-fsi/REST/AIContent.php:1149
+#: modules/ai-fsi/REST/AIContent.php:929
+#: modules/ai-fsi/REST/AIContent.php:941
+#: modules/ai-fsi/REST/AIContent.php:1208
 msgid "Something went wrong. Please try again or contact support."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:899
-#: modules/ai-fsi/REST/AIContent.php:1140
+#: modules/ai-fsi/REST/AIContent.php:952
+#: modules/ai-fsi/REST/AIContent.php:1199
 msgid "Invalid response from API."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:909
+#: modules/ai-fsi/REST/AIContent.php:962
 #: modules/template-customizer/REST/LogoGeneration.php:210
 msgid "API returned an unexpected response."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:984
+#: modules/ai-fsi/REST/AIContent.php:1037
 msgid "A generation id is required to save customization."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:993
+#: modules/ai-fsi/REST/AIContent.php:1046
 msgid "Customization data must be an object."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1007
+#: modules/ai-fsi/REST/AIContent.php:1060
 msgid "That generation is no longer available on this site."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1089
+#: modules/ai-fsi/REST/AIContent.php:1142
 msgid "Business name is required for brand kit generation."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1127
-#: modules/ai-fsi/REST/AIContent.php:1159
+#: modules/ai-fsi/REST/AIContent.php:1186
+#: modules/ai-fsi/REST/AIContent.php:1218
 msgid "Failed to generate brand kit."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1179
-#: modules/ai-fsi/REST/AIContent.php:1343
-#: modules/ai-fsi/REST/AIContent.php:1424
-#: modules/ai-fsi/REST/AIContent.php:1462
-#: modules/ai-fsi/REST/AIContent.php:1569
+#: modules/ai-fsi/REST/AIContent.php:1238
+#: modules/ai-fsi/REST/AIContent.php:1402
+#: modules/ai-fsi/REST/AIContent.php:1483
+#: modules/ai-fsi/REST/AIContent.php:1521
+#: modules/ai-fsi/REST/AIContent.php:1628
 msgid "Invalid conversation ID."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1183
+#: modules/ai-fsi/REST/AIContent.php:1242
 msgid "Failed to fetch conversation."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1185
+#: modules/ai-fsi/REST/AIContent.php:1244
 msgid "Could not retrieve the conversation."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1212
+#: modules/ai-fsi/REST/AIContent.php:1271
 msgid "Failed to fetch your AI sites."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1214
+#: modules/ai-fsi/REST/AIContent.php:1273
 msgid "Could not retrieve your AI sites."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1274
+#: modules/ai-fsi/REST/AIContent.php:1333
 #: modules/full-site-import/Concerns/HandlesSession.php:70
-#: modules/full-site-import/Concerns/RunsImport.php:115
+#: modules/full-site-import/Concerns/RunsImport.php:131
 msgid "Your site connection is disconnected. Please migrate your connection first."
 msgstr ""
 
 #. translators: %d: HTTP status code returned by the API.
-#: modules/ai-fsi/REST/AIContent.php:1309
+#: modules/ai-fsi/REST/AIContent.php:1368
 #, php-format
 msgid "API returned HTTP %d error."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1352
-#: modules/ai-fsi/REST/AIContent.php:1620
+#: modules/ai-fsi/REST/AIContent.php:1411
+#: modules/ai-fsi/REST/AIContent.php:1679
 #: assets/js/templately.js:2
 msgid "Failed to fetch generated content."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1354
-#: modules/ai-fsi/REST/AIContent.php:1622
+#: modules/ai-fsi/REST/AIContent.php:1413
+#: modules/ai-fsi/REST/AIContent.php:1681
 msgid "Could not retrieve the generated content."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1442
+#: modules/ai-fsi/REST/AIContent.php:1501
 msgid "Failed to update detected info."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1444
+#: modules/ai-fsi/REST/AIContent.php:1503
 msgid "Could not save your changes."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1472
+#: modules/ai-fsi/REST/AIContent.php:1531
 msgid "Failed to record import."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1474
+#: modules/ai-fsi/REST/AIContent.php:1533
 msgid "Could not record the import."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1573
+#: modules/ai-fsi/REST/AIContent.php:1632
 msgid "Invalid session ID."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1587
+#: modules/ai-fsi/REST/AIContent.php:1646
 msgid "Invalid AI page IDs."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1655
+#: modules/ai-fsi/REST/AIContent.php:1714
 msgid "Your free access to this generated site has ended. Upgrade your plan or purchase this template to import it."
 msgstr ""
 
-#: modules/ai-fsi/REST/AIContent.php:1806
+#: modules/ai-fsi/REST/AIContent.php:1865
 msgid "Failed to save generated content."
 msgstr ""
 
-#: modules/auth/REST/Login.php:100
+#: modules/auth/REST/Login.php:120
 msgid "API Key field cannot be empty."
 msgstr ""
 
-#: modules/auth/REST/Login.php:107
+#: modules/auth/REST/Login.php:127
 #: modules/auth/REST/SignUp.php:41
 msgid "Make sure you have given a valid email address."
 msgstr ""
 
-#: modules/auth/REST/Login.php:111
+#: modules/auth/REST/Login.php:131
 msgid "Password field cannot be empty."
 msgstr ""
 
-#: modules/auth/REST/Login.php:185
+#: modules/auth/REST/Login.php:205
 #: modules/mcp-abilities/Abilities/AuthLoginWithApiKeyAbility.php:90
 msgid "Invalid API key."
 msgstr ""
 
-#: modules/auth/REST/Login.php:294
+#: modules/auth/REST/Login.php:314
 msgid "You are not connected to Templately."
 msgstr ""
 
-#: modules/auth/REST/Login.php:317
+#: modules/auth/REST/Login.php:337
 msgid "Failed to invalidate the remote session."
 msgstr ""
 
-#: modules/auth/REST/Login.php:325
+#: modules/auth/REST/Login.php:345
 msgid "Logged out."
 msgstr ""
 
@@ -909,13 +912,13 @@ msgstr ""
 
 #: modules/block-recovery/REST/Rebuild.php:58
 #: modules/block-recovery/REST/Rebuild.php:75
-#: modules/block-recovery/REST/Rebuild.php:126
+#: modules/block-recovery/REST/Rebuild.php:128
 msgid "A post id is required."
 msgstr ""
 
 #: modules/block-recovery/REST/Rebuild.php:62
 #: modules/block-recovery/REST/Rebuild.php:79
-#: modules/block-recovery/REST/Rebuild.php:130
+#: modules/block-recovery/REST/Rebuild.php:132
 msgid "Sorry, you are not allowed to edit this post."
 msgstr ""
 
@@ -1133,10 +1136,10 @@ msgstr ""
 
 #: modules/display-conditions/Conditions/Search.php:15
 #: assets/js/templately.js:2
-#: assets/js/templately.js:4
-#: assets/js/templately.js:16
-#: assets/js/templately.js:19
-#: assets/js/templately.js:20
+#: assets/js/templately.js:5
+#: assets/js/templately.js:14
+#: assets/js/templately.js:17
+#: assets/js/templately.js:28
 msgid "Search"
 msgstr ""
 
@@ -1152,19 +1155,19 @@ msgstr ""
 msgid "WooCommerce"
 msgstr ""
 
-#: modules/display-conditions/REST/Conditions.php:94
+#: modules/display-conditions/REST/Conditions.php:95
 msgid "Successfully saved."
 msgstr ""
 
-#: modules/display-conditions/REST/Conditions.php:114
+#: modules/display-conditions/REST/Conditions.php:115
 msgid "Unsupported query type."
 msgstr ""
 
-#: modules/display-conditions/REST/Conditions.php:125
+#: modules/display-conditions/REST/Conditions.php:126
 msgid "Unsupported query field."
 msgstr ""
 
-#: modules/display-conditions/REST/Conditions.php:136
+#: modules/display-conditions/REST/Conditions.php:137
 msgid "You are not allowed to list users."
 msgstr ""
 
@@ -1312,71 +1315,71 @@ msgid "Permission Passed"
 msgstr ""
 
 #: modules/full-site-import/Concerns/DownloadsPack.php:51
-#: modules/full-site-import/Concerns/DownloadsPack.php:91
-#: modules/full-site-import/Concerns/DownloadsPack.php:112
+#: modules/full-site-import/Concerns/DownloadsPack.php:146
+#: modules/full-site-import/Concerns/DownloadsPack.php:180
 #: modules/full-site-import/Runners/DownloadZip.php:70
-#: modules/full-site-import/Runners/DownloadZip.php:120
-#: modules/full-site-import/Runners/DownloadZip.php:132
+#: modules/full-site-import/Runners/DownloadZip.php:168
+#: modules/full-site-import/Runners/DownloadZip.php:193
 msgid "Downloading Template Pack"
 msgstr ""
 
-#: modules/full-site-import/Concerns/DownloadsPack.php:80
-#: modules/full-site-import/Runners/DownloadZip.php:109
+#: modules/full-site-import/Concerns/DownloadsPack.php:135
+#: modules/full-site-import/Runners/DownloadZip.php:157
 msgid "Template pack download failed. "
 msgstr ""
 
-#: modules/full-site-import/Concerns/DownloadsPack.php:85
-#: modules/full-site-import/Runners/DownloadZip.php:114
+#: modules/full-site-import/Concerns/DownloadsPack.php:140
+#: modules/full-site-import/Runners/DownloadZip.php:162
 #, php-format
 msgid " Please try again or contact <a href='%s' target='_blank'>support</a>."
 msgstr ""
 
-#: modules/full-site-import/Concerns/DownloadsPack.php:108
+#: modules/full-site-import/Concerns/DownloadsPack.php:163
 msgid "Not enough disk space to import this pack. Please free up space and try again."
 msgstr ""
 
-#: modules/full-site-import/Concerns/DownloadsPack.php:116
-#: modules/full-site-import/Runners/DownloadZip.php:136
+#: modules/full-site-import/Concerns/DownloadsPack.php:186
+#: modules/full-site-import/Runners/DownloadZip.php:199
 msgid "Downloading Failed. Please try again"
 msgstr ""
 
-#: modules/full-site-import/Concerns/DownloadsPack.php:125
+#: modules/full-site-import/Concerns/DownloadsPack.php:195
 msgid "WP_Filesystem cannot be initialized"
 msgstr ""
 
-#: modules/full-site-import/Concerns/DownloadsPack.php:201
+#: modules/full-site-import/Concerns/DownloadsPack.php:271
 #: assets/js/templately.js:2
 #, php-format,js-format
 msgid "It seems we're experiencing technical difficulties. Please try again or contact <a href='%s' target='_blank'>support</a>."
 msgstr ""
 
 #. translators: %d: PHP ZipArchive::open() error code.
-#: modules/full-site-import/Concerns/DownloadsPack.php:434
+#: modules/full-site-import/Concerns/DownloadsPack.php:504
 #, php-format
 msgid "Could not open the downloaded archive (ZipArchive error code %d)."
 msgstr ""
 
 #. translators: %s: archive entry name
-#: modules/full-site-import/Concerns/DownloadsPack.php:499
+#: modules/full-site-import/Concerns/DownloadsPack.php:569
 #, php-format
 msgid "The template pack archive is corrupted (unreadable entry: %s). Please try again."
 msgstr ""
 
-#: modules/full-site-import/Concerns/DownloadsPack.php:513
+#: modules/full-site-import/Concerns/DownloadsPack.php:583
 msgid "Could not write the template pack to disk (disk full or not writable). Please free up space and try again."
 msgstr ""
 
-#: modules/full-site-import/Concerns/DownloadsPack.php:573
+#: modules/full-site-import/Concerns/DownloadsPack.php:643
 msgid "Cannot be imported, as the manifest file is corrupted"
 msgstr ""
 
 #: modules/full-site-import/Concerns/HandlesSession.php:192
-#: modules/full-site-import/Concerns/RunsImport.php:199
+#: modules/full-site-import/Concerns/RunsImport.php:215
 msgid "Invalid Pack ID."
 msgstr ""
 
 #: modules/full-site-import/Concerns/HandlesSession.php:217
-#: modules/full-site-import/Concerns/RunsImport.php:249
+#: modules/full-site-import/Concerns/RunsImport.php:265
 msgid "Please update the templately plugin."
 msgstr ""
 
@@ -1389,20 +1392,16 @@ msgstr ""
 msgid "Oops!"
 msgstr ""
 
-#: modules/full-site-import/Concerns/RunsImport.php:127
+#: modules/full-site-import/Concerns/RunsImport.php:143
 msgid "Invalid Session ID."
 msgstr ""
 
-#: modules/full-site-import/Concerns/RunsImport.php:138
+#: modules/full-site-import/Concerns/RunsImport.php:154
 msgid "This import has already been completed. Please start a new import."
 msgstr ""
 
-#: modules/full-site-import/Concerns/RunsImport.php:170
+#: modules/full-site-import/Concerns/RunsImport.php:186
 msgid "Forced test error (retryable) — exercising the FSI retry affordance."
-msgstr ""
-
-#: modules/full-site-import/Concerns/RunsImport.php:360
-msgid "Missing Credit Cost"
 msgstr ""
 
 #: modules/full-site-import/REST/GlobalSettings.php:40
@@ -1435,7 +1434,7 @@ msgid "Platform is not specified. Please try again after specifying the platform
 msgstr ""
 
 #: modules/full-site-import/Runners/CustomCSS.php:27
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Custom CSS"
 msgstr ""
 
@@ -1466,23 +1465,23 @@ msgstr ""
 msgid "Could not fully apply the %s — a plugin hooked to that change failed. The rest of the pack was imported."
 msgstr ""
 
-#: modules/full-site-import/Runners/Dependencies.php:23
+#: modules/full-site-import/Runners/Dependencies.php:21
 msgid "Download Dependencies"
 msgstr ""
 
-#: modules/full-site-import/Runners/Dependencies.php:35
+#: modules/full-site-import/Runners/Dependencies.php:33
 msgid "Downloading Dependencies"
 msgstr ""
 
-#: modules/full-site-import/Runners/Dependencies.php:304
+#: modules/full-site-import/Runners/Dependencies.php:270
 msgid "Elementor is required by this template but is not active on your site. Please install and activate Elementor, then try again."
 msgstr ""
 
-#: modules/full-site-import/Runners/Dependencies.php:312
+#: modules/full-site-import/Runners/Dependencies.php:278
 msgid "Essential Blocks is required by this template but is not active on your site. Please install and activate Essential Blocks, then try again."
 msgstr ""
 
-#: modules/full-site-import/Runners/Dependencies.php:357
+#: modules/full-site-import/Runners/Dependencies.php:304
 #, php-format
 msgid "Required plugin \"%s\" is not active. Please refresh the page and try again."
 msgstr ""
@@ -1546,8 +1545,8 @@ msgid "Importing Taxonomies"
 msgstr ""
 
 #: modules/full-site-import/Runners/Templates.php:20
-#: assets/js/templately.js:19
-#: assets/js/templately.js:21
+#: assets/js/templately.js:17
+#: assets/js/templately.js:29
 msgid "Templates"
 msgstr ""
 
@@ -1595,44 +1594,40 @@ msgstr ""
 msgid "Invalid file path: path is outside WordPress upload directory."
 msgstr ""
 
-#: modules/full-site-import/Utils/AIUtils.php:198
-msgid "Waiting for AI Content"
-msgstr ""
-
-#: modules/full-site-import/Utils/AIUtils.php:287
+#: modules/full-site-import/Utils/AIUtils.php:289
 msgid "AI content generation could not be retrieved."
 msgstr ""
 
-#: modules/full-site-import/Utils/AIUtils.php:295
+#: modules/full-site-import/Utils/AIUtils.php:297
 msgid "API returned an error response."
 msgstr ""
 
-#: modules/full-site-import/Utils/AIUtils.php:313
+#: modules/full-site-import/Utils/AIUtils.php:315
 #: modules/template-customizer/REST/LogoGeneration.php:447
 msgid "Process ID is required for logo polling."
 msgstr ""
 
-#: modules/full-site-import/Utils/AIUtils.php:1121
+#: modules/full-site-import/Utils/AIUtils.php:1147
 msgid "Content ID not found in AI page IDs."
 msgstr ""
 
-#: modules/full-site-import/Utils/AIUtils.php:1169
+#: modules/full-site-import/Utils/AIUtils.php:1195
 msgid "Failed to save template file."
 msgstr ""
 
-#: modules/full-site-import/Utils/AIUtils.php:1437
+#: modules/full-site-import/Utils/AIUtils.php:1463
 msgid "Process ID is required."
 msgstr ""
 
-#: modules/full-site-import/Utils/AIUtils.php:1442
+#: modules/full-site-import/Utils/AIUtils.php:1468
 msgid "Process ID not found."
 msgstr ""
 
-#: modules/full-site-import/Utils/AIUtils.php:1447
+#: modules/full-site-import/Utils/AIUtils.php:1473
 msgid "Session ID missing from process data."
 msgstr ""
 
-#: modules/full-site-import/Utils/AIUtils.php:1451
+#: modules/full-site-import/Utils/AIUtils.php:1477
 msgid "AI page IDs missing from process data."
 msgstr ""
 
@@ -2046,31 +2041,31 @@ msgid "This address is on your own computer — expected for a desktop or comman
 msgstr ""
 
 #: modules/mcp-server/Auth/OAuth/ConsentScreen.php:344
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Access"
 msgstr ""
 
 #: modules/mcp-server/Auth/OAuth/ConsentScreen.php:349
 #: modules/mcp-server/REST/Connections.php:299
-#: assets/js/templately.js:16
-#: assets/js/templately.js:17
+#: assets/js/templately.js:14
+#: assets/js/templately.js:15
 msgid "Read-only"
 msgstr ""
 
 #: modules/mcp-server/Auth/OAuth/ConsentScreen.php:350
 #: modules/mcp-server/REST/Connections.php:300
-#: assets/js/templately.js:16
-#: assets/js/templately.js:17
+#: assets/js/templately.js:14
+#: assets/js/templately.js:15
 msgid "Full access"
 msgstr ""
 
 #: modules/mcp-server/Auth/OAuth/ConsentScreen.php:355
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Acting as"
 msgstr ""
 
 #: modules/mcp-server/Auth/OAuth/ConsentScreen.php:361
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Site"
 msgstr ""
 
@@ -2090,10 +2085,10 @@ msgstr ""
 #: assets/js/ai-editor.js:5
 #: assets/js/templately.js:1
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
-#: assets/js/templately.js:19
-#: assets/js/templately.js:20
-#: assets/js/templately.js:28
+#: assets/js/templately.js:14
+#: assets/js/templately.js:17
+#: assets/js/templately.js:18
+#: assets/js/templately.js:36
 msgid "Cancel"
 msgstr ""
 
@@ -2256,23 +2251,19 @@ msgstr ""
 msgid "No preferences provided."
 msgstr ""
 
-#: modules/single-import/REST/Dependencies.php:141
+#: modules/single-import/REST/Dependencies.php:162
 msgid "You have the plugin installed."
 msgstr ""
 
-#: modules/single-import/REST/Dependencies.php:195
+#: modules/single-import/REST/Dependencies.php:217
 msgid "The plugin could not be installed. Please try again, or install it from the Plugins screen."
 msgstr ""
 
-#: modules/single-import/REST/Dependencies.php:482
+#: modules/single-import/REST/Dependencies.php:498
 msgid "No plugins were selected for update."
 msgstr ""
 
-#: modules/single-import/REST/Dependencies.php:494
-msgid "None of the selected plugins have an update available."
-msgstr ""
-
-#: modules/single-import/REST/Dependencies.php:505
+#: modules/single-import/REST/Dependencies.php:534
 msgid "The plugins could not be updated."
 msgstr ""
 
@@ -2332,6 +2323,38 @@ msgstr ""
 
 #: modules/site-editor-views/Views.php:69
 msgid "Recently imported"
+msgstr ""
+
+#: modules/subscription/REST/ProPluginDownload.php:76
+msgid "Only administrators can download the Pro plugins."
+msgstr ""
+
+#: modules/subscription/REST/ProPluginDownload.php:87
+msgid "Choose a platform: elementor or gutenberg."
+msgstr ""
+
+#: modules/subscription/REST/ProPluginDownload.php:98
+msgid "Connect this site to your Templately account first."
+msgstr ""
+
+#: modules/subscription/REST/ProPluginDownload.php:111
+#: assets/js/templately.js:24
+msgid "Download limit reached. The download service allows only a few downloads per hour. Try again later."
+msgstr ""
+
+#: modules/subscription/REST/ProPluginDownload.php:120
+#: assets/js/templately.js:24
+msgid "This site could not reach the download service. Check the site's internet connection and try again."
+msgstr ""
+
+#: modules/subscription/REST/ProPluginDownload.php:129
+#: assets/js/templately.js:24
+msgid "The download service returned an error. Try again in a few minutes."
+msgstr ""
+
+#: modules/subscription/REST/ProPluginDownload.php:139
+#: assets/js/templately.js:24
+msgid "This download is not available for your plan right now. If you think it should be, contact support."
 msgstr ""
 
 #: modules/template-browsing/REST/Items.php:158
@@ -2454,92 +2477,115 @@ msgstr ""
 msgid "Templately Gutenberg Template"
 msgstr ""
 
-#: modules/theme-builder/REST/ThemeBuilderApi.php:24
+#: modules/theme-builder/REST/ThemeBuilderApi.php:25
 msgid "Sorry, you are not allowed to create templates."
 msgstr ""
 
-#: modules/theme-builder/REST/ThemeBuilderApi.php:79
+#: modules/theme-builder/REST/ThemeBuilderApi.php:80
 #, php-format
 msgid "Something went wrong. %s"
 msgstr ""
 
-#: modules/theme-builder/Source.php:96
+#: modules/theme-builder/Source.php:106
+msgid "Make active"
+msgstr ""
+
+#: modules/theme-builder/Source.php:124
+msgid "Invalid template."
+msgstr ""
+
+#: modules/theme-builder/Source.php:130
+msgid "Sorry, you are not allowed to do that."
+msgstr ""
+
+#: modules/theme-builder/Source.php:166
+msgid "The template used for this type. Display conditions can still override it on specific pages."
+msgstr ""
+
+#: modules/theme-builder/Source.php:167
+#: assets/js/templately.js:24
+msgid "Active"
+msgstr ""
+
+#: modules/theme-builder/Source.php:190
 #: assets/js/ai-editor.js:4
-#: assets/js/templately.js:4
-#: assets/js/templately.js:19
-#: assets/js/templately.js:20
+#: assets/js/templately.js:5
+#: assets/js/templately.js:17
+#: assets/js/templately.js:18
 msgid "Type"
 msgstr ""
 
-#: modules/theme-builder/Source.php:97
+#: modules/theme-builder/Source.php:191
 msgid "Platform"
 msgstr ""
 
-#: modules/theme-builder/Source.php:141
+#: modules/theme-builder/Source.php:235
 msgid "Edit Conditions"
 msgstr ""
 
-#: modules/theme-builder/Source.php:165
-#: modules/theme-builder/Source.php:180
+#: modules/theme-builder/Source.php:259
+#: modules/theme-builder/Source.php:274
 msgctxt "Template Library"
 msgid "Templates"
 msgstr ""
 
-#: modules/theme-builder/Source.php:169
+#: modules/theme-builder/Source.php:263
 msgctxt "Template Library"
 msgid "Template"
 msgstr ""
 
-#: modules/theme-builder/Source.php:170
-#: modules/theme-builder/Source.php:171
+#: modules/theme-builder/Source.php:264
+#: modules/theme-builder/Source.php:265
 msgctxt "Template Library"
 msgid "Add New Template"
 msgstr ""
 
-#: modules/theme-builder/Source.php:172
+#: modules/theme-builder/Source.php:266
 msgctxt "Template Library"
 msgid "Edit Template"
 msgstr ""
 
-#: modules/theme-builder/Source.php:173
+#: modules/theme-builder/Source.php:267
 msgctxt "Template Library"
 msgid "New Template"
 msgstr ""
 
-#: modules/theme-builder/Source.php:174
+#: modules/theme-builder/Source.php:268
 msgctxt "Template Library"
 msgid "All Templates"
 msgstr ""
 
-#: modules/theme-builder/Source.php:175
+#: modules/theme-builder/Source.php:269
 msgctxt "Template Library"
 msgid "View Template"
 msgstr ""
 
-#: modules/theme-builder/Source.php:176
+#: modules/theme-builder/Source.php:270
 msgctxt "Template Library"
 msgid "Search Template"
 msgstr ""
 
-#: modules/theme-builder/Source.php:177
+#: modules/theme-builder/Source.php:271
 msgctxt "Template Library"
 msgid "No Templates found"
 msgstr ""
 
-#: modules/theme-builder/Source.php:178
+#: modules/theme-builder/Source.php:272
 msgctxt "Template Library"
 msgid "No Templates found in Trash"
 msgstr ""
 
-#: modules/theme-builder/Source.php:222
+#: modules/theme-builder/Source.php:321
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
-#: assets/js/templately.js:20
-#: assets/js/templately.js:30
+#: assets/js/templately.js:14
+#: assets/js/templately.js:18
+#: assets/js/templately.js:25
+#: assets/js/templately.js:28
+#: assets/js/templately.js:38
 msgid "All"
 msgstr ""
 
-#: modules/theme-builder/ThemeBuilder.php:164
+#: modules/theme-builder/ThemeBuilder.php:169
 msgid "Missing required template fields."
 msgstr ""
 
@@ -2605,10 +2651,10 @@ msgid "Page"
 msgstr ""
 
 #: modules/theme-builder/Types/Page.php:18
-#: assets/js/templately.js:19
-#: assets/js/templately.js:20
-#: assets/js/templately.js:21
-#: assets/js/templately.js:22
+#: assets/js/templately.js:17
+#: assets/js/templately.js:18
+#: assets/js/templately.js:29
+#: assets/js/templately.js:30
 msgid "Pages"
 msgstr ""
 
@@ -2706,8 +2752,9 @@ msgstr ""
 #: modules/theme-builder/Widgets/Featured_Image.php:196
 #: modules/theme-builder/Widgets/Site_Logo.php:222
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
-#: assets/js/templately.js:20
+#: assets/js/templately.js:14
+#: assets/js/templately.js:18
+#: assets/js/templately.js:28
 msgid "Default"
 msgstr ""
 
@@ -2931,7 +2978,7 @@ msgstr ""
 #: modules/theme-builder/Widgets/Post_Comments.php:818
 #: modules/theme-builder/Widgets/Post_Comments.php:849
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Background Color"
 msgstr ""
 
@@ -3008,7 +3055,7 @@ msgstr ""
 #: modules/theme-builder/Widgets/Post_Content.php:54
 #: modules/theme-builder/Widgets/Post_Title.php:85
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Text Color"
 msgstr ""
 
@@ -3064,9 +3111,9 @@ msgstr ""
 #: modules/theme-builder/Widgets/Post_Comments.php:1170
 #: assets/js/deactivation-survey.js:1
 #: assets/js/templately.js:1
-#: assets/js/templately.js:17
-#: assets/js/templately.js:20
-#: assets/js/templately.js:28
+#: assets/js/templately.js:15
+#: assets/js/templately.js:18
+#: assets/js/templately.js:36
 msgid "Name"
 msgstr ""
 
@@ -3077,7 +3124,7 @@ msgstr ""
 #: modules/theme-builder/Widgets/Post_Comments.php:1176
 #: assets/js/post-import-feedback.js:1
 #: assets/js/templately.js:2
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Email"
 msgstr ""
 
@@ -3282,29 +3329,24 @@ msgstr ""
 msgid "Search, preview, and import Templately designs on this WordPress site."
 msgstr ""
 
-#: modules/wp-abilities-api/REST/Connection.php:159
+#: modules/wp-abilities-api/REST/Connection.php:164
 msgid "No authenticated user."
 msgstr ""
 
-#: modules/wp-abilities-api/REST/Connection.php:165
+#: modules/wp-abilities-api/REST/Connection.php:170
 msgid "Application Passwords are not available for your account. They require an HTTPS connection."
 msgstr ""
 
-#: modules/wp-abilities-api/REST/Connection.php:172
+#: modules/wp-abilities-api/REST/Connection.php:177
 msgid "Templately MCP (AI agent)"
 msgstr ""
 
-#: modules/wp-abilities-api/REST/Connection.php:255
+#: modules/wp-abilities-api/REST/Connection.php:260
 msgid "MCP Adapter installation failed."
 msgstr ""
 
-#: modules/wp-abilities-api/REST/Connection.php:312
-#, php-format
-msgid "Could not reach GitHub to download the MCP Adapter (HTTP %d)."
-msgstr ""
-
-#: modules/wp-abilities-api/REST/Connection.php:329
-msgid "No downloadable MCP Adapter release was found on GitHub."
+#: modules/wp-abilities-api/REST/Connection.php:298
+msgid "The MCP Adapter plugin is not available on WordPress.org yet. Download its release zip and upload it under Plugins → Add New → Upload Plugin, then activate it and reload this page."
 msgstr ""
 
 #. translators: %s: post title
@@ -3407,7 +3449,7 @@ msgstr ""
 
 #. translators: %d: remaining credit balance
 #: assets/js/ai-editor.js:2
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 #, js-format
 msgid "%d credits"
 msgstr ""
@@ -3426,8 +3468,9 @@ msgstr ""
 
 #: assets/js/ai-editor.js:2
 #: assets/js/templately.js:2
-#: assets/js/templately.js:4
-#: assets/js/templately.js:16
+#: assets/js/templately.js:5
+#: assets/js/templately.js:14
+#: assets/js/templately.js:21
 msgid "Close"
 msgstr ""
 
@@ -3567,7 +3610,7 @@ msgid "Skipped (Pro)"
 msgstr ""
 
 #: assets/js/ai-editor.js:5
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "failed"
 msgstr ""
 
@@ -3580,26 +3623,29 @@ msgid "No preview"
 msgstr ""
 
 #: assets/js/ai-editor.js:5
-#: assets/js/templately.js:20
-#: assets/js/templately.js:22
+#: assets/js/templately.js:18
+#: assets/js/templately.js:25
+#: assets/js/templately.js:28
+#: assets/js/templately.js:30
 msgid "Pro"
 msgstr ""
 
 #: assets/js/ai-editor.js:5
-#: assets/js/templately.js:20
+#: assets/js/templately.js:24
+#: assets/js/templately.js:25
 msgid "Free"
 msgstr ""
 
 #: assets/js/ai-editor.js:5
 #: assets/js/templately.js:1
 #: assets/js/templately.js:2
-#: assets/js/templately.js:4
-#: assets/js/templately.js:16
+#: assets/js/templately.js:5
+#: assets/js/templately.js:14
 msgid "Preview"
 msgstr ""
 
 #: assets/js/ai-editor.js:5
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Select"
 msgstr ""
 
@@ -3716,17 +3762,6 @@ msgid "Sign in to Templately to edit this page with AI. Open the Templately dash
 msgstr ""
 
 #: assets/js/deactivation-survey.js:1
-#: assets/js/templately.js:1
-msgid "Last Modified"
-msgstr ""
-
-#: assets/js/deactivation-survey.js:1
-#: assets/js/templately.js:1
-#: assets/js/templately.js:4
-msgid "Action"
-msgstr ""
-
-#: assets/js/deactivation-survey.js:1
 msgid "Why are you deactivating?"
 msgstr ""
 
@@ -3758,6 +3793,62 @@ msgstr ""
 msgid "Totally optional — it helps us improve Templately."
 msgstr ""
 
+#: assets/js/deactivation-survey.js:1
+#: assets/js/templately.js:1
+msgid "Last Modified"
+msgstr ""
+
+#: assets/js/deactivation-survey.js:1
+#: assets/js/templately.js:1
+#: assets/js/templately.js:5
+msgid "Action"
+msgstr ""
+
+#: assets/js/deactivation-survey.js:1
+#: assets/js/templately.js:38
+msgid "Contact support"
+msgstr ""
+
+#: assets/js/deactivation-survey.js:1
+#: assets/js/templately.js:38
+msgid "Upgrade your plan"
+msgstr ""
+
+#: assets/js/deactivation-survey.js:1
+#: assets/js/templately.js:38
+msgid "Manage API keys"
+msgstr ""
+
+#: assets/js/deactivation-survey.js:1
+#: assets/js/templately.js:38
+msgid "You have connected as many sites as your subscription allows."
+msgstr ""
+
+#: assets/js/deactivation-survey.js:1
+#: assets/js/templately.js:38
+msgid "Upgrade to connect more sites"
+msgstr ""
+
+#: assets/js/deactivation-survey.js:1
+#: assets/js/templately.js:38
+msgid "This sign-in link is no longer valid. Please try signing in again."
+msgstr ""
+
+#: assets/js/deactivation-survey.js:1
+#: assets/js/templately.js:38
+msgid "Google sign-in returned no API key. Please try again."
+msgstr ""
+
+#: assets/js/deactivation-survey.js:1
+#: assets/js/templately.js:38
+msgid "Google sign-in did not complete. Please try again."
+msgstr ""
+
+#: assets/js/deactivation-survey.js:1
+#: assets/js/templately.js:38
+msgid "Templately could not complete this request due to an internal error. Please update the plugin, or contact support if it keeps happening."
+msgstr ""
+
 #: assets/js/elementor.js:1
 msgid "Save Page in Templately"
 msgstr ""
@@ -3775,7 +3866,7 @@ msgid "We truly value your feedback. Please let us know how we can improve and e
 msgstr ""
 
 #: assets/js/post-import-feedback.js:1
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Description"
 msgstr ""
 
@@ -3831,6 +3922,17 @@ msgstr ""
 msgid "Rate Templately"
 msgstr ""
 
+#: assets/js/templately-commons.js:1
+#: assets/js/templately.js:5
+#: assets/js/templately.js:38
+msgid "Something went wrong"
+msgstr ""
+
+#: assets/js/templately-commons.js:1
+#: assets/js/templately.js:2
+msgid "Reload the page"
+msgstr ""
+
 #: assets/js/templately.js:1
 msgid "Please enter a valid email address."
 msgstr ""
@@ -3856,7 +3958,7 @@ msgid "Password not matched!"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Oops...!"
 msgstr ""
 
@@ -3865,12 +3967,12 @@ msgid "Loading template…"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Deleting..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Delete"
 msgstr ""
 
@@ -3879,12 +3981,12 @@ msgid "You want to delete the file from your cloud."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Workspace..."
 msgstr ""
 
 #: assets/js/templately.js:1
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Your Site"
 msgstr ""
 
@@ -3941,8 +4043,8 @@ msgid "Move Failed"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: assets/js/templately.js:16
-#: assets/js/templately.js:28
+#: assets/js/templately.js:14
+#: assets/js/templately.js:36
 msgid "Something Went Wrong!"
 msgstr ""
 
@@ -3951,12 +4053,12 @@ msgid "We couldn't complete that. Try again or "
 msgstr ""
 
 #: assets/js/templately.js:1
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Are You Sure?"
 msgstr ""
 
 #: assets/js/templately.js:1
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Successfully Deleted!"
 msgstr ""
 
@@ -3970,13 +4072,14 @@ msgstr ""
 
 #: assets/js/templately.js:1
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
-#: assets/js/templately.js:19
-#: assets/js/templately.js:20
+#: assets/js/templately.js:14
+#: assets/js/templately.js:17
+#: assets/js/templately.js:18
 msgid "Insert"
 msgstr ""
 
 #: assets/js/templately.js:1
+#: assets/js/templately.js:23
 msgid "Download"
 msgstr ""
 
@@ -4009,7 +4112,7 @@ msgid "Your template is being pushed to your cloud store. Please do not refresh 
 msgstr ""
 
 #: assets/js/templately.js:1
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Successfully Pushed!"
 msgstr ""
 
@@ -4151,22 +4254,6 @@ msgid "For example"
 msgstr ""
 
 #: assets/js/templately.js:1
-msgid "Do you want to change the language for content generation? By default, we generate content in English."
-msgstr ""
-
-#: assets/js/templately.js:1
-msgid "Here you can change your content language or can click skip to keep the default language."
-msgstr ""
-
-#: assets/js/templately.js:1
-msgid "English, Spanish, French, German, etc."
-msgstr ""
-
-#: assets/js/templately.js:1
-msgid "I want to keep English"
-msgstr ""
-
-#: assets/js/templately.js:1
 msgid "Love that!"
 msgstr ""
 
@@ -4247,6 +4334,22 @@ msgid "We stay open from 08:00 AM to 06:00 PM (GMT+6)"
 msgstr ""
 
 #: assets/js/templately.js:1
+msgid "Do you want to change the language for content generation? By default, we generate content in English."
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "Here you can change your content language or can click skip to keep the default language."
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "English, Spanish, French, German, etc."
+msgstr ""
+
+#: assets/js/templately.js:1
+msgid "I want to keep English"
+msgstr ""
+
+#: assets/js/templately.js:1
 msgid "Thank you! Do you want to replace the default images with new ones?"
 msgstr ""
 
@@ -4306,124 +4409,124 @@ msgid "Use this image for the selected slot"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Use This Image"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Searching for images..."
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
-#: assets/js/templately.js:30
+#: assets/js/templately.js:14
+#: assets/js/templately.js:38
 msgid "No image found"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Undo"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Replace"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
-#: assets/js/templately.js:30
+#: assets/js/templately.js:14
+#: assets/js/templately.js:38
 msgid "Landscape"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
-#: assets/js/templately.js:30
+#: assets/js/templately.js:14
+#: assets/js/templately.js:38
 msgid "Portrait"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
-#: assets/js/templately.js:30
+#: assets/js/templately.js:14
+#: assets/js/templately.js:38
 msgid "Square"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Great! Choose visuals that fit your web content or upload your own."
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Images used in your template"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
-#: assets/js/templately.js:20
+#: assets/js/templately.js:14
+#: assets/js/templately.js:25
 msgid "Reset"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Select image"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Stock Images"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Upload"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "AI Generated"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "No image selected"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Please choose an image to replace the current one."
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
-#: assets/js/templately.js:22
+#: assets/js/templately.js:14
+#: assets/js/templately.js:30
 msgid "Coming Soon"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Select or upload from Media Library."
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Browse media library"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Skip"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
-#: assets/js/templately.js:28
+#: assets/js/templately.js:14
+#: assets/js/templately.js:36
 msgid "Save Changes"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:30
+#: assets/js/templately.js:38
 msgid "Failed to search images. Please try again."
 msgstr ""
 
@@ -4440,7 +4543,7 @@ msgid "Edit detected information"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Save"
 msgstr ""
 
@@ -4485,7 +4588,7 @@ msgid "Attachments fetch was cancelled"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Conversation ID is missing."
 msgstr ""
 
@@ -4554,7 +4657,7 @@ msgid "Yes, let’s start"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Profile"
 msgstr ""
 
@@ -4563,7 +4666,7 @@ msgid "Edit answer"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Edit"
 msgstr ""
 
@@ -4723,17 +4826,17 @@ msgid "Your AI Credits"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Buy Credits"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Increase Limit"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "AI Credits"
 msgstr ""
 
@@ -4742,7 +4845,7 @@ msgid "Month"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Credits"
 msgstr ""
 
@@ -4751,17 +4854,17 @@ msgid "Monthly reset in"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "AI credits validity: Lifetime – use anytime."
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "To generate AI content - buy credits now!"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Estimated AI Credits for this generation:"
 msgstr ""
 
@@ -4839,14 +4942,14 @@ msgid "Dev"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
-#: assets/js/templately.js:20
+#: assets/js/templately.js:14
+#: assets/js/templately.js:18
 msgid "Site Title"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
-#: assets/js/templately.js:20
+#: assets/js/templately.js:14
+#: assets/js/templately.js:18
 msgid "Site Tagline"
 msgstr ""
 
@@ -4855,7 +4958,7 @@ msgid "Hex color value"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Copied"
 msgstr ""
 
@@ -4864,24 +4967,24 @@ msgid "Copy color"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
-#: assets/js/templately.js:20
+#: assets/js/templately.js:14
+#: assets/js/templately.js:18
 msgid "System"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
-#: assets/js/templately.js:20
+#: assets/js/templately.js:14
+#: assets/js/templately.js:18
 msgid "Google"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Upload your own logo"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "OR"
 msgstr ""
 
@@ -4922,54 +5025,54 @@ msgid "JPEG"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "1536×1024 (Landscape)"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "1024×1536 (Portrait)"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "1024×1024 (Square)"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Prompt"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 #, js-format
 msgid "Create a professional, modern logo for my company “%s” using a clean minimal style and a blue color palette."
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Number of variations"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Image size"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
-#: assets/js/templately.js:20
+#: assets/js/templately.js:14
+#: assets/js/templately.js:28
 msgid "Category"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Image quality"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Output format"
 msgstr ""
 
@@ -4979,12 +5082,12 @@ msgid "This generation needs about %1$s credits, but you have %2$s. Lower the qu
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Generating..."
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Generate Now"
 msgstr ""
 
@@ -4993,82 +5096,82 @@ msgid "Hex"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "None"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Loading icons..."
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Logo text"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Enter your logo text"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Font family"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Font weight"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Font size"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Icon gap"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Shape"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Shape size"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Text color"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Background color"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Generating your site logo… please wait."
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Logo Preview"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Generate your logo with AI and see a live preview here."
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "used for this generation"
 msgstr ""
 
@@ -5077,102 +5180,97 @@ msgid "The logo preview could not be loaded."
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:20
-msgid "Reload the page"
-msgstr ""
-
-#: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Shuffle Settings"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Zoom Out"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Reset Zoom"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Zoom In"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Fit to View"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Insert Logo"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Your Logo"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Generate Logo with AI"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Site Logo Generator"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Available Credit"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Create your site logo using AI or design a custom typography logo manually."
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "AI Generator"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Typography"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Generate with AI"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Generate Site Title"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Generate Site Tagline"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Generate Field"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Enter your prompt"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Generate"
 msgstr ""
 
@@ -5213,7 +5311,7 @@ msgid "An error occurred while generating tagline"
 msgstr ""
 
 #: assets/js/templately.js:2
-#: assets/js/templately.js:12
+#: assets/js/templately.js:13
 msgid "Installed"
 msgstr ""
 
@@ -5267,697 +5365,704 @@ msgstr ""
 msgid "Please install PRO plugins manually."
 msgstr ""
 
-#. translators: %s: the linked words "subscription plan".
+#. translators: 1: the Pro plugin name (Essential Addons Pro / Essential Blocks Pro). 2: the linked words "Activate it".
 #: assets/js/templately.js:4
 #, js-format
-msgid "The PRO plugin below will be installed automatically if your %s includes it."
-msgid_plural "The PRO plugins below will be installed automatically if your %s includes them."
-msgstr[0] ""
-msgstr[1] ""
-
-#: assets/js/templately.js:4
-msgid "subscription plan"
+msgid "%1$s is installed but not active. %2$s before importing so the Pro sections appear correctly after the import."
 msgstr ""
 
 #: assets/js/templately.js:4
+msgid "Activate it"
+msgstr ""
+
+#. translators: 1: the Pro plugin name (Essential Addons Pro / Essential Blocks Pro). 2: the linked words "subscription page". 3: the linked words "Install it".
+#: assets/js/templately.js:5
+#, js-format
+msgid "You can download %1$s from your %2$s. %3$s before importing so the Pro sections appear correctly after the import."
+msgstr ""
+
+#: assets/js/templately.js:5
+msgid "subscription page"
+msgstr ""
+
+#: assets/js/templately.js:5
+#: assets/js/templately.js:21
+msgid "Install it"
+msgstr ""
+
+#: assets/js/templately.js:5
 msgid "Update failed. Please update this plugin manually."
 msgstr ""
 
-#: assets/js/templately.js:4
-#: assets/js/templately.js:11
-#: assets/js/templately.js:19
-#: assets/js/templately.js:20
+#: assets/js/templately.js:5
+#: assets/js/templately.js:12
+#: assets/js/templately.js:17
+#: assets/js/templately.js:18
 msgid "Required Dependencies"
 msgstr ""
 
-#: assets/js/templately.js:4
-#: assets/js/templately.js:12
+#: assets/js/templately.js:5
+#: assets/js/templately.js:13
 msgid "To import this item you need to install all the Plugin(s)"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Plugin Dependencies"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Theme Dependencies"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "We recommend you to use this theme for a smooth importing experience."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Import Demo Content"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Demo content such as posts, products, forms, etc will be excluded from the import."
 msgstr ""
 
-#: assets/js/templately.js:4
-#: assets/js/templately.js:16
-#: assets/js/templately.js:19
+#: assets/js/templately.js:5
+#: assets/js/templately.js:14
+#: assets/js/templately.js:17
 msgid "Back"
 msgstr ""
 
-#: assets/js/templately.js:4
-#: assets/js/templately.js:13
+#: assets/js/templately.js:5
+#: assets/js/templately.js:14
 msgid "Continue anyway"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Updating…"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Update & Continue"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Import"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Continue"
 msgstr ""
 
-#: assets/js/templately.js:4
-#: assets/js/templately.js:19
+#: assets/js/templately.js:5
+#: assets/js/templately.js:17
 msgid "Import Failed"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Import Completed"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Importing Your Website..."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Credit Cost:"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Imported with default content:"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "pages or templates"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Credit Cost: Not Available"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "No AI pages were processed"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "AI Generated Pages & Templates:"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Failed:"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "AI Content Processing Information Unavailable"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Installed Required Plugins"
 msgstr ""
 
-#: assets/js/templately.js:4
-msgid "could not be installed automatically."
-msgstr ""
-
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "not found."
 msgstr ""
 
-#: assets/js/templately.js:4
-#: assets/js/templately.js:13
+#: assets/js/templately.js:5
+#: assets/js/templately.js:14
 msgid "Please get it"
 msgstr ""
 
-#: assets/js/templately.js:4
-#: assets/js/templately.js:13
+#: assets/js/templately.js:5
+#: assets/js/templately.js:14
 msgid "here"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Installed Recommended Theme"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Theme Installation Failed"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Imported Attachments:"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Imported Contents:"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Single Post type"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Imported Templates:"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Skipped Items:"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Item"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Unknown error"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Imported Site Settings: Layout, Fonts, Colors, Typography, Images, Custom CSS, etc."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Congratulations! Your Website is ready"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "You have imported and applied the following to your site."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Visit Your Website"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Your website is being ready..."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "This usually takes a few minutes. Please do not close the window until the process is complete."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "This usually takes a few moments. Please do not close the window until the process is complete."
 msgstr ""
 
-#: assets/js/templately.js:4
-#: assets/js/templately.js:20
-#: assets/js/templately.js:30
-msgid "Something went wrong"
-msgstr ""
-
-#: assets/js/templately.js:4
-#: assets/js/templately.js:20
+#: assets/js/templately.js:5
+#: assets/js/templately.js:17
+#: assets/js/templately.js:18
 msgid "Retry"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Your AI Credit"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Credit"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "AI credit validity: Lifetime – use anytime."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Oops! We need some details about your website."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Launch your website in seconds!"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Just a few details about your site – we’ll take care of the rest."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Website Information"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Select website type"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid " e.g., Portfolio, Blog, Business, etc."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "No category found, create new one!"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Tell us what your site is about"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Your input will reflect throughout the entire templates."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Contact Information"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Full address"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "123 Main St, Anytown, USA"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Email address"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "you@example.com"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Contact number"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "(123) 456-7890"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Oops! Something went wrong while generating AI content for this template. Need help? Please contact"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "support"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Switch to Regular"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Buy Credit"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Set Branding"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Your website import is in progress. Reloading will lose your import."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Could not finish preparing your generated content."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Could not prepare the import. Please try again."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "No Access Yet"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Unfortunately, you don't have permission to import templates. Please check your permissions or contact the website admin for help."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Build Full Website"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Build with Templately AI"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Desktop"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Tablet"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Mobile"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "This generation has no pages to preview yet."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Could not load this preview."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Preview size"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Loading preview…"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "This template has no live preview."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Search here . . . "
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Clear search"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Previous page"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Next page"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Grid view"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "List view"
 msgstr ""
 
-#: assets/js/templately.js:4
-#: assets/js/templately.js:19
+#: assets/js/templately.js:5
+#: assets/js/templately.js:17
 msgid "Loading…"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Status"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Generating"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
+#: assets/js/templately.js:17
 msgid "Failed"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Expired"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "1 day left"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 #, js-format
 msgid "%d days left"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Imported"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Ready"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Credits Used"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Generated"
 msgstr ""
 
-#: assets/js/templately.js:4
-#: assets/js/templately.js:20
+#: assets/js/templately.js:5
+#: assets/js/templately.js:25
 msgid "Upgrade"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
+#: assets/js/templately.js:24
 msgid "Preparing…"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Could not load your AI sites"
 msgstr ""
 
-#: assets/js/templately.js:4
-#: assets/js/templately.js:13
-#: assets/js/templately.js:22
+#: assets/js/templately.js:5
+#: assets/js/templately.js:14
+#: assets/js/templately.js:23
 #: assets/js/templately.js:30
+#: assets/js/templately.js:38
 msgid "Try again"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "No AI sites yet"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Generate a site with Templately AI and it will show up here, ready to import whenever you need it."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Something went wrong. Please try again."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Increase limit"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Your AI credit balance could not be loaded. It is unchanged — reload to try again."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 #, js-format
 msgid "(%1$s AI Credits/Month + %2$s AI Credits)"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 #, js-format
 msgid "%1$s/%2$s Credits"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 #, js-format
 msgid "Monthly reset in %d"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Could not load your credit history."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Template Name"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Credit Used"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Created Date"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Could not load your credit history"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "AI Credits Usages History"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "No credit history yet"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "You do not have any credit history."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "My AI Sites"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "AI Studio sections"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "API Key"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Your API Key"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Email Address"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Enter Your Email Address"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Password"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Forgot Password?"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Global Sign In"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "All the sitewide users will be logged in with this Templately account"
 msgstr ""
 
-#: assets/js/templately.js:4
-#: assets/js/templately.js:19
+#: assets/js/templately.js:5
+#: assets/js/templately.js:17
 msgid "Sign In"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Signing In..."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Connect via API"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Connect via Login Credentials"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "First name and Last name cannot be empty."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "First Name"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Last Name"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Confirm Password"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "I agree to the Templately "
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Privacy Policy"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Terms of Services"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Sign Up"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Ultimate Templates "
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Cloud for WordPress"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Take Your Favourite Page Builders To A Whole New Level & Manage All Your Designs In One Place With Templately"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Free Sign Up"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Redirecting..."
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Sign up with Google"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Continue with Google"
 msgstr ""
 
-#: assets/js/templately.js:4
+#: assets/js/templately.js:5
 msgid "Or with email"
-msgstr ""
-
-#. translators: %s: plugin name
-#: assets/js/templately.js:5
-#, js-format
-msgid "%s is ready. Reload the editor to render the blocks it provides."
-msgstr ""
-
-#: assets/js/templately.js:5
-#: assets/js/templately.js:13
-msgid "Reload the editor"
 msgstr ""
 
 #. translators: %s: plugin name
 #: assets/js/templately.js:6
 #, js-format
-msgid "Activating %s…"
+msgid "%s is ready. Reload the editor to render the blocks it provides."
+msgstr ""
+
+#: assets/js/templately.js:6
+#: assets/js/templately.js:14
+msgid "Reload the editor"
 msgstr ""
 
 #. translators: %s: plugin name
 #: assets/js/templately.js:7
 #, js-format
+msgid "Activating %s…"
+msgstr ""
+
+#. translators: %s: plugin name
+#: assets/js/templately.js:8
+#, js-format
 msgid "Installing %s…"
 msgstr ""
 
 #. translators: 1: plugin name, 2: error message
-#: assets/js/templately.js:8
+#: assets/js/templately.js:9
 #, js-format
 msgid "Could not install %1$s: %2$s"
 msgstr ""
 
-#: assets/js/templately.js:8
-#: assets/js/templately.js:10
+#: assets/js/templately.js:9
+#: assets/js/templately.js:11
 msgid "unknown error"
 msgstr ""
 
-#: assets/js/templately.js:8
+#: assets/js/templately.js:9
 msgid "Install manually"
 msgstr ""
 
 #. translators: 1: plugin name, 2: number of blocks
-#: assets/js/templately.js:9
+#: assets/js/templately.js:10
 #, js-format
 msgid "This design uses %2$d block from %1$s, which is installed but not active."
 msgid_plural "This design uses %2$d blocks from %1$s, which is installed but not active."
@@ -5965,7 +6070,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: 1: plugin name, 2: number of blocks
-#: assets/js/templately.js:10
+#: assets/js/templately.js:11
 #, js-format
 msgid "This design uses %2$d block from %1$s, which is not installed on this site."
 msgid_plural "This design uses %2$d blocks from %1$s, which is not installed on this site."
@@ -5973,2139 +6078,2243 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: plugin name
-#: assets/js/templately.js:10
+#: assets/js/templately.js:11
 #, js-format
 msgid "Activate %s"
 msgstr ""
 
 #. translators: %s: plugin name
-#: assets/js/templately.js:10
+#: assets/js/templately.js:11
 #, js-format
 msgid "Install %s"
 msgstr ""
 
 #. translators: %s: plugin name
-#: assets/js/templately.js:10
+#: assets/js/templately.js:11
 #, js-format
 msgid "Get %s"
 msgstr ""
 
 #. translators: %s: plugin name
-#: assets/js/templately.js:11
-#: assets/js/templately.js:13
+#: assets/js/templately.js:12
+#: assets/js/templately.js:14
 #, js-format
 msgid "%s not found."
 msgstr ""
 
 #. translators: %s: pattern title
-#: assets/js/templately.js:12
+#: assets/js/templately.js:13
 #, js-format
 msgid "To import %s you need to install all the Plugin(s)"
 msgstr ""
 
-#: assets/js/templately.js:12
+#: assets/js/templately.js:13
 msgid "installed but not active"
 msgstr ""
 
-#: assets/js/templately.js:13
+#: assets/js/templately.js:14
 msgid "Reload the editor to render the blocks it provides."
 msgstr ""
 
-#: assets/js/templately.js:13
-#: assets/js/templately.js:28
+#: assets/js/templately.js:14
+#: assets/js/templately.js:17
+#: assets/js/templately.js:36
 msgid "Installing…"
 msgstr ""
 
-#: assets/js/templately.js:13
+#: assets/js/templately.js:14
 msgid "Install & Activate"
 msgstr ""
 
-#: assets/js/templately.js:13
+#: assets/js/templately.js:14
 msgid "Templately Pattern"
 msgstr ""
 
-#: assets/js/templately.js:13
+#: assets/js/templately.js:14
 msgid "Loads a Templately pattern on demand."
 msgstr ""
 
-#: assets/js/templately.js:13
+#: assets/js/templately.js:14
 msgid "Empty pattern content."
 msgstr ""
 
-#: assets/js/templately.js:13
+#: assets/js/templately.js:14
 msgid "Could not load this pattern."
 msgstr ""
 
-#: assets/js/templately.js:13
+#: assets/js/templately.js:14
 msgid "Templately pattern"
 msgstr ""
 
 #. translators: %s: pattern title
-#: assets/js/templately.js:13
+#: assets/js/templately.js:14
 #, js-format
 msgid "Adding %s…"
 msgstr ""
 
-#: assets/js/templately.js:13
+#: assets/js/templately.js:14
 msgid "Adding pattern…"
 msgstr ""
 
-#. translators: %d: number of blocks left as they were imported
 #: assets/js/templately.js:14
-#, js-format
-msgid "%d block was left exactly as imported."
-msgid_plural "%d blocks were left exactly as imported."
-msgstr[0] ""
-msgstr[1] ""
-
-#: assets/js/templately.js:14
-msgid "Your content is intact. These may show a recovery notice in the editor until the plugin that provides them is active."
-msgstr ""
-
-#. translators: %d: number of blocks repaired
-#: assets/js/templately.js:15
-#, js-format
-msgid "Optimised %d imported block."
-msgid_plural "Optimised %d imported blocks."
-msgstr[0] ""
-msgstr[1] ""
-
-#: assets/js/templately.js:15
-msgid "Settings for features from plugins that are not active on this site were preserved."
-msgstr ""
-
-#. translators: 1: posts processed, 2: total posts
-#: assets/js/templately.js:16
-#, js-format
-msgid "Optimising imported blocks… (%1$d/%2$d)"
-msgstr ""
-
-#: assets/js/templately.js:16
 msgid "Include"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Exclude"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Add New Condition"
 msgstr ""
 
-#: assets/js/templately.js:16
-#: assets/js/templately.js:28
+#: assets/js/templately.js:14
+#: assets/js/templately.js:36
 msgid "Saving..."
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Save & Close"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Logo generation is not available"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Tagline generation is not available"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Logo"
 msgstr ""
 
-#: assets/js/templately.js:16
-msgid "Synced Account"
+#: assets/js/templately.js:14
+msgid "Account Synced"
 msgstr ""
 
-#: assets/js/templately.js:16
-#: assets/js/templately.js:19
+#: assets/js/templately.js:14
+#: assets/js/templately.js:17
 msgid "Success"
 msgstr ""
 
-#: assets/js/templately.js:16
-#: assets/js/templately.js:20
+#: assets/js/templately.js:14
+#: assets/js/templately.js:18
 msgid "Restoring previous version of your website. This usually takes a few moments. Please wait…"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "This will remove your existing settings and content with the previous one."
 msgstr ""
 
-#: assets/js/templately.js:16
-#: assets/js/templately.js:20
+#: assets/js/templately.js:14
+#: assets/js/templately.js:18
 msgid "Yes, Revert"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Are You Sure you want to revert to your old website?"
 msgstr ""
 
-#: assets/js/templately.js:16
-#: assets/js/templately.js:20
+#: assets/js/templately.js:14
+#: assets/js/templately.js:18
 msgid "Successfully Reverted"
 msgstr ""
 
-#: assets/js/templately.js:16
-#: assets/js/templately.js:20
+#: assets/js/templately.js:14
+#: assets/js/templately.js:18
 msgid "Old website has been successfully restored."
 msgstr ""
 
-#: assets/js/templately.js:16
-#: assets/js/templately.js:20
+#: assets/js/templately.js:14
+#: assets/js/templately.js:18
 msgid "Visit Site"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Revert Failed"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Something went wrong while reverting your website. Try later or "
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Revert Now"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Switch Platforms"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Toggle between Elementor and Gutenberg templates using this switcher."
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Type a keyword, niche, or template name to find templates instantly."
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Your Account"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Access your profile, manage your cloud storage, view your plan, and sign out from here."
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Back to Dashboard"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Use this button to return to your WordPress dashboard at any time."
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Advanced Filters"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Click to filter by category, required plugins, and tags — narrow results to exactly what you need."
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Insert Template"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Click to insert this template directly into your current page — no full-site import required."
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Preview Live"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Open a live preview of this template in your browser before deciding to import it."
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Platform Versions"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Some templates are available for both Elementor and Gutenberg. Switch tabs to see the version for your page builder."
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Import Full Pack"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Imports every page in this pack to your WordPress site at once — the fastest way to launch a complete website."
 msgstr ""
 
-#: assets/js/templately.js:16
-#: assets/js/templately.js:22
+#: assets/js/templately.js:14
+#: assets/js/templately.js:30
 msgid "Required Plugins"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "These plugins must be installed and activated on your site before importing. Click any icon to visit its plugin page."
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Close tour"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Done"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Next"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "The Feature Tour is available on the template library page. Would you like to go there now?"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Feature Tour"
 msgstr ""
 
-#: assets/js/templately.js:16
-#: assets/js/templately.js:17
+#: assets/js/templately.js:14
+#: assets/js/templately.js:15
 msgid "Connections"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Create and revoke agent access"
 msgstr ""
 
-#: assets/js/templately.js:16
-#: assets/js/templately.js:17
+#: assets/js/templately.js:14
+#: assets/js/templately.js:15
 msgid "Setup"
 msgstr ""
 
-#: assets/js/templately.js:16
-#: assets/js/templately.js:19
+#: assets/js/templately.js:14
+#: assets/js/templately.js:17
 msgid "Connect your AI client"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Tools"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "What an agent can call"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Activity"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "What agents changed, and when"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Claude Code"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Cursor"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "VS Code"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Claude Desktop"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "claude.ai / remote"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Never"
 msgstr ""
 
-#: assets/js/templately.js:16
-#: assets/js/templately.js:28
+#: assets/js/templately.js:14
+#: assets/js/templately.js:36
 msgid "Copy"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "AI agent settings"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Copy this key now"
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "This is the only time the key is shown. Templately stores only a hash — it cannot be recovered. Lost it? Revoke this connection and create another."
 msgstr ""
 
-#: assets/js/templately.js:16
+#: assets/js/templately.js:14
 msgid "Show setup instructions"
 msgstr ""
 
 #. translators: %d: number of connected agents.
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 #, js-format
 msgid "Connected · %d agent(s)"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Not connected"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Agents can browse Templately designs and, with full access, import them into this site."
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "No agent can reach this site until you create a connection."
 msgstr ""
 
-#: assets/js/templately.js:17
-#: assets/js/templately.js:22
+#: assets/js/templately.js:15
+#: assets/js/templately.js:30
 msgid "Refresh"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Endpoint"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "This site uses plain permalinks. Connections you create below still work, but an agent that only accepts a site address — like ChatGPT or Claude — cannot connect until you switch Settings → Permalinks to any other option."
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Create a connection"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Give each agent its own connection, so you can revoke one without disturbing the others."
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "e.g. Claude Code"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Read-only — browse designs only"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Full access — browse and import"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Create"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Revoke every connection?"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Every agent stops working immediately, including any connected through the approval flow. This cannot be undone — you would need to create new connections."
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Revoke all"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "No connections yet. Agents cannot reach this site until you create one."
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Created"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Last used"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Approved through the browser sign-in flow"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "OAuth"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Access level"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Not tracked for browser-approved connections"
 msgstr ""
 
-#: assets/js/templately.js:17
+#: assets/js/templately.js:15
 msgid "Revoke this connection?"
 msgstr ""
 
 #. translators: %s: connection name.
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 #, js-format
 msgid "\"%s\" stops working immediately. Other connections are unaffected."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Revoke"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Pick your client — the formats are not interchangeable. Replace YOUR_KEY with the key shown when you created the connection."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Run this once in your terminal — it registers Templately with Claude Code."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Add this to .cursor/mcp.json in your project, or ~/.cursor/mcp.json globally."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Add this to .vscode/mcp.json. Note VS Code uses \"servers\", not \"mcpServers\"."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Claude Desktop cannot reach a remote server directly — this uses the mcp-remote bridge. Add it to claude_desktop_config.json."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "For clients that take only an address (e.g. claude.ai connectors). Paste the URL — there is no key field. You will be asked to approve the connection here."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "The key travels in an Authorization header, so it never lands in a URL or a server log. Treat it like a password — it lets an AI change this site."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Cursor and VS Code both support ${env:VAR} references, so you can keep the key out of a committed file."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Tools your AI agent can call"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "A read-only connection may call only the read tools; the rest are refused."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Recent agent activity"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Only changes are recorded — browsing and searching are not."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "No changes have been made by an agent yet."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Show less"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Show all"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Could not load connections."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Could not create the connection."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Could not update the connection."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Could not revoke the connection."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Could not revoke connections."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "AI Agents"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Upgrade to Pro"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Purchase This Item"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Installing..."
 msgstr ""
 
-#: assets/js/templately.js:19
-msgid "Not available — install manually"
+#: assets/js/templately.js:17
+msgid "Skipped"
 msgstr ""
 
-#: assets/js/templately.js:19
-msgid "Retry & Proceed to Import"
+#: assets/js/templately.js:17
+msgid "Some plugins could not be installed. You can retry them above, or continue — the template will be imported without them, and parts of it may not render until they are installed."
 msgstr ""
 
-#: assets/js/templately.js:19
-msgid "Ignored"
+#: assets/js/templately.js:17
+msgid "Proceed Anyway"
 msgstr ""
 
-#: assets/js/templately.js:19
-msgid "Proceed to Import"
-msgstr ""
-
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Install & Proceed to Import"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
+msgid "Proceed to Import"
+msgstr ""
+
+#: assets/js/templately.js:17
 msgid "Edit with Elementor"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "You can now edit or preview the template or, you can push it to Templately Cloud to share with your team."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Imported Successfully!"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Choose how to use this template"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Create a New Page"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
+msgid "Saves as a draft in your Pages list — edit anytime in the block editor with Gutenberg."
+msgstr ""
+
+#: assets/js/templately.js:17
 msgid "Saves as a draft in your Pages list — edit anytime in Elementor."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Enter page title..."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Import to Templately Library"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Adds to your template library for reuse — no new page created."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Create Page"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Import to Library"
 msgstr ""
 
-#: assets/js/templately.js:19
-#, js-format
-msgid "Oops! Seems you don't have Elementor Pro to import the %s Template"
-msgstr ""
-
-#: assets/js/templately.js:19
-#, js-format
-msgid "%6$s %1$s is a part of a %2$s which is available in %3$s. You need to install Elementor Pro to import %1$s template from here. %4$s, you can insert this template from %5$s on your single page."
-msgstr ""
-
-#: assets/js/templately.js:19
-msgid "NOTE"
-msgstr ""
-
-#: assets/js/templately.js:19
-#: assets/js/templately.js:20
+#: assets/js/templately.js:17
+#: assets/js/templately.js:18
 msgid "To import this item you need to install all the plugins listed below"
 msgstr ""
 
-#: assets/js/templately.js:19
-#: assets/js/templately.js:20
-#: assets/js/templately.js:21
+#: assets/js/templately.js:17
+#: assets/js/templately.js:18
+#: assets/js/templately.js:29
 msgid "Packs"
 msgstr ""
 
-#: assets/js/templately.js:19
-#: assets/js/templately.js:20
-#: assets/js/templately.js:21
-#: assets/js/templately.js:22
+#: assets/js/templately.js:17
+#: assets/js/templately.js:18
+#: assets/js/templately.js:29
+#: assets/js/templately.js:30
 msgid "Blocks"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "..."
 msgstr ""
 
-#: assets/js/templately.js:19
-#: assets/js/templately.js:28
+#: assets/js/templately.js:17
+#: assets/js/templately.js:36
 msgid "Please verify your email to continue."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Elementor not installed"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "The required dependency 'Elementor' is missing."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Actions"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "No matching templates"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Nothing saved yet"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Try a different keyword, or clear the search to see every saved template."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Templates you save to My Cloud will show up here."
 msgstr ""
 
-#: assets/js/templately.js:19
-#: assets/js/templately.js:28
+#: assets/js/templately.js:17
+#: assets/js/templately.js:36
 msgid "My Clouds"
 msgstr ""
 
-#: assets/js/templately.js:19
-#: assets/js/templately.js:28
+#: assets/js/templately.js:17
+#: assets/js/templately.js:36
 msgid "My WorkSpace"
 msgstr ""
 
-#: assets/js/templately.js:19
-#: assets/js/templately.js:28
+#: assets/js/templately.js:17
+#: assets/js/templately.js:36
 msgid "Shared WorkSpace"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Page is empty"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Please add some content before saving your template."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Something must went wrong!"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Uploading..."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Your template content is being pushed into Templately Cloud. Please do not refresh or close this tab."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Your template has been successfully pushed to "
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Your template has been successfully pushed."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Save your templates and push to cloud"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Type a name for the template..."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Select "
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Loading workspace and shared workspaces list."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Save & Push"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "My Cloud"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Shared with Me"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "My Favourites"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "My Downloads"
 msgstr ""
 
-#: assets/js/templately.js:19
-msgid "Purchased Items"
-msgstr ""
-
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Subscription"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
+msgid "Purchased Items"
+msgstr ""
+
+#: assets/js/templately.js:17
 msgid "AI Studio"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 #, js-format
 msgid "%1$d of %2$s files"
 msgstr ""
 
-#: assets/js/templately.js:19
-#: assets/js/templately.js:20
+#: assets/js/templately.js:17
+#: assets/js/templately.js:25
 msgid "Unlimited"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "You have reached your limit of files. Please upgrade your plan to upload more files."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Your storage quota is runing out. Please upgrade your plan to upload more files."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 #, js-format
 msgid "You are using %d%% of your storage quota"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "User"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "My Cloud Status"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Thumbnail"
 msgstr ""
 
-#: assets/js/templately.js:19
-#: assets/js/templately.js:28
+#: assets/js/templately.js:17
+#: assets/js/templately.js:36
 msgid "Item Name"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Downloaded Date"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "No downloads yet"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "You did not download any item yet."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Joining Date"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Manage Account"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Link My Account"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Unlink My Account"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Logout"
 msgstr ""
 
-#: assets/js/templately.js:19
-#: assets/js/templately.js:21
-#: assets/js/templately.js:22
+#: assets/js/templately.js:17
+#: assets/js/templately.js:29
+#: assets/js/templately.js:30
 msgid "Gutenberg"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "What are you looking for?"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Default tab — click to unset"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Make this my default tab"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Theme"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Sign out"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "My Workspace"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Shared with me"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Templates (Legacy)"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Syncing..."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Sync Cloud"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Talk to Support"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Support"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Get unlimited access to all Premium Templates with "
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "AI feature "
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "and more, at only "
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "$4.99"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Get unlimited templates"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Verifying . . ."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "I've verified & Close"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Your email hasn’t been verified yet. Please check your inbox and click the link to continue."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Account Verified"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Verify Your Account"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "You're all set! Start building your website now."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Please complete your account by clicking the verification email we sent you. Didn’t get it?"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Resend verification email"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Get Started"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Migration failed"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Site Migrated!"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Your site has been successfully connected. You can now import templates."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Migration Failed"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Failed to migrate site connection. Please try again."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Your site connection needs to be updated. This typically happens when migrating from staging to production."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Click the button below to migrate your connection to this site."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Migrating . . ."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Migrate Site Connection"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Back to WordPress Dashboard"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Theme builder"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Settings"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Save your template"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Not Active"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Not Installed"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Elementor Not Active"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Elementor Not Installed"
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Please activate Elementor to switch to the Elementor editor."
 msgstr ""
 
-#: assets/js/templately.js:19
+#: assets/js/templately.js:17
 msgid "Please install and activate Elementor to switch to the Elementor editor."
 msgstr ""
 
 #. translators: %d: number of CSS issues.
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 #, js-format
 msgid "Your Custom CSS has %d issue."
 msgid_plural "Your Custom CSS has %d issues."
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Saving with issues may cause your styles to not work as expected."
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Go Back"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Save Anyway"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Custom CSS has issues"
 msgstr ""
 
-#: assets/js/templately.js:20
-#: assets/js/templately.js:28
+#: assets/js/templately.js:18
+#: assets/js/templately.js:36
 msgid "Successfully Saved"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Your settings have been updated successfully."
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Failed to Update Settings"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Dismiss"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
+msgid "Subscription updated"
+msgstr ""
+
+#: assets/js/templately.js:18
+msgid "Your new plan is active. Everything it unlocks is available right away."
+msgstr ""
+
+#: assets/js/templately.js:18
 msgid "Purchase complete"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
+msgid "This template is now yours and is ready to import."
+msgstr ""
+
+#: assets/js/templately.js:18
 msgid "Your purchase has been added to your account."
 msgstr ""
 
-#: assets/js/templately.js:20
-#: assets/js/templately.js:22
+#: assets/js/templately.js:18
+#: assets/js/templately.js:25
+#: assets/js/templately.js:28
+#: assets/js/templately.js:30
 msgid "Starter"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Price:"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Type:"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "No favorites yet"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "No matching favorites"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "You did not mark any item as favorite."
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "No item matched your filter criteria."
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Purchase Date"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "View"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "No purchases yet"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Items you buy from the template library will show up here."
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Loading Editor..."
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Toggle line wrap"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Wrap"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Switch to light theme"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Switch to dark theme"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Light"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Dark"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Exit full screen (Esc)"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Full screen"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Exit Full Screen"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Full Screen"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Warning: This will remove your existing settings and content with the previous one."
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Are you sure you want to revert to your old website?"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:18
 msgid "Something went wrong while reverting your website. Try Later or Contact support."
 msgstr ""
 
+#: assets/js/templately.js:18
+msgid "Bundle"
+msgstr ""
+
+#: assets/js/templately.js:18
+msgid "Bundle pricing"
+msgstr ""
+
+#: assets/js/templately.js:18
+msgid "Regular"
+msgstr ""
+
+#: assets/js/templately.js:18
+msgid "Up to 75%"
+msgstr ""
+
+#: assets/js/templately.js:18
+msgid "off Essential Addons Pro and Essential Blocks Pro"
+msgstr ""
+
+#. translators: %s: plugin name(s), e.g. "Essential Blocks Pro"
+#: assets/js/templately.js:19
+#, js-format
+msgid "Bundle pricing on. Includes %s, which you download and install yourself."
+msgstr ""
+
+#: assets/js/templately.js:19
+msgid "Regular pricing. Templates and cloud only."
+msgstr ""
+
+#. translators: %s: builder name, e.g. "Gutenberg"
 #: assets/js/templately.js:20
+#, js-format
+msgid "%s bundle"
+msgstr ""
+
+#: assets/js/templately.js:20
+msgid "Bundled Pro plugin"
+msgstr ""
+
+#: assets/js/templately.js:20
+msgid "Included plugins"
+msgstr ""
+
+#: assets/js/templately.js:20
+msgid "Your plan details could not be loaded right now. Refresh the page to try again."
+msgstr ""
+
+#: assets/js/templately.js:20
+msgid "Your plan does not include a Pro plugin yet. Add Essential Blocks Pro or Essential Addons Pro so templates built with their Pro widgets import in full."
+msgstr ""
+
+#: assets/js/templately.js:20
+msgid "Add Pro plugins"
+msgstr ""
+
+#: assets/js/templately.js:20
+msgid "Your plan does not include a Pro plugin."
+msgstr ""
+
+#. translators: %s: the plugin name, e.g. "Essential Addons Pro".
+#: assets/js/templately.js:21
+#, js-format
+msgid "%s is downloading"
+msgstr ""
+
+#: assets/js/templately.js:21
+msgid "The zip is being saved by your browser. Upload it on the Install Plugins screen and activate it, then continue the import."
+msgstr ""
+
+#. translators: %s: builder name, e.g. "Gutenberg".
+#: assets/js/templately.js:22
+#, js-format
+msgid "%s Pro plugin"
+msgstr ""
+
+#: assets/js/templately.js:22
+msgid "Not available for download here yet."
+msgstr ""
+
+#. translators: %s: the plugin name.
+#: assets/js/templately.js:23
+#: assets/js/templately.js:24
+#, js-format
+msgid "Download %s"
+msgstr ""
+
+#: assets/js/templately.js:24
 msgid "Yearly"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:24
 msgid "Monthly"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:24
 msgid "Lifetime"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:24
+#: assets/js/templately.js:25
+msgid "Billed yearly"
+msgstr ""
+
+#: assets/js/templately.js:24
+#: assets/js/templately.js:25
+msgid "One-time payment"
+msgstr ""
+
+#: assets/js/templately.js:24
 msgid "You are on the Free plan"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:24
 msgid "Lifetime access — never expires"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:24
 #, js-format
 msgid "Expires on %s"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:24
 #, js-format
 msgid "Renews on %s"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:24
 #, js-format
 msgid "%s plan"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:24
 msgid "Current Plan"
 msgstr ""
 
-#: assets/js/templately.js:20
-msgid "Active"
+#. translators: %s: plugin name(s), e.g. "Essential Blocks Pro"
+#: assets/js/templately.js:25
+#, js-format
+msgid "Includes %s. Download it below and install it before importing"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
+msgid " and "
+msgstr ""
+
+#: assets/js/templately.js:25
 msgid "Unlimited sites"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 #, js-format
 msgid "%s sites"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Upgrade Plan"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Manage Subscription"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Price"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
+msgid "Pro Plugin Included"
+msgstr ""
+
+#: assets/js/templately.js:25
+msgid "Not included"
+msgstr ""
+
+#: assets/js/templately.js:25
+msgid " + "
+msgstr ""
+
+#: assets/js/templately.js:25
+msgid "Download and install it yourself"
+msgstr ""
+
+#: assets/js/templately.js:25
 msgid "Billing"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Sites"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "My Cloud Items"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "WorkSpaces"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Full Site Import"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Pro Items"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Loading plans…"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Current"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Downgrade"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Contact Us"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Choose Plan"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Redirecting…"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "We could not start the checkout. Please try again."
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Plan"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Exclusive Deal"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Available Plans"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Could not load the plans"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "The plan catalog could not be reached. Your current plan above is unaffected."
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "No plans to show"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "There are no plans available to compare right now."
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Administrators only"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Subscription and billing are managed by site administrators."
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Pro Plugins Dependencies"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Free Plugins Dependencies"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Filter Items by Tags"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Write a keyword..."
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Filter"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Categories"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:25
 msgid "Types"
 msgstr ""
 
-#: assets/js/templately.js:20
-#: assets/js/templately.js:22
-msgid "Checkout Failed"
+#. translators: %s: a formatted price, e.g. "$5.98/mo"
+#: assets/js/templately.js:27
+#, js-format
+msgid "from %s"
 msgstr ""
 
-#: assets/js/templately.js:20
-#: assets/js/templately.js:22
-msgid "We could not start the checkout. Please try again or "
+#. translators: %s: plugin name(s), e.g. "Essential Blocks Pro"
+#: assets/js/templately.js:28
+#, js-format
+msgid "Includes %s"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Include These PRO Plugins"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Exclude These PRO Plugins"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Include These Free Plugins"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Exclude These Free Plugins"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Filters"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Plugins Dependencies"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "templates match"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Reset all"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Apply"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Most Popular"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Top Rated"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Latest Items"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Inc:"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Excl:"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Clear All"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Suggested:"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Sort By"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 msgid "Loading templates…"
 msgstr ""
 
-#: assets/js/templately.js:20
+#: assets/js/templately.js:28
 #, js-format
 msgid "You are looking for: %s"
 msgstr ""
 
 #. translators: %s: the search term.
-#: assets/js/templately.js:21
+#: assets/js/templately.js:29
 #, js-format
 msgid "Search: %s"
 msgstr ""
 
 #. translators: 1: platform name (Elementor/Gutenberg), 2: template type (Packs/Blocks/Pages).
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 #, js-format
 msgid "%1$s %2$s"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Saved Templates"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Live Demo"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
+msgid "Checkout Failed"
+msgstr ""
+
+#: assets/js/templately.js:30
+msgid "We could not start the checkout. Please try again or "
+msgstr ""
+
+#: assets/js/templately.js:30
 msgid "Processing…"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 #, js-format
 msgid "Purchase This %s"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 #, js-format
 msgid "Insert This %s"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Pack"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "View full Pack"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Features"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Tags"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Home"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
+msgid "Sync Account"
+msgstr ""
+
+#: assets/js/templately.js:30
+msgid "Thank you for your purchase - one more step"
+msgstr ""
+
+#: assets/js/templately.js:30
+msgid "We have emailed your Templately login details. Sign in here with them to connect this site, and your account will be ready to use."
+msgstr ""
+
+#: assets/js/templately.js:30
+msgid "Already have an account? You can connect with an API key instead - "
+msgstr ""
+
+#: assets/js/templately.js:30
+msgid "get your API key"
+msgstr ""
+
+#: assets/js/templately.js:30
+msgid " and paste it on the sign-in screen."
+msgstr ""
+
+#: assets/js/templately.js:30
+msgid "Sign in to connect"
+msgstr ""
+
+#: assets/js/templately.js:30
 msgid "Template"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "We couldn't find that template."
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Back to templates"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Browse More"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Related Products"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Trending Products"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Featured Products"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Template name cannot exceed 50 characters."
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Choose the type of template you want to work on"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Select template type"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "No type found"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Name your template"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Enter template name (optional)"
 msgstr ""
 
-#: assets/js/templately.js:22
-#: assets/js/templately.js:28
+#: assets/js/templately.js:30
+#: assets/js/templately.js:36
 msgid "Creating..."
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Create Template"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Templates Make your Work More Efficient"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Templates help you create different sections of your site, and with just a single click, you can reuse them whenever needed"
 msgstr ""
 
-#: assets/js/templately.js:22
-#: assets/js/templately.js:28
+#: assets/js/templately.js:30
+#: assets/js/templately.js:36
 msgid "Storage & Cleanup"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Automatic cleanup is switched off for this site."
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Measuring storage…"
 msgstr ""
 
-#: assets/js/templately.js:22
+#: assets/js/templately.js:30
 msgid "Could not read storage usage."
 msgstr ""
 
 #. translators: %s: reclaimable size, e.g. "412 MB".
-#: assets/js/templately.js:23
+#: assets/js/templately.js:31
 #, js-format
 msgid "Templately can reclaim about %s of leftover files. Nothing is removed until you turn this on."
 msgstr ""
 
-#: assets/js/templately.js:23
+#: assets/js/templately.js:31
 msgid "Turn on automatic cleanup"
 msgstr ""
 
-#: assets/js/templately.js:23
+#: assets/js/templately.js:31
 msgid "(measured so far — still scanning)"
 msgstr ""
 
 #. translators: %s: free disk space.
-#: assets/js/templately.js:24
+#: assets/js/templately.js:32
 #, js-format
 msgid "%s free on disk"
 msgstr ""
 
 #. translators: %s: reclaimable size.
-#: assets/js/templately.js:25
+#: assets/js/templately.js:33
 #, js-format
 msgid "About %s reclaimable"
 msgstr ""
 
-#: assets/js/templately.js:25
+#: assets/js/templately.js:33
 msgid "Unavailable — the uploads folder is not writable."
 msgstr ""
 
-#: assets/js/templately.js:25
+#: assets/js/templately.js:33
 msgid "Working…"
 msgstr ""
 
-#: assets/js/templately.js:25
+#: assets/js/templately.js:33
 msgid "Clean"
 msgstr ""
 
-#: assets/js/templately.js:25
+#: assets/js/templately.js:33
 msgid "Clean up now"
 msgstr ""
 
-#: assets/js/templately.js:25
+#: assets/js/templately.js:33
 msgid "Recent cleanups"
 msgstr ""
 
 #. translators: 1: reclaimed size, 2: what triggered the run.
-#: assets/js/templately.js:26
+#: assets/js/templately.js:34
 #, js-format
 msgid "%1$s reclaimed (%2$s)"
 msgstr ""
 
-#: assets/js/templately.js:26
+#: assets/js/templately.js:34
 msgid "preview"
 msgstr ""
 
 #. translators: %d: number of days.
-#: assets/js/templately.js:27
+#: assets/js/templately.js:35
 #, js-format
 msgid "Files are kept for %d days."
 msgstr ""
 
-#: assets/js/templately.js:27
+#: assets/js/templately.js:35
 msgid "Remove these files?"
 msgstr ""
 
 #. translators: 1: what will be cleaned, 2: reclaimable size.
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 #, js-format
 msgid "%1$s — about %2$s will be removed. This cannot be undone."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Remove"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Cleanup is not switched on yet"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Nothing was removed. Turn on automatic cleanup first, then try again."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "OK"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Cleanup failed."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "All routine cleanups"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Could not turn on cleanup."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Utilities"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "The WorkSpace will be permanently deleted."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Want to delete files too?"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "This email is already added."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 #, js-format
 msgid "Name should not be greater than %d characters."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Create Workspace"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Example space"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Shared with"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Add people"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Type email to add"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Add"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Invited"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Rejected"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Accepted"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "My Files"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "by"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Current Workspace"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Switch workspace"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Add New Workspace"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Workspace Created"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "You have created a WorkSpace called"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Create Failed"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Something went wrong while creating workspace for you. Try later or "
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Workspaces let you group templates and share them with your team."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "My Workspaces"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Shared Workspaces"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Select Source:"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Select a source"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "No Sources Found"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Select Workspace:"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Select a workspace"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 #, js-format
 msgid "No %s Found"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Workspace"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Shared Workspace"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Select Templates:"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Select by typing...."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "No Templates Found"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Loading templates..."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "You are seeing fewer items after initial load. You can search more to find your desired templates from the selected source."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Adding..."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Add to Workspace"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Edit Workspace"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "You have successfully saved your WorkSpace changes."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Edit Failed"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Something went wrong while editing workspace for you. Try later or "
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "You have deleted a WorkSpace from your account."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Something went wrong regarding deleting your WorkSpace. Try later or "
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Add member"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Add Template to Workspace"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Successfully Added!"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Your template has been added to the workspace."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Something went wrong while adding your file. Try later or contact support."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Add Templates"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "No files found"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "No files found in this WorkSpace."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "No shared workspaces yet."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "You do not have any workspaces."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Workspaces other people share with you will appear here."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Copy to"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Move to"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Loading..."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Move"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Select Workspace"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "No WorkSpace Found"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Request failed."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Copied!"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Could not install the MCP Adapter."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Could not generate an Application Password."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Connect an AI Agent (MCP)"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Let an MCP-capable AI agent (Claude Code, Claude Desktop, …) search, preview, and import Templately designs directly on this site."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Step 1 — Install the MCP Adapter"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "The MCP server is served by the free \"MCP Adapter\" plugin. It is not active on this site yet."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Activate MCP Adapter"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Install & Activate MCP Adapter"
 msgstr ""
 
-#: assets/js/templately.js:28
-msgid "Plugin installation is disabled on this site. Install the \"MCP Adapter\" plugin from its GitHub releases page, then reload."
+#: assets/js/templately.js:36
+msgid "Plugin installation is disabled on this site. Download the \"MCP Adapter\" release zip and upload it from the Plugins screen, then reload."
 msgstr ""
 
-#: assets/js/templately.js:28
-msgid "View on GitHub"
+#: assets/js/templately.js:36
+msgid "Download the release zip"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
+msgid "Upload Plugin"
+msgstr ""
+
+#: assets/js/templately.js:36
+msgid "One-click install only works once the adapter is listed on WordPress.org. Until then, download the zip and upload it yourself."
+msgstr ""
+
+#: assets/js/templately.js:36
 msgid "HTTP (recommended)"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "works from any machine"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Generate a WordPress Application Password, then run this command in your agent's CLI."
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Generating…"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Application Password generated"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Generate Application Password"
 msgstr ""
 
-#: assets/js/templately.js:28
+#: assets/js/templately.js:36
 msgid "Application Passwords require an HTTPS connection."
 msgstr ""
 
 #. translators: %s: WordPress username.
-#: assets/js/templately.js:29
+#: assets/js/templately.js:37
 #, js-format
 msgid "Credential created for %s — shown once, already inserted below."
 msgstr ""
 
-#: assets/js/templately.js:29
+#: assets/js/templately.js:37
 msgid "The password is displayed only once. --scope local keeps the credential out of any committed config. Revoke it anytime under Users → Profile → Application Passwords."
 msgstr ""
 
-#: assets/js/templately.js:29
+#: assets/js/templately.js:37
 msgid "WP-CLI (STDIO)"
 msgstr ""
 
-#: assets/js/templately.js:29
+#: assets/js/templately.js:37
 msgid "same machine only"
 msgstr ""
 
-#: assets/js/templately.js:29
+#: assets/js/templately.js:37
 msgid "No Application Password needed. The agent launches WP-CLI as a subprocess and talks to the MCP server over stdin/stdout. Requires WP-CLI on the agent's machine."
 msgstr ""
 
 #. translators: %s: the WordPress path inside the container.
-#: assets/js/templately.js:30
+#: assets/js/templately.js:38
 #, js-format
 msgid "This site runs inside a container, so %s is the path INSIDE it — not a path on your machine. Run wp there (e.g. exec into the container) with that path, or just use the HTTP method above, which works from anywhere."
 msgstr ""
 
-#: assets/js/templately.js:30
+#: assets/js/templately.js:38
 msgid "Verify the server is registered with:"
 msgstr ""
 
-#: assets/js/templately.js:30
+#: assets/js/templately.js:38
 msgid "After adding the server, reload your agent and run"
 msgstr ""
 
-#: assets/js/templately.js:30
+#: assets/js/templately.js:38
 msgid "to confirm it is connected."
 msgstr ""
 
-#: assets/js/templately.js:30
+#: assets/js/templately.js:38
 msgid "MCP Adapter"
 msgstr ""
 
-#: assets/js/templately.js:30
-msgid "Contact support"
-msgstr ""
-
-#: assets/js/templately.js:30
-msgid "Upgrade your plan"
-msgstr ""
-
-#: assets/js/templately.js:30
-msgid "Manage API keys"
-msgstr ""
-
-#: assets/js/templately.js:30
-msgid "You have connected as many sites as your subscription allows."
-msgstr ""
-
-#: assets/js/templately.js:30
-msgid "Upgrade to connect more sites"
-msgstr ""
-
-#: assets/js/templately.js:30
-msgid "This sign-in link is no longer valid. Please try signing in again."
-msgstr ""
-
-#: assets/js/templately.js:30
-msgid "Google sign-in returned no API key. Please try again."
-msgstr ""
-
-#: assets/js/templately.js:30
-msgid "Google sign-in did not complete. Please try again."
-msgstr ""
-
-#: assets/js/templately.js:30
-msgid "Templately could not complete this request due to an internal error. Please update the plugin, or contact support if it keeps happening."
-msgstr ""
-
-#: assets/js/templately.js:30
+#: assets/js/templately.js:38
 msgid "Something needs attention"
 msgstr ""
 
-#: assets/js/templately.js:30
+#: assets/js/templately.js:38
 msgid "Heads up"
 msgstr ""

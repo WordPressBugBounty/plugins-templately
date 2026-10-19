@@ -83,12 +83,6 @@ class Module extends Module_Base {
 		// `utilities` owns the cleanup engine this module contributes tasks to,
 		// and the guarded remover those tasks delete through (spec 052). The
 		// arrow points one way: utilities never names this module.
-		//
-		// `pro-plugin-provisioning` (spec 059) is deliberately NOT listed, though the
-		// runner reads its catalog. Declaring it makes Modules_Manager SKIP this whole
-		// module whenever that one is inactive — the exact opposite of "behaves as
-		// before when disabled". The reads are soft (`class_exists` + `is_live()`), so
-		// it is baselined as an intentional reach-in instead.
 		return [ 'mcp-core', 'utilities' ];
 	}
 

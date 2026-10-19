@@ -3,9 +3,6 @@
 namespace Templately\Utils;
 
 use Automatic_Upgrader_Skin;
-use Templately\Modules\ProPluginProvisioning\Archive as ProProvisioningArchive;
-use Templately\Modules\ProPluginProvisioning\Catalog as ProProvisioningCatalog;
-use Templately\Modules\ProPluginProvisioning\Module as ProProvisioningModule;
 use Plugin_Upgrader;
 use Theme_Upgrader;
 use WP_Ajax_Upgrader_Skin;
@@ -64,76 +61,43 @@ class Installer extends Base {
 				return $response;
 			}
 
-			/**
-			 * A pro plugin has no wordpress.org record, so `plugins_api()` cannot supply a
-			 * download link for one. Before spec 059 that was the end of it: the response
-			 * above stood, and the user was told to install the plugin by hand.
-			 *
-			 * Now we ASK first. If a registered provisioning source can supply an archive
-			 * — because the user's subscription entitles them to it — we install from that
-			 * path and skip `plugins_api()` entirely. If nothing answers, the `pro_plugin`
-			 * response above is returned untouched, which is byte-for-byte the behaviour
-			 * every non-entitled user has always had.
-			 *
-			 * The ask is made only for plugins that are actually obtainable, and the
-			 * catalog — never the descriptor's own claim — decides which those are: this
-			 * governs what gets downloaded from a third party and executed on the site, so
-			 * a spoofed dependency response must not be able to widen it.
-			 *
-			 * @see modules/pro-plugin-provisioning/
-			 * @see specs/059-pro-plugin-provisioning/contracts/provisioning-source.md
-			 */
-			$provisioned = $is_pro ? $this->provision_pro_archive( $plugin ) : null;
-
-			if ( null === $provisioned && $is_pro ) {
-				// Not obtainable. Return the refusal rather than asking wordpress.org for
-				// a plugin it has never heard of.
+			// A pro plugin has no wordpress.org record, so there is nothing to download:
+			// the `pro_plugin` refusal recorded above stands and the user installs it by
+			// hand. Templately never obtains a paid plugin on the user's behalf.
+			if ( $is_pro ) {
 				return $response;
 			}
 
-			if ( null === $provisioned ) {
-				$plugins_api_args =  [
-					'slug'   => sanitize_key( wp_unslash( $plugin['slug'] ) ),
-					'fields' => [
-						'sections' => false,
-					],
-				];
-				if(isset($plugin['has_license']) && $plugin['has_license']){
-					$plugins_api_args['has_license'] = $plugin['has_license'];
-				}
-				/**
-				 * @var array|object $api
-				 */
-				$api = plugins_api( 'plugin_information', $plugins_api_args);
+			$plugins_api_args =  [
+				'slug'   => sanitize_key( wp_unslash( $plugin['slug'] ) ),
+				'fields' => [
+					'sections' => false,
+				],
+			];
+			if(isset($plugin['has_license']) && $plugin['has_license']){
+				$plugins_api_args['has_license'] = $plugin['has_license'];
+			}
+			/**
+			 * @var array|object $api
+			 */
+			$api = plugins_api( 'plugin_information', $plugins_api_args);
 
 
-				if ( is_wp_error( $api ) ) {
-					$response['message'] = $api->get_error_message();
+			if ( is_wp_error( $api ) ) {
+				$response['message'] = $api->get_error_message();
 
-					return $response;
-				}
-
-				$compatibility = $this->check_compatibility($api);
-				if (!$compatibility['success']) {
-					return $compatibility;
-				}
-
-				$response['name'] = $api->name;
-			} else {
-				// A provisioned pro plugin: the refusal recorded above no longer applies.
-				// UNSET, not '' — an empty-string code survives every `?? 'fallback'` in the
-				// callers, and `new WP_Error( '', … )` early-returns with no error at all,
-				// which the REST server turns into a 500 with a null body.
-				unset( $response['code'], $response['message'] );
-				$response['name'] = $plugin['name'] ?? $plugin['slug'];
+				return $response;
 			}
 
+			$compatibility = $this->check_compatibility($api);
+			if (!$compatibility['success']) {
+				return $compatibility;
+			}
+
+			$response['name'] = $api->name;
 			$skin     = new WP_Ajax_Upgrader_Skin();
 			$upgrader = new Plugin_Upgrader( $skin );
-			$result   = $upgrader->install( null !== $provisioned ? $provisioned : $api->download_link );
-
-			// Nothing licensed survives the request that downloaded it, on either branch.
-			ProProvisioningArchive::discard( $provisioned );
+			$result   = $upgrader->install( $api->download_link );
 
 			if ( is_wp_error( $result ) ) {
 				$response['code']    = $result->get_error_code();
@@ -165,13 +129,8 @@ class Installer extends Base {
 				return $response;
 			}
 
-			if ( null === $provisioned ) {
-				$install_status        = install_plugin_install_status( $api );
-				$plugin['plugin_file'] = $install_status['file'];
-			}
-			// A provisioned plugin keeps the plugin_file the dependency descriptor named:
-			// `install_plugin_install_status()` resolves it from a wordpress.org API
-			// object, and a pro plugin has none.
+			$install_status        = install_plugin_install_status( $api );
+			$plugin['plugin_file'] = $install_status['file'];
 		}
 
 		if ( !Helper::current_user_can( 'activate_plugins' ) && is_plugin_inactive( $plugin['plugin_file'] ) ) {
@@ -543,102 +502,5 @@ class Installer extends Base {
 		return false;
 	}
 
-
-	/**
-	 * Ask any registered provisioning source for an installable pro-plugin archive.
-	 *
-	 * Returns null — meaning "not available", the only failure this feature has — when the
-	 * plugin is not one Templately may obtain, when the module supplying the seam is not
-	 * loaded, when the site is not connected, when the current user may not activate what
-	 * would be installed, or when no source answers.
-	 *
-	 * The activation capability is checked HERE as well as after installation: downloading
-	 * megabytes for a user who could never activate the result is wasted work and leaves a
-	 * plugin installed that nobody asked for.
-	 *
-	 * @param array $plugin Dependency descriptor.
-	 * @return string|null Absolute path to an archive, or null.
-	 */
-	private function provision_pro_archive( array &$plugin ) {
-		// `class_exists()` alone is NOT a "module enabled" test: Modules_Manager registers
-		// the autoloader namespace for every DISCOVERED module, inactive ones included, so
-		// the class loads even when the module never booted. What a disabled module does
-		// not do is add its filter listener — and the dev mock depends on it, so it is
-		// skipped too. No listener ⇒ nothing can answer ⇒ the pre-059 refusal stands
-		// (FR-025), without spending the checks below.
-		if ( ! class_exists( ProProvisioningModule::class ) || ! ProProvisioningModule::is_live() ) {
-			Helper::log(
-				sprintf( 'pro-provisioning: module not live, cannot obtain "%s"', $plugin['slug'] ?? '(no slug)' ),
-				'pro_plugin_provisioning',
-				'info'
-			);
-
-			return null;
-		}
-
-		$entry = ProProvisioningCatalog::find( $plugin );
-
-		if ( null === $entry ) {
-			// Not one of the plugins this feature can obtain. Ordinary, and the reason the
-			// catalog exists — but indistinguishable from a failure without saying so.
-			Helper::log(
-				sprintf( 'pro-provisioning: "%s" is not in the obtainable catalog', $plugin['slug'] ?? '(no slug)' ),
-				'pro_plugin_provisioning',
-				'info'
-			);
-
-			return null;
-		}
-
-		// The catalog matched — possibly by slug alone. Everything after installation
-		// (`is_plugin_inactive()`, `activate_plugin()`) keys on the plugin FILE, so it
-		// must be the catalog's, not whatever the descriptor did or did not carry.
-		$plugin['plugin_file'] = $entry['plugin_file'];
-
-		if ( ! Helper::current_user_can( 'activate_plugins' ) ) {
-			Helper::log(
-				sprintf( 'pro-provisioning[%s]: user cannot activate_plugins', $entry['slug'] ),
-				'pro_plugin_provisioning',
-				'info'
-			);
-
-			return null;
-		}
-
-		$credential = ProProvisioningModule::credential();
-
-		if ( '' === $credential ) {
-			// No stored api_key: the site is not connected to Templately, so there is
-			// nothing to present as proof of entitlement.
-			Helper::log(
-				sprintf( 'pro-provisioning[%s]: no stored credential — site not connected', $entry['slug'] ),
-				'pro_plugin_provisioning',
-				'info'
-			);
-
-			return null;
-		}
-
-		$archive = apply_filters( ProProvisioningModule::ARCHIVE_FILTER, null, [
-			'plugin_file' => $entry['plugin_file'],
-			'slug'        => $entry['slug'],
-			'platform'    => $entry['platform'],
-			'credential'  => $credential,
-		] );
-
-		if ( is_string( $archive ) && '' !== $archive && is_readable( $archive ) ) {
-			return $archive;
-		}
-
-		// The source has already logged WHY it could not supply one; record that the
-		// refusal is what the import will act on, so the two halves join up in the log.
-		Helper::log(
-			sprintf( 'pro-provisioning[%s]: no archive available — falling back to "install it yourself"', $entry['slug'] ),
-			'pro_plugin_provisioning',
-			'info'
-		);
-
-		return null;
-	}
 
 }

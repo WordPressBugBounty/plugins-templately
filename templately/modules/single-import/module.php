@@ -28,10 +28,6 @@ class Module extends Module_Base {
 		// import (spec 025). (The elementor-/gutenberg-integration references stay
 		// baselined — they are docblock-only @method type hints; the driver is resolved
 		// through the Module string-ID locator, not the class reference.)
-		// `pro-plugin-provisioning` (spec 059) is deliberately NOT listed: the only
-		// reach is a build-time TypeScript import of its catalog twin, and declaring
-		// it would make Modules_Manager skip THIS module whenever that one is inactive.
-		// Baselined as an intentional reach-in instead.
 		return [ 'full-site-import' ];
 	}
 

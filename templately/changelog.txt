@@ -1,4 +1,14 @@
 == Changelog ==
+= 3.8.1 - 19-10-2026 =
+Added: "Included plugins" section on the Subscription page, where bundle subscribers download the Pro plugins their plan includes.
+Improved: Pro plugins are no longer installed automatically during import. The dependency step now points you to the Subscription page to download Essential Addons Pro or Essential Blocks Pro and install it yourself.
+Improved: When Essential Addons Pro or Essential Blocks Pro is installed but not active, the import dependency step now asks you to activate it before importing.
+Improved: The Subscription page now explains why a Pro plugin download failed (download limit reached, connection problem or service error) and lets you try again.
+Fixed: Subscription page could show an outdated plan catalog (missing bundle plans, old prices).
+Fixed: The import dependency dialog said "Install & Proceed to Import" even when every required plugin was already installed.
+Fixed: MCP Adapter is only installed from WordPress.org; the GitHub download fallback was removed.
+Few minor bug fixes and improvements
+
 = 3.8.0 - 23-09-2026 =
 Added: Browse and insert Templately designs from the block inserter and new-page pattern chooser.
 Added: View required plugins on the canvas and install and activate them with one click.

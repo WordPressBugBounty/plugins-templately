@@ -24,7 +24,7 @@ use Templately\Core\Migrator;
 use Templately\Utils\Response\RestEnvelope;
 
 final class Plugin extends Base {
-    public $version = '3.8.0';
+    public $version = '3.8.1';
 
 	public $admin;
 	/**
