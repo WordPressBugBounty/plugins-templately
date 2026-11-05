@@ -216,7 +216,7 @@ class ChatAIContentProvider {
 				$written++;
 			}
 			Helper::log( sprintf(
-				'chat_provider[%s] generation finished but %d page(s) never delivered (%s) — marked skipped, importing pack defaults',
+				'chat_provider[%s] generation finished but %d page(s) never delivered (%s) - marked skipped, importing pack defaults',
 				$chat_id, count( $missing ), implode( ',', $missing )
 			), 'ai-import', 'error' );
 			$missing = [];

@@ -151,8 +151,8 @@ class Post_Comments extends Widget_Base {
 				'label'     => esc_html__( 'Count Position', 'templately' ),
 				'type'      => Controls_Manager::SELECT,
 				'options'   => [
-					'after'  => esc_html__( 'After title — Comments (2)', 'templately' ),
-					'before' => esc_html__( 'Before title — 2 Comments', 'templately' ),
+					'after'  => esc_html__( 'After title - Comments (2)', 'templately' ),
+					'before' => esc_html__( 'Before title - 2 Comments', 'templately' ),
 				],
 				'default'   => 'after',
 				'condition' => [
@@ -262,8 +262,8 @@ class Post_Comments extends Widget_Base {
 				'label'     => esc_html__( 'Form Layout', 'templately' ),
 				'type'      => Controls_Manager::SELECT,
 				'options'   => [
-					'inline'  => esc_html__( 'Inline — Name & Email side by side', 'templately' ),
-					'stacked' => esc_html__( 'Stacked — one field per row', 'templately' ),
+					'inline'  => esc_html__( 'Inline - Name & Email side by side', 'templately' ),
+					'stacked' => esc_html__( 'Stacked - one field per row', 'templately' ),
 				],
 				'default'   => 'inline',
 				'selectors' => [

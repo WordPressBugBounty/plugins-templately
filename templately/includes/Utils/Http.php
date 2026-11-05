@@ -286,7 +286,7 @@ public function google_auth_url($redirect_to = '', $current_url = '') {
             $error = $normalized->error();
 
             if ( defined( 'TEMPLATELY_DEBUG_LOG' ) && TEMPLATELY_DEBUG_LOG ) {
-                Helper::log( 'ERROR: ' . $error->code() . ' — ' . $error->message() );
+                Helper::log( 'ERROR: ' . $error->code() . ' - ' . $error->message() );
             }
 
             // An expired session still tears down the stored login — but it now

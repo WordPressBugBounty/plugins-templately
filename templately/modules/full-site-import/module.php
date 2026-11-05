@@ -60,6 +60,7 @@ use Templately\Core\Module_Base;
 use Templately\Modules\FullSiteImport\Abilities\AgentCapabilities;
 use Templately\Modules\FullSiteImport\Cleanup\CleanupTasks;
 use Templately\Modules\FullSiteImport\REST\GlobalSettings;
+use Templately\Modules\FullSiteImport\REST\LogsDownload;
 use Templately\Modules\FullSiteImport\REST\PackInfo;
 
 class Module extends Module_Base {
@@ -100,6 +101,17 @@ class Module extends Module_Base {
 		// and old import logs. Hands over class names only — nothing is
 		// constructed unless a sweep actually runs.
 		CleanupTasks::register();
+
+		// Tell the SPA whether to render the error screen's "Download logs" button.
+		add_filter(
+			'templately_admin_localized_data',
+			static function ( $data ) {
+				if ( is_array( $data ) ) {
+					$data['logDownload'] = LogsDownload::is_enabled() && current_user_can( 'manage_options' );
+				}
+				return $data;
+			}
+		);
 	}
 
 	public function register_rest_routes(): void {
@@ -109,5 +121,10 @@ class Module extends Module_Base {
 		// share the upstream fetch via Utils\PackInfoFetcher; the matching ajax actions
 		// (import_info / import_global_settings) stay registered as deprecated shims.
 		PackInfo::get_instance()->register_routes();
+		// Support: zip of every Templately/WP/PHP log for the import error screen's
+		// "Download logs" button. Dev option — off unless TEMPLATELY_LOG_DOWNLOAD.
+		if ( LogsDownload::is_enabled() ) {
+			LogsDownload::get_instance()->register_routes();
+		}
 	}
 }

@@ -183,7 +183,7 @@ trait RunsImport {
 			// is never set in production — this is a single dormant get_option() there.
 			if ( get_option( '_templately_test_force_step_error' ) ) {
 				delete_option( '_templately_test_force_step_error' );
-				throw new RetryableErrorException( __( 'Forced test error (retryable) — exercising the FSI retry affordance.', 'templately' ) );
+				throw new RetryableErrorException( __( 'Forced test error (retryable) - exercising the FSI retry affordance.', 'templately' ) );
 			}
 
 			// Trigger action hook for network admin multisite handling. Also the
@@ -294,7 +294,16 @@ trait RunsImport {
 			// One producer (PRD PHP-4): derives `retry` from the exception type and
 			// persists the frame so LiteSpeed clients, which never receive the SSE
 			// stream, can still learn the import failed via import_status().
-			$this->sse_error( $e );
+			$this->sse_error(
+				$e,
+				null,
+				FatalGuard::debug_enabled()
+					? [
+						'exception' => sprintf( '%s: %s in %s:%d', get_class( $e ), $e->getMessage(), $e->getFile(), $e->getLine() ),
+						'trace'     => $e->getTraceAsString(),
+					]
+					: null
+			);
 		}
 
 		// if($_GET['part'] === 'import'){
@@ -436,14 +445,39 @@ trait RunsImport {
 
 			$this->handle_import_status( 'failed', $safe_message );
 
-			// A PHP fatal is not retryable — the same request will die the same
-			// way. FatalErrorException keeps the SSE frame's `retry` false.
-			$this->sse_error( new FatalErrorException( $safe_message ), $safe_message );
+			$this->sse_error(
+				$this->shutdown_fatal_exception( $last_error, $safe_message ),
+				$safe_message,
+				FatalGuard::debug_enabled() ? FatalGuard::debug_payload( $last_error ) : null
+			);
 		}
 
 		$this->debug_log("Shutdown:.....");
 		$this->debug_log("connection_status: " . $this->getConnectionStatusText());
 		$this->debug_log($last_error);
+	}
+
+	/**
+	 * The exception the shutdown handler reports for a captured fatal — its
+	 * TYPE decides the SSE frame's `retry` flag (see LogHelper::sse_error()).
+	 *
+	 * A resource-limit fatal (max_execution_time / memory_limit) is retryable:
+	 * runners persist progress per item, so the next request resumes where this
+	 * one died. That is what 3.7.5 relied on (it sent `retry: true` for every
+	 * fatal) and what lets imports finish on low-limit hosts. Any other fatal
+	 * is a code defect that dies the same way again, so it stays terminal.
+	 * Retries are bounded by the client (useFullSiteImport: `retryCount < 5`).
+	 *
+	 * @param array  $last_error   error_get_last()-shaped array.
+	 * @param string $safe_message Client-safe message (no server detail).
+	 * @return RetryableErrorException|FatalErrorException
+	 */
+	public function shutdown_fatal_exception( array $last_error, $safe_message ) {
+		if ( FatalGuard::is_resource_limit( $last_error ) ) {
+			return new RetryableErrorException( $safe_message );
+		}
+
+		return new FatalErrorException( $safe_message );
 	}
 
 	protected function getConnectionStatusText() {

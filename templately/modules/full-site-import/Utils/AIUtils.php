@@ -223,7 +223,7 @@ class AIUtils {
 		// content for it. Log it — this used to be entirely silent, which made a
 		// defaulted page impossible to diagnose after the fact.
 		Helper::log(sprintf(
-			'ai_wait[%s/%s] timed out after %ds — page %s falls back to pack default content (%d/%d pages ready)',
+			'ai_wait[%s/%s] timed out after %ds - page %s falls back to pack default content (%d/%d pages ready)',
 			$session_id,
 			$progress_id,
 			$timeout_seconds,
@@ -356,7 +356,7 @@ class AIUtils {
 		$existing_record = self::read_process($process_id);
 		if (!empty($existing_record['is_last_part'])) {
 			Helper::log(
-				sprintf('poll_for_template: %s already marked last-part — no remote call made', $process_id),
+				sprintf('poll_for_template: %s already marked last-part - no remote call made', $process_id),
 				'poll_for_template',
 				'debug'
 			);

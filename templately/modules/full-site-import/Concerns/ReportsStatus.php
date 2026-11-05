@@ -93,7 +93,7 @@ trait ReportsStatus {
 		// was silently treated as success and its body decoded as a result).
 		if ($normalized->is_error()) {
 			$error = $normalized->error();
-			Helper::log("Import status report failed: {$error->code()} — {$error->message()}", 'ReportsStatus', 'warning');
+			Helper::log("Import status report failed: {$error->code()} - {$error->message()}", 'ReportsStatus', 'warning');
 
 			return null;
 		}

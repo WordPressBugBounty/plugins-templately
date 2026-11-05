@@ -304,7 +304,7 @@ class Installer extends Base {
 					// rest of the run continue — aborting here would strand every plugin
 					// after this one, which is exactly what the fatal above did.
 					Helper::log(
-						sprintf( 'update: %s updated but could not be re-activated — %s', $plugin_file, $e->getMessage() ),
+						sprintf( 'update: %s updated but could not be re-activated - %s', $plugin_file, $e->getMessage() ),
 						'installer_update',
 						'warning'
 					);

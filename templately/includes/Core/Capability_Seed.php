@@ -105,7 +105,7 @@ class Capability_Seed {
 		$capabilities->register( 'block-bindings-nested-richtext', [
 			'wp'      => '7.1',
 			'posture' => 'degrade',
-			'note'    => 'Bound rich text preserves nested inner blocks (behavioral — likely stays version-only).',
+			'note'    => 'Bound rich text preserves nested inner blocks (behavioral - likely stays version-only).',
 		] );
 
 		$capabilities->register( 'icons-api', [

@@ -120,12 +120,12 @@ trait HandlesAiEndpoints {
 		$stranded = ! empty($is_last_part) && $total_pages > 0 && $on_disk < $total_pages;
 		Helper::log(
 			sprintf(
-				'retrieve_ai_content: %s — %d/%d page(s) on disk, is_last_part=%s%s',
+				'retrieve_ai_content: %s - %d/%d page(s) on disk, is_last_part=%s%s',
 				$process_id,
 				$on_disk,
 				$total_pages,
 				null === $is_last_part ? '(not polled)' : ( $is_last_part ? 'yes' : 'no' ),
-				$stranded ? ' — STRANDED: marked complete with pages missing' : ''
+				$stranded ? ' - STRANDED: marked complete with pages missing' : ''
 			),
 			'retrieve_ai_content',
 			$stranded ? 'warning' : 'debug'

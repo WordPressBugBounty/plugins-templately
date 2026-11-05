@@ -126,7 +126,10 @@ class Elementor extends ElementorLocal {
 		$defaults = [
 			'post_title'   => isset( $template_data['page_title'] ) ? $template_data['page_title'] : 'Templately: ' . $template_data['title'],
 			'page_settings' => $page_settings,
-			'status' => current_user_can( 'publish_posts' ) ? 'publish' : 'pending',
+			// The import dialog promises "Saves as a draft in your Pages list", and the
+			// Gutenberg path keeps it. This path published the page, live to anonymous
+			// visitors the moment the import finished (testers' retest, 2026-10-25).
+			'status' => 'draft',
 		];
 
 		$template_data = wp_parse_args( $template_data, $defaults );

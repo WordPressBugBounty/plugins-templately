@@ -104,6 +104,28 @@ class LogoGeneration extends API {
 	}
 
 	/**
+	 * The host platform the logo is generated for, forwarded to the cloud as
+	 * `x-templately-requested-platform` (it decides billing and gating).
+	 *
+	 * An explicit `requested_platform` param wins, as before. Without one, fall back
+	 * to Helper::get_requested_platform() — the X-Templately-Requested-Platform
+	 * header a host stamps via configureRequestedPlatform(), then the
+	 * `templately_requested_platform` filter — instead of a hard 'templately', so a
+	 * host such as AI Builder is not billed as Templately.
+	 *
+	 * @return string
+	 */
+	protected function resolve_requested_platform() {
+		$explicit = $this->get_param( 'requested_platform', '' );
+
+		if ( '' !== $explicit ) {
+			return $explicit;
+		}
+
+		return Helper::get_requested_platform();
+	}
+
+	/**
 	 * Generate logo using AI - Async callback pattern
 	 *
 	 * @return array|\WP_Error
@@ -117,7 +139,7 @@ class LogoGeneration extends API {
 		$output_format      = $this->get_param( 'output_format', 'png' );
 		$category           = $this->get_param( 'category', '' );
 		$quantity           = $this->get_param( 'quantity', 1 );
-		$requested_platform = $this->get_param( 'requested_platform', 'templately' );
+		$requested_platform = $this->resolve_requested_platform();
 
 		// Validate required parameters
 		if ( empty( $description ) ) {

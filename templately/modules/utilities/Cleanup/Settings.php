@@ -104,7 +104,7 @@ final class Settings {
 					'invalid_ceiling',
 					sprintf(
 						/* translators: %s: minimum size, already formatted (e.g. "100 MB"). */
-						__( 'The storage limit must be at least %s — a smaller limit would be reached by a single template pack.', 'templately' ),
+						__( 'The storage limit must be at least %s - a smaller limit would be reached by a single template pack.', 'templately' ),
 						size_format( self::MIN_CEILING_BYTES )
 					),
 					[ 'status' => 400, 'field' => 'ceiling_bytes' ]

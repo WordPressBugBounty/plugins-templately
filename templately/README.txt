@@ -1,11 +1,11 @@
 === Templately – Elementor & Gutenberg Template Library: 6500+ Free & Pro Ready Templates And Cloud! ===
-Contributors: templately, wpdevteam, re_enter_rupok, Asif2BD, priyomukul, rahat89, alimuzzamanalim, sapanmozammel
+Contributors: templately, wpdevteam, re_enter_rupok, Asif2BD, priyomukul, rahat89, alimuzzamanalim
 Donate link: https://templately.com
 Tags: templates, elementor template, Gutenberg template, landing page, WoCommerce Templates
 Requires at least: 5.0
 Tested up to: 7.1
 Requires PHP: 7.2
-Stable tag: 3.8.1
+Stable tag: 3.9.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -153,6 +153,23 @@ Visit [WPDeveloper](https://wpdeveloper.com/) to learn more about how to do bett
 
 
 == Changelog ==
+= 3.9.0 - 05-11-2026 =
+Added: Edit with AI (Alpha) in the Elementor and Gutenberg editors. Describe a change in the chat panel and Templately AI edits the page for you.
+Added: Free AI credits for new users to try Edit with AI.
+Improved: When you come back to the AI content chat for a template pack, you can reuse the business details you shared before or start fresh.
+Improved: Full site import now continues automatically when the server stops it for reaching its time or memory limit.
+Updated: Templately and Save page in Templately are now grouped in one Templately dropdown in the editor top bar.
+Fixed: My Favourites did not load.
+Fixed: Full site import went back to the first step when the browser window was resized.
+Fixed: Full site import stopped at "Downloading Template Pack" on some hosts.
+Fixed: Full site import could stall after retrying a slow step.
+Fixed: Signing in could take you straight back to the sign-in screen.
+Fixed: Browser autofill put your WordPress login into the library search box and the API key field.
+Fixed: Show/Hide Templately buttons option did not apply to every Templately button in the Gutenberg editor.
+Fixed: Elementor page import now saves the page as a draft, as the dialog says.
+Fixed: Saving a page with Templately patterns created duplicate copies of images already in your Media Library.
+Few minor bug fixes and improvements
+
 = 3.8.1 - 19-10-2026 =
 Added: "Included plugins" section on the Subscription page, where bundle subscribers download the Pro plugins their plan includes.
 Improved: Pro plugins are no longer installed automatically during import. The dependency step now points you to the Subscription page to download Essential Addons Pro or Essential Blocks Pro and install it yourself.

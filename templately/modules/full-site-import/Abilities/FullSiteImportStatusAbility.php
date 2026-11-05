@@ -37,7 +37,7 @@ class FullSiteImportStatusAbility {
 		return [
 			'id'                  => self::ID,
 			'label'               => __( 'Track Templately Full Site Import', 'templately' ),
-			'description'         => __( 'Advance a running full-site import by ONE step (advance=true, the default) and report progress + status: running, needs_retry, failed, complete, or expired. Poll-driven — keep calling until status is "complete" or "failed" (the import only moves while polled); on "needs_retry" call templately/retry-full-site-import then continue polling. Pass advance=false to read current progress cheaply WITHOUT running a step — ideal for a monitor/watcher checking whether the import has finished. The whole advance loop can run in a background process that treats a terminal status ("complete"/"failed") as the completion signal.', 'templately' ),
+			'description'         => __( 'Advance a running full-site import by ONE step (advance=true, the default) and report progress + status: running, needs_retry, failed, complete, or expired. Poll-driven - keep calling until status is "complete" or "failed" (the import only moves while polled); on "needs_retry" call templately/retry-full-site-import then continue polling. Pass advance=false to read current progress cheaply WITHOUT running a step - ideal for a monitor/watcher checking whether the import has finished. The whole advance loop can run in a background process that treats a terminal status ("complete"/"failed") as the completion signal.', 'templately' ),
 			'input_schema'        => [
 				'type'       => 'object',
 				'properties' => [

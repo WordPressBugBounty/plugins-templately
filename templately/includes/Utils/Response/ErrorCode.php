@@ -248,7 +248,7 @@ class ErrorCode {
 			case self::SERVER_ERROR:
 				return __( 'Something went wrong on the Templately server. Please try again in a moment.', 'templately' );
 			case self::FATAL_ERROR:
-				return __( 'A critical error occurred on your website while processing this request. Details were saved to the Templately log — please contact support if it keeps happening.', 'templately' );
+				return __( 'A critical error occurred on your website while processing this request. Details were saved to the Templately log - please contact support if it keeps happening.', 'templately' );
 			default:
 				return __( 'The request could not be completed.', 'templately' );
 		}

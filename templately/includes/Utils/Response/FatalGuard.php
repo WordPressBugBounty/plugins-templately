@@ -2,6 +2,7 @@
 
 namespace Templately\Utils\Response;
 
+use Templately\Utils\Log\LogFile;
 use Templately\Utils\Log\Logger;
 
 /**
@@ -26,6 +27,12 @@ use Templately\Utils\Log\Logger;
  *    handler and emits over its own channel (`sse_error` + import status).
  */
 class FatalGuard {
+
+	/**
+	 * How much of the Templately log {@see debug_payload()} sends to the browser.
+	 */
+	const DEBUG_LOG_BYTES = 65536;
+
 
 	/**
 	 * Context string for the current armed request ('' = not armed).
@@ -165,16 +172,16 @@ class FatalGuard {
 			return null;
 		}
 
-		Logger::error(
-			sprintf(
-				'PHP fatal (type %d): %s in %s:%d',
-				$last_error['type'],
-				isset( $last_error['message'] ) ? $last_error['message'] : '(no message)',
-				isset( $last_error['file'] ) ? $last_error['file'] : '(unknown file)',
-				isset( $last_error['line'] ) ? $last_error['line'] : 0
-			),
-			$context
-		);
+		$detail = self::format_fatal( $last_error );
+
+		Logger::error( $detail, $context );
+
+		// Logger is WP_DEBUG_LOG-gated, but the FATAL_ERROR message tells the
+		// user the detail "was saved to the Templately log" — so a fatal is
+		// written to the log file regardless of the gate.
+		if ( ! ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) ) {
+			LogFile::write( sprintf( '[%s] [ERROR] [%s] %s', current_time( 'Y-m-d H:i:s' ), $context, $detail ) );
+		}
 
 		return $last_error;
 	}
@@ -194,6 +201,90 @@ class FatalGuard {
 		$fatal_types = E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR;
 
 		return (bool) ( $error['type'] & $fatal_types );
+	}
+
+	/**
+	 * Whether a fatal is PHP killing the request for exceeding a resource
+	 * limit — `max_execution_time` or `memory_limit` — rather than a code
+	 * defect (missing class, bad call, parse error).
+	 *
+	 * The distinction matters to work that resumes from saved progress: a
+	 * limit fatal kills THIS request at an arbitrary point, and a fresh request
+	 * gets a fresh clock and a fresh heap, so it can get further. A code-defect
+	 * fatal reproduces identically on every attempt.
+	 *
+	 * PHP reports both limits as E_ERROR with a fixed, untranslated message
+	 * prefix, so the message is the only reliable signal.
+	 *
+	 * @param array $error error_get_last()-shaped array.
+	 * @return bool
+	 */
+	public static function is_resource_limit( array $error ) {
+		if ( ! isset( $error['type'], $error['message'] ) || E_ERROR !== (int) $error['type'] ) {
+			return false;
+		}
+
+		$message = (string) $error['message'];
+
+		return 0 === strpos( $message, 'Maximum execution time of' )
+			|| 0 === strpos( $message, 'Allowed memory size of' )
+			|| 0 === strpos( $message, 'Out of memory' );
+	}
+
+	/**
+	 * Whether this request may receive the raw fatal detail — the
+	 * `TEMPLATELY_LOG_DOWNLOAD` dev option, for admins only. Everyone else
+	 * gets only the generic FATAL_ERROR message.
+	 *
+	 * @return bool
+	 */
+	public static function debug_enabled() {
+		return defined( 'TEMPLATELY_LOG_DOWNLOAD' ) && TEMPLATELY_LOG_DOWNLOAD
+			&& function_exists( 'current_user_can' ) && current_user_can( 'manage_options' );
+	}
+
+	/**
+	 * The fatal's detail plus the tail of the Templately log, for the
+	 * browser console when {@see debug_enabled()}.
+	 *
+	 * @param array $last_error error_get_last() array.
+	 * @return array{fatal: string, log: string}
+	 */
+	public static function debug_payload( array $last_error ) {
+		$log  = '';
+		$path = LogFile::path();
+
+		if ( $path && @is_readable( $path ) ) {
+			$size = (int) @filesize( $path );
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- tail read.
+			$handle = @fopen( $path, 'rb' );
+			if ( $handle ) {
+				if ( $size > self::DEBUG_LOG_BYTES ) {
+					fseek( $handle, -self::DEBUG_LOG_BYTES, SEEK_END );
+				}
+				$log = (string) stream_get_contents( $handle );
+				fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+			}
+		}
+
+		return [
+			'fatal' => self::format_fatal( $last_error ),
+			'log'   => $log,
+		];
+	}
+
+	/**
+	 * @param array $last_error error_get_last() array.
+	 * @return string
+	 */
+	private static function format_fatal( array $last_error ) {
+		return sprintf(
+			'PHP fatal (type %d): %s in %s:%d',
+			$last_error['type'],
+			isset( $last_error['message'] ) ? $last_error['message'] : '(no message)',
+			isset( $last_error['file'] ) ? $last_error['file'] : '(unknown file)',
+			isset( $last_error['line'] ) ? $last_error['line'] : 0
+		);
 	}
 
 	/**
@@ -233,6 +324,13 @@ class FatalGuard {
 			header( 'Content-Type: application/json; charset=' . get_option( 'blog_charset' ) );
 		}
 
-		echo wp_json_encode( Envelope::error( self::safe_error() ) );
+		$body = Envelope::error( self::safe_error() );
+
+		$last_error = error_get_last();
+		if ( is_array( $last_error ) && self::is_fatal( $last_error ) && self::debug_enabled() ) {
+			$body['debug'] = self::debug_payload( $last_error );
+		}
+
+		echo wp_json_encode( $body );
 	}
 }

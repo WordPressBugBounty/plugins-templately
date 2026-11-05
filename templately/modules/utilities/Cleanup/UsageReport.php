@@ -95,7 +95,8 @@ final class UsageReport {
 		$base = Scanner::get_base_dir();
 		$dir  = is_dir( $base ) ? $base : dirname( $base );
 
-		$free = @disk_free_space( $dir ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		// Disabled on many hosts — and a disabled function is a fatal on PHP 8, `@` or not.
+		$free = function_exists( 'disk_free_space' ) ? @disk_free_space( $dir ) : false; // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 
 		return ( false === $free || null === $free ) ? null : (int) $free;
 	}

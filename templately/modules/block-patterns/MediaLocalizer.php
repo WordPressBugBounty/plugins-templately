@@ -220,7 +220,7 @@ class MediaLocalizer extends Base {
 		$urls = [];
 		foreach ( (array) $matches[0] as $url ) {
 			$host = wp_parse_url( $url, PHP_URL_HOST );
-			if ( ! $host || ! $this->host_allowed( (string) $host, $hosts ) ) {
+			if ( ! $host || ! $this->host_allowed( (string) $host, $hosts ) || $this->is_own_media( $url ) ) {
 				continue;
 			}
 			$base = $this->normalize_url( $url );
@@ -238,6 +238,32 @@ class MediaLocalizer extends Base {
 	 *
 	 * @return string[]
 	 */
+	/**
+	 * Whether a URL already points at this site's own media.
+	 *
+	 * A site whose own domain sits under an allow-listed one (docs.templately.com
+	 * is a subdomain of templately.com) would otherwise "localize" its own uploads:
+	 * each save sideloads every image back into itself as `name-1.jpg`, rewrites
+	 * the content to the copy, and the next save does it again to the copy, whose
+	 * new URL defeats the source-URL dedup. Nothing on this site needs importing.
+	 */
+	private function is_own_media( string $url ): bool {
+		$uploads = wp_get_upload_dir();
+		$baseurl = isset( $uploads['baseurl'] ) ? set_url_scheme( (string) $uploads['baseurl'], 'https' ) : '';
+		if ( '' !== $baseurl && 0 === strpos( set_url_scheme( $url, 'https' ), trailingslashit( $baseurl ) ) ) {
+			return true;
+		}
+
+		$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+		foreach ( [ home_url(), site_url() ] as $own ) {
+			if ( $host === strtolower( (string) wp_parse_url( $own, PHP_URL_HOST ) ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private function variants_in( string $content, string $base_url ): array {
 		preg_match_all( self::IMAGE_URL_PATTERN, $content, $matches );
 

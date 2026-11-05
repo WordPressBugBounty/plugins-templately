@@ -123,7 +123,7 @@ trait DownloadsPack {
 			$error = $normalized->error();
 
 			Helper::log(
-				sprintf( 'download_zip: refused — %s: %s (retryable=%s)', $error->code(), wp_strip_all_tags( $error->message() ), $error->is_retryable() ? 'yes' : 'no' ),
+				sprintf( 'download_zip: refused - %s: %s (retryable=%s)', $error->code(), wp_strip_all_tags( $error->message() ), $error->is_retryable() ? 'yes' : 'no' ),
 				'download_zip',
 				'error'
 			);
@@ -158,7 +158,9 @@ trait DownloadsPack {
 		// A full disk is not transient: a retry loop against it never resolves.
 		// Require the zip size plus headroom for extraction (packs expand).
 		$needed = strlen($response['body']) * 3;
-		$free   = @disk_free_space(dirname($this->filePath)); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- some hosts disable the function; false skips the check.
+		// Hosts often disable disk_free_space(); on PHP 8 calling a disabled
+		// function is an uncaught Error that `@` cannot silence, so check first.
+		$free   = function_exists('disk_free_space') ? @disk_free_space(dirname($this->filePath)) : false; // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- false skips the check.
 		if (false !== $free && $free < $needed) {
 			$this->throw(__('Not enough disk space to import this pack. Please free up space and try again.', 'templately'));
 		}

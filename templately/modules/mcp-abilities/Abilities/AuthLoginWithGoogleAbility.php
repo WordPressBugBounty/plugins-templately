@@ -91,7 +91,7 @@ class AuthLoginWithGoogleAbility {
 
 		return [
 			'url'          => $url,
-			'instructions' => __( 'Open this URL in a browser and complete Google sign-in. Instead of connecting automatically, the page will show you an API key — copy it and give it to the agent, which will call templately-auth-login-with-api-key to finish connecting this site.', 'templately' ),
+			'instructions' => __( 'Open this URL in a browser and complete Google sign-in. Instead of connecting automatically, the page will show you an API key - copy it and give it to the agent, which will call templately-auth-login-with-api-key to finish connecting this site.', 'templately' ),
 		];
 	}
 }

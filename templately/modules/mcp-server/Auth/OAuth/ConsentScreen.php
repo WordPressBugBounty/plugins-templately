@@ -324,7 +324,7 @@ class ConsentScreen {
 		if ( $loopback ) {
 			printf(
 				'<p class="tmpl-lede" style="margin:8px 0 0;font-size:12px">%s</p>',
-				esc_html__( 'This address is on your own computer — expected for a desktop or command-line agent.', 'templately' )
+				esc_html__( 'This address is on your own computer - expected for a desktop or command-line agent.', 'templately' )
 			);
 		}
 
@@ -373,7 +373,7 @@ class ConsentScreen {
 			esc_html__( 'This application will be able to browse Templately designs only. It cannot change anything on this site.', 'templately' ),
 			esc_attr( ToolDescriptor::ACCESS_FULL ),
 			$full ? '' : ';display:none',
-			esc_html__( 'This application will be able to browse Templately designs and import them — creating pages, templates and media on this site.', 'templately' )
+			esc_html__( 'This application will be able to browse Templately designs and import them - creating pages, templates and media on this site.', 'templately' )
 		);
 
 		// Confused-deputy guard: the site cannot tell a genuine request from one a

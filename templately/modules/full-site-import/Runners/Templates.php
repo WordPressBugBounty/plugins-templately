@@ -195,7 +195,7 @@ class Templates extends BaseRunner {
 				0,
 				sprintf(
 					/* translators: %s: template name */
-					__( 'Skipped "%s" — a plugin conflict stopped this template from importing. The rest of the pack was imported.', 'templately' ),
+					__( 'Skipped "%s" - a plugin conflict stopped this template from importing. The rest of the pack was imported.', 'templately' ),
 					$label
 				),
 				'eventLog'

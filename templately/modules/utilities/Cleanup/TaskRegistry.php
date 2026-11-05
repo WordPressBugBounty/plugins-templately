@@ -256,7 +256,7 @@ final class TaskRegistry {
 
 			if ( isset( $this->descriptors[ $descriptor->id ] ) ) {
 				Helper::log(
-					sprintf( 'Duplicate cleanup task id "%s" from %s — ignored.', $descriptor->id, $class ),
+					sprintf( 'Duplicate cleanup task id "%s" from %s - ignored.', $descriptor->id, $class ),
 					'cleanup',
 					'error'
 				);

@@ -135,8 +135,9 @@ class Module extends Module_Base {
 			if ( ! PatternRegistrar::lazy_mode() ) {
 				return;
 			}
-			if ( ! \WP_Block_Type_Registry::get_instance()->is_registered( 'templately/lazy-pattern' ) ) {
-				register_block_type( 'templately/lazy-pattern', [
+			if ( ! \WP_Block_Type_Registry::get_instance()->is_registered( PatternRegistrar::LAZY_BLOCK ) ) {
+				// Constant, not a literal: see PatternRegistrar::LAZY_BLOCK.
+				register_block_type( PatternRegistrar::LAZY_BLOCK, [
 					'api_version'     => 3,
 					'attributes'      => [
 						'patternId'  => [ 'type' => 'number', 'default' => 0 ],

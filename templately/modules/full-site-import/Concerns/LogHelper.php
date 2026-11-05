@@ -36,9 +36,10 @@ trait LogHelper {
 	 * @param \Throwable  $error
 	 * @param string|null $message Overrides the exception message when the caller
 	 *                             has friendlier copy.
+	 * @param array|null  $debug   Dev-option-only raw detail for the browser console.
 	 * @return void
 	 */
-	public function sse_error( $error, $message = null ) {
+	public function sse_error( $error, $message = null, $debug = null ) {
 		$retry = $error instanceof RetryableErrorException;
 
 		$frame = [
@@ -49,6 +50,12 @@ trait LogHelper {
 			'title'   => __( 'Oops!', 'templately' ),
 			'message' => $message !== null ? $message : $error->getMessage(),
 		];
+
+		// Dev option (TEMPLATELY_LOG_DOWNLOAD, admins only): raw detail for the
+		// browser console. Never set otherwise — see FatalGuard::debug_enabled().
+		if ( null !== $debug ) {
+			$frame['debug'] = $debug;
+		}
 
 		$this->persist_last_error( $frame );
 

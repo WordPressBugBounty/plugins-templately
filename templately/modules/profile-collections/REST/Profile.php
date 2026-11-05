@@ -51,7 +51,7 @@ class Profile extends API {
 			$funcArgs['type'] = $type;
 		}
 
-		$response = $this->http()->mutation( 'myFavouriteItem', 'total_page, current_page, data { id, name, rating, type, slug, favourite_count, thumbnail, thumbnail2, thumbnail3, price, author{ display_name, name, joined }, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link } }', $funcArgs )->post();
+		$response = $this->http()->mutation( 'myFavouriteItem', 'total_page, current_page, data { id, name, rating, type, slug, favourite_count, thumbnail, thumbnail2, thumbnail3, price, dependencies{ id, name, icon, plugin_file, plugin_original_slug, is_pro, link } }', $funcArgs )->post();
 
 		if ( is_wp_error( $response ) ) {
 			return $this->error( 'invalid_my_favourites_response', __( $response->get_error_message(), 'templately' ), 'profile/my-favourites' );

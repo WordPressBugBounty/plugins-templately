@@ -29,7 +29,7 @@ class DiscoverTemplatesAbility {
 		return [
 			'id'                  => self::ID,
 			'label'               => __( 'Discover designs from Templately', 'templately' ),
-			'description'         => __( 'Search or browse the Templately design template library, covering both full page designs and individual section/block designs (e.g. headers, heroes, footers, pricing tables). Use this whenever the user wants to find, browse, or get ideas for a design, layout, template, or section — by keyword, type (page or section), platform (Elementor or Gutenberg), category, or sort order.', 'templately' ),
+			'description'         => __( 'Search or browse the Templately design template library, covering both full page designs and individual section/block designs (e.g. headers, heroes, footers, pricing tables). Use this whenever the user wants to find, browse, or get ideas for a design, layout, template, or section - by keyword, type (page or section), platform (Elementor or Gutenberg), category, or sort order.', 'templately' ),
 			'input_schema'        => [
 				'type'       => 'object',
 				'properties' => [
@@ -62,7 +62,7 @@ class DiscoverTemplatesAbility {
 								'platform'  => [ 'type' => 'string' ],
 								'category'  => [ 'type' => 'string' ],
 								'thumbnail' => [ 'type' => 'string' ],
-								'demo_url'  => [ 'type' => 'string', 'description' => __( 'Live preview/demo URL — open to view the design before importing.', 'templately' ) ],
+								'demo_url'  => [ 'type' => 'string', 'description' => __( 'Live preview/demo URL - open to view the design before importing.', 'templately' ) ],
 								'price'     => [ 'type' => 'number' ],
 								'is_pro'    => [ 'type' => 'boolean' ],
 							],

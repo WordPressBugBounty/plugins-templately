@@ -37,7 +37,7 @@ class StartFullSiteImportAbility {
 		return [
 			'id'                  => self::ID,
 			'label'               => __( 'Start Templately Full Site Import', 'templately' ),
-			'description'         => __( 'Begin importing a full-site Templately pack and return a tracking handle immediately — the import does NOT run on its own. Drive it to completion by repeatedly calling templately/full-site-import-status with advance=true until its status is "complete" or "failed"; the import only progresses while you poll. This poll loop can be automated by a background/monitor process that watches for the terminal status.', 'templately' ),
+			'description'         => __( 'Begin importing a full-site Templately pack and return a tracking handle immediately - the import does NOT run on its own. Drive it to completion by repeatedly calling templately/full-site-import-status with advance=true until its status is "complete" or "failed"; the import only progresses while you poll. This poll loop can be automated by a background/monitor process that watches for the terminal status.', 'templately' ),
 			'input_schema'        => [
 				'type'       => 'object',
 				'properties' => [

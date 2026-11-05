@@ -372,7 +372,7 @@ class AIContent extends API {
 		// is deliberately allowed through to the handling below.
 		if ($normalized->is_error() && ErrorCode::INVALID_REQUEST !== $normalized->error()->code()) {
 			$error = $normalized->error();
-			Helper::log("modify_content failed: {$error->code()} — {$error->message()}", 'modify_content_error', 'error');
+			Helper::log("modify_content failed: {$error->code()} - {$error->message()}", 'modify_content_error', 'error');
 
 			return $this->error($error->code(), $error->message(), 'modify_content', $error->status());
 		}
@@ -469,7 +469,7 @@ class AIContent extends API {
 		// worked), so it is still passed through; it is now merely audible.
 		Helper::log(
 			sprintf(
-				'modify_content: cloud declined to start generation (pack_id=%s, platform=%s, status=%s, process_id=%s) — %s',
+				'modify_content: cloud declined to start generation (pack_id=%s, platform=%s, status=%s, process_id=%s) - %s',
 				$pack_id,
 				$platform,
 				isset($data['status']) ? (string) $data['status'] : '(none)',
@@ -558,7 +558,7 @@ class AIContent extends API {
 			// nobody reads while debugging. Put it in the log too.
 			Helper::log(
 				sprintf(
-					'ai_update_preview: remote reported failure for %s (isSkipped=%s) — %s',
+					'ai_update_preview: remote reported failure for %s (isSkipped=%s) - %s',
 					$process_id,
 					!empty($isSkipped) ? 'yes' : 'no',
 					!empty($error) ? (string) $error : '(no message)'
@@ -1567,7 +1567,7 @@ class AIContent extends API {
 
 		$response = Helper::make_api_get_request("v2/chatbot/conversation/{$chat}", [], ['Accept' => 'application/json'], 30);
 		if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
-			Helper::log(sprintf('chatbot_import_prepare[%s] conversation fetch failed — process stored without answers', $chat), 'ai-import', 'warning');
+			Helper::log(sprintf('chatbot_import_prepare[%s] conversation fetch failed - process stored without answers', $chat), 'ai-import', 'warning');
 			return [];
 		}
 

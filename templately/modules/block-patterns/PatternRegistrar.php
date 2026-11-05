@@ -17,6 +17,14 @@ class PatternRegistrar extends Base {
 	const BRAND_CATEGORY = 'templately';
 
 	/**
+	 * The placeholder block's name. Passed to register_block_type() as this
+	 * constant, never as a string literal: wordpress.org builds a plugin's public
+	 * "Blocks" list by scanning its PHP for a literal block name in that call, and
+	 * this internal block (never offered in the inserter) was listed there.
+	 */
+	const LAZY_BLOCK = 'templately/lazy-pattern';
+
+	/**
 	 * Cumulative pattern-content budget, in bytes.
 	 *
 	 * Registered patterns are NOT free at page load: WordPress preloads the
@@ -70,7 +78,7 @@ class PatternRegistrar extends Base {
 					$spent += $cost;
 				}
 			} catch ( \Throwable $e ) {
-				Helper::log( 'block-patterns: skipped corrupt cache entry — ' . $e->getMessage() );
+				Helper::log( 'block-patterns: skipped corrupt cache entry - ' . $e->getMessage() );
 			}
 		}
 
@@ -175,7 +183,7 @@ class PatternRegistrar extends Base {
 			'viewportWidth' => 1200,
 			'description'   => sprintf(
 				/* translators: %s: pattern title */
-				__( '%s — from the Templately library', 'templately' ),
+				__( '%s - from the Templately library', 'templately' ),
 				sanitize_text_field( $item['title'] )
 			),
 			'content'       => $this->lazy_content( $item ),
@@ -223,7 +231,7 @@ class PatternRegistrar extends Base {
 			'viewportWidth' => 1200,
 			'description'   => sprintf(
 				/* translators: %s: pattern title */
-				__( '%s — from the Templately library', 'templately' ),
+				__( '%s - from the Templately library', 'templately' ),
 				sanitize_text_field( $item['title'] )
 			),
 		];

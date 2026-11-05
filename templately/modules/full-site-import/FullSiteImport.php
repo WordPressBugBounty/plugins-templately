@@ -172,12 +172,12 @@ class FullSiteImport extends Base {
 			// PHP stops at the next write, silently), and a non-null `last_error` means PHP
 			// died.
 			$started = microtime( true );
-			Helper::log( sprintf( 'ajax: templately_pack_%s — start', $action ), 'fsi_ajax', 'info' );
+			Helper::log( sprintf( 'ajax: templately_pack_%s - start', $action ), 'fsi_ajax', 'info' );
 
 			register_shutdown_function( function () use ( $action, $started ) {
 				Helper::log(
 					sprintf(
-						'ajax: templately_pack_%s — ended after %.1fs (connection_aborted=%d, http_code=%s, last_error=%s)',
+						'ajax: templately_pack_%s - ended after %.1fs (connection_aborted=%d, http_code=%s, last_error=%s)',
 						$action,
 						microtime( true ) - $started,
 						connection_aborted(),

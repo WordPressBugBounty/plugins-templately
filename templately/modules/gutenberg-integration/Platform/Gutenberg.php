@@ -90,7 +90,11 @@ class Gutenberg extends Platform {
     }
 
     /**
-     * 	Templately Button and Wrapper for Gutenberg
+     * The library modal mount for the block editor.
+     *
+     * Spec 061 (supersedes 033 FR-001): the two toolbar buttons are gone. The Templately
+     * menu is rendered client-side into its own header mount; its "Save … in cloud" label
+     * rides on this mount so `templately_cloud_push_post_type` keeps naming the post type.
      *
      * @since 2.0.0
      *
@@ -100,22 +104,12 @@ class Gutenberg extends Platform {
         if ( ! $this->is_gutenberg_active ) {
             return;
         }
-        $post_type = apply_filters( 'templately_cloud_push_post_type', get_post_type());
+        $post_type = apply_filters( 'templately_cloud_push_post_type', get_post_type() );
+        /* translators: %s: the post type being saved, e.g. "page". */
+        $save_label = sprintf( __( 'Save %s in cloud', 'templately' ), $post_type );
 
         ?>
-        <div id="templately-gutenberg"></div>
-        <script id="templately-gutenberg-button-switch-mode" type="text/html">
-            <div id="templately-gutenberg-buttons">
-                <button id="templately-gutenberg-button" type="button" class="button button-primary button-large gutenberg-add-templately-button">
-                    <i class="templately-icon" aria-hidden="true"></i>
-                    <?php echo esc_html__( 'Templately', 'templately' ); ?>
-                </button>
-                <button id="templately-cloud-push" type="button" class="button button-primary button-large">
-                    <i class="templately-cloud-icon" aria-hidden="true"></i>
-                    <?php echo esc_html( sprintf( __( 'Save %s in Templately', 'templately' ), $post_type ) ); ?>
-                </button>
-            </div>
-        </script>
+        <div id="templately-gutenberg" data-save-label="<?php echo esc_attr( $save_label ); ?>"></div>
         <?php
     }
 

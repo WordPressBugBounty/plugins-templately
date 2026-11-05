@@ -98,7 +98,7 @@ class Fields {
 		}
 
 		/* translators: %s: the name of the Templately pack the content came from. */
-		return sprintf( __( 'Templately — %s', 'templately' ), $name );
+		return sprintf( __( 'Templately - %s', 'templately' ), $name );
 	}
 
 	/**

@@ -331,7 +331,7 @@ class PatternSync extends Base {
 			// A failed axis query must not empty the catalog. Fall back to the flat
 			// popularity run this replaced, sized to roughly what the composition
 			// would have produced, and treat it as complete.
-			Helper::log( 'block-patterns: no template types resolved — falling back to a flat popular fetch.' );
+			Helper::log( 'block-patterns: no template types resolved - falling back to a flat popular fetch.' );
 
 			$items  = array_merge( $items, $this->fetch_type( 'items', 'section', max( 1, $per_type * 10 ), $plan_key ) );
 			$cursor = 0;
@@ -374,7 +374,7 @@ class PatternSync extends Base {
 			// Never truncate silently: a catalog that quietly stops at the cap
 			// reads as "this is everything the cloud has" when it is not.
 			Helper::log( sprintf(
-				'block-patterns: composed %d designs, ceiling %d — %d dropped.',
+				'block-patterns: composed %d designs, ceiling %d - %d dropped.',
 				count( $items ),
 				$ceiling,
 				count( $items ) - $ceiling

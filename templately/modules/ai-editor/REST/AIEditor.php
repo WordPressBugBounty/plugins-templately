@@ -5,8 +5,10 @@ namespace Templately\Modules\AiEditor\REST;
 use Templately\API\API;
 use Templately\Utils\Database;
 use Templately\Utils\Helper;
+use Templately\Utils\Options;
 use Templately\Utils\Response\FatalGuard;
 use WP_REST_Request;
+use WP_REST_Response;
 
 /**
  * AI Editor chat proxy (041) — templately/v1/ai-editor/*.
@@ -22,15 +24,152 @@ class AIEditor extends API {
 
 	const CLOUD_ENDPOINT = 'v2/ai-editor/chat';
 
-	/** Cloud contract major version this plugin speaks (contract §cloud). */
-	const CONTRACT_VERSION = 1;
+	const APPLY_REPORT_ENDPOINT = 'v2/ai-editor/apply-report';
+
+	/** Cloud route for the one-time free-credit offer (app PRD ai-editor-free-credits). */
+	const FREE_CREDITS_ENDPOINT = 'v2/ai-editor/free-credits';
+
+	/** Per-WP-user flag: the library-page offer alert was closed and never returns. */
+	const OFFER_DISMISSED_KEY = 'ai_editor_offer_dismissed';
+
+	/** Developer mock only: per-user "already claimed" marker so a second claim refuses. */
+	const MOCK_CLAIMED_TRANSIENT = 'templately_ai_editor_mock_free_claimed_';
+
+	/**
+	 * Cloud contract major version this plugin speaks (contract §cloud).
+	 *
+	 * 2 (2026-10-06): the app may run edit turns clause by clause and answer with
+	 * `clauses: [{n, status, reason?}]` beside the usual fields
+	 * (app docs/prd/improvements/jev-implementation.md, D16). Everything else a
+	 * contract-1 response carried is unchanged, so a 1 is still accepted.
+	 */
+	const CONTRACT_VERSION = 2;
 
 	public function register_routes() {
 		$this->post( 'ai-editor/chat', [ $this, 'chat' ] );
 		$this->get( 'ai-editor/chat/(?P<process_id>[a-zA-Z0-9_\-]+)', [ $this, 'poll_turn' ] );
+		// What an apply did, for the app to check its reply (plugin plan task 3).
+		$this->post( 'ai-editor/apply-report', [ $this, 'apply_report' ] );
 		// Shared AI credit balance (research R10) — same upstream as the
 		// logo-generation route, which stays untouched.
 		$this->get( 'ai/available-credits', [ $this, 'available_credits' ] );
+		// One-time free credits for a first-time AI Editor user (free-credits plugin plan).
+		// The app owns eligibility; these two only relay it.
+		$this->get( 'ai-editor/free-credits', [ $this, 'free_credits' ] );
+		$this->post( 'ai-editor/free-credits/claim', [ $this, 'claim_free_credits' ] );
+		// Local only: the library-page alert's close button.
+		$this->post( 'ai-editor/free-credits/dismiss', [ $this, 'dismiss_free_credits' ] );
+	}
+
+	/**
+	 * GET /ai-editor/free-credits — whether this account may claim the offer.
+	 *
+	 * Ineligible is still a 200 from the app (`eligible: false` + `reason`), so the
+	 * body is relayed as-is and the client decides from `data.eligible`.
+	 */
+	public function free_credits() {
+		if ( $this->is_mock_mode() ) {
+			return $this->success( $this->mock_free_credit_offer() );
+		}
+
+		// 10 s: a cheap read, asked while the editor loads. A hung app must answer
+		// as a failure (the panel retries) before PHP's own 30 s limit kills the
+		// request and WordPress answers with its HTML error page.
+		return $this->relay_free_credit_response( Helper::make_api_get_request( self::FREE_CREDITS_ENDPOINT, [], [], 10 ) );
+	}
+
+	/**
+	 * POST /ai-editor/free-credits/claim — claim the offer once.
+	 *
+	 * A refusal is a 409 from the app (`statusText`/`data.reason` say why); it is
+	 * relayed with its status and reason, never folded into a generic failure.
+	 */
+	public function claim_free_credits() {
+		if ( $this->is_mock_mode() ) {
+			return $this->mock_free_credit_claim();
+		}
+
+		return $this->relay_free_credit_response(
+			Helper::make_api_post_request( self::FREE_CREDITS_ENDPOINT . '/claim', [], [], 20 )
+		);
+	}
+
+	/**
+	 * POST /ai-editor/free-credits/dismiss — the library-page alert's close (×).
+	 *
+	 * Stored on the ACTING WordPress user, never through the global-login fallback
+	 * (which would write the flag onto the admin who connected the site).
+	 */
+	public function dismiss_free_credits() {
+		Options::get_instance()->set( self::OFFER_DISMISSED_KEY, true, get_current_user_id() );
+
+		return $this->success( [ 'dismissed' => true ] );
+	}
+
+	/**
+	 * Relay a free-credits cloud response with its status.
+	 *
+	 * - 2xx: the cloud body, untouched.
+	 * - 4xx with a JSON body (409 refusal, 429 throttle, 403 unverified): the
+	 *   body's `statusText`, `message` and `data` with the SAME status, shaped as a
+	 *   043 failure envelope (`success:false` + `code`) so RestEnvelope leaves it
+	 *   alone instead of collapsing it to a status-derived generic error.
+	 * - anything else (transport error, 5xx, non-JSON): a generic 502 failure. A
+	 *   5xx body can carry a framework stack trace and never reaches the browser.
+	 *
+	 * @param mixed $response raw wp_remote_* result
+	 * @return WP_REST_Response
+	 */
+	private function relay_free_credit_response( $response ) {
+		$unavailable = new WP_REST_Response(
+			self::ai_envelope( 'remote_failed', __( 'The Templately AI service is unavailable right now. Please try again in a moment.', 'templately' ) ),
+			502
+		);
+
+		if ( is_wp_error( $response ) ) {
+			Helper::log( 'free-credits transport error: ' . $response->get_error_message(), 'ai-editor-free-credits', 'error' );
+			return $unavailable;
+		}
+
+		$status = (int) wp_remote_retrieve_response_code( $response );
+		$body   = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( $status >= 200 && $status < 300 ) {
+			return is_array( $body ) ? $this->success( $body ) : $unavailable;
+		}
+
+		if ( $status < 400 || $status >= 500 || ! is_array( $body ) ) {
+			Helper::log( 'free-credits upstream ' . $status . ': ' . substr( (string) wp_remote_retrieve_body( $response ), 0, 500 ), 'ai-editor-free-credits', 'error' );
+			return $unavailable;
+		}
+
+		$data   = isset( $body['data'] ) && is_array( $body['data'] ) ? $body['data'] : [];
+		$reason = '';
+		if ( isset( $body['statusText'] ) && is_string( $body['statusText'] ) ) {
+			$reason = sanitize_key( $body['statusText'] );
+		} elseif ( isset( $data['reason'] ) && is_string( $data['reason'] ) ) {
+			$reason = sanitize_key( $data['reason'] );
+		}
+		if ( '' === $reason ) {
+			$reason = 429 === $status ? 'rate_limited' : 'remote_failed';
+		}
+
+		$message = isset( $body['message'] ) && is_string( $body['message'] ) ? trim( wp_strip_all_tags( $body['message'] ) ) : '';
+		if ( '' === $message || strlen( $message ) > 300 ) {
+			$message = __( 'The free credits could not be claimed right now.', 'templately' );
+		}
+
+		return new WP_REST_Response(
+			[
+				'success'    => false,
+				'code'       => $reason,
+				'message'    => $message,
+				'status'     => 'error',
+				'statusText' => $reason,
+				'data'       => $data,
+			],
+			$status
+		);
 	}
 
 	/**
@@ -155,11 +294,17 @@ class AIEditor extends API {
 		// global:<preset> pointer means from it. Absent until the user first
 		// customizes globals (EB creates the option lazily).
 		if ( 'gutenberg' === $payload['platform'] ) {
-			$global_settings = self::eb_global_settings();
+			$global_settings = self::eb_global_settings() ?? [];
+			// The theme's heading sizes, measured in the canvas: an EB heading on "global"
+			// typography with no EB preset for its tag renders at these (2026-10-15).
+			if ( ! empty( $payload['theme_headings'] ) && empty( $global_settings['headings'] ) ) {
+				$global_settings['headings'] = $payload['theme_headings'];
+			}
 			if ( $global_settings ) {
 				$payload['global_settings'] = $global_settings;
 			}
 		}
+		unset( $payload['theme_headings'] );
 
 		// Dev diagnostic: dump the EXACT minified JSON we send to the app
 		// (WP_DEBUG_LOG-gated via Helper::log; opt out with the filter). No
@@ -170,7 +315,8 @@ class AIEditor extends API {
 			Helper::log( 'bytes=' . strlen( $json ) . ' body=' . $json, 'ai-editor-request' );
 		}
 
-		$response = Helper::make_api_post_request( self::CLOUD_ENDPOINT, $payload, [], 60 );
+		// 90 s: a page-wide edit on gpt-6-luna can run past 60 s; the app allows a turn 90 s.
+		$response = Helper::make_api_post_request( self::CLOUD_ENDPOINT, $payload, [], 90 );
 
 		return $this->relay_cloud_response( $response );
 	}
@@ -193,6 +339,182 @@ class AIEditor extends API {
 		$response = Helper::make_api_get_request( self::CLOUD_ENDPOINT . '/' . $process_id );
 
 		return $this->relay_cloud_response( $response );
+	}
+
+	/**
+	 * POST /ai-editor/apply-report — what an apply did (plugin plan task 3).
+	 *
+	 * Sent after a contract-2 edit that carried `turn_id`. The app checks its
+	 * reply against it and answers with a `result` (the final reply and clause
+	 * statuses) or, once per turn, a retry `edit`. Never billing: the turn was
+	 * charged before the chat response left the app.
+	 */
+	public function apply_report() {
+		FatalGuard::arm( 'ai-editor/apply-report' );
+
+		$report = $this->parse_apply_report();
+		if ( is_wp_error( $report ) ) {
+			return $report;
+		}
+
+		if ( $this->is_mock_mode() ) {
+			return $this->success( [
+				'success'         => true,
+				'type'            => 'result',
+				'conversation_id' => $report['conversation_id'],
+				'contract'        => self::CONTRACT_VERSION,
+				'reply'           => __( 'Done.', 'templately' ),
+				'clauses'         => [],
+			] );
+		}
+
+		$report['contract'] = self::CONTRACT_VERSION;
+
+		if ( apply_filters( 'templately_ai_editor_log_payload', true ) ) {
+			$json = wp_json_encode( $report );
+			Helper::log( 'bytes=' . strlen( $json ) . ' body=' . $json, 'ai-editor-apply-report' );
+		}
+
+		// 90 s, as for a chat turn: the answer may carry a retry edit, which is an edit call.
+		$response = Helper::make_api_post_request( self::APPLY_REPORT_ENDPOINT, $report, [], 90 );
+
+		return $this->relay_cloud_response( $response );
+	}
+
+	/**
+	 * The apply report as sent, checked by shape. Attribute values are the
+	 * element's own settings and pass byte-faithful (HTML included), like a
+	 * chat turn's target settings; everything else is ids, keys and short
+	 * strings, sanitized per leaf. Malformed entries are dropped.
+	 *
+	 * @return array|\WP_Error
+	 */
+	private function parse_apply_report() {
+		$conversation_id = $this->get_param( 'conversation_id', '', 'sanitize_key' );
+		$turn_id         = substr( (string) $this->get_param( 'turn_id', '', 'sanitize_text_field' ), 0, 64 );
+		if ( '' === $conversation_id || '' === $turn_id ) {
+			return $this->error( 'invalid_request', __( 'An apply report needs its conversation and turn.', 'templately' ), 'ai-editor/apply-report', 400 );
+		}
+
+		$platform = $this->get_param( 'platform', '', 'sanitize_key' );
+		if ( ! in_array( $platform, [ 'gutenberg', 'elementor' ], true ) ) {
+			return $this->error( 'invalid_request', __( 'Invalid platform.', 'templately' ), 'ai-editor/apply-report', 400 );
+		}
+
+		$post_id = $this->get_param( 'post_id', 0, 'absint' );
+		if ( $post_id <= 0 ) {
+			return $this->error( 'invalid_request', __( 'Invalid post.', 'templately' ), 'ai-editor/apply-report', 400 );
+		}
+
+		$applied = [];
+		$raw     = $this->get_param( 'applied', [], null );
+		foreach ( is_array( $raw ) ? array_slice( $raw, 0, 200 ) : [] as $entry ) {
+			if ( ! is_array( $entry ) || empty( $entry['id'] ) || ! is_string( $entry['id'] ) ) {
+				continue;
+			}
+			$attributes = [];
+			foreach ( is_array( $entry['attributes'] ?? null ) ? array_slice( $entry['attributes'], 0, 200, true ) : [] as $key => $value ) {
+				if ( is_string( $key ) && '' !== $key ) {
+					$attributes[ substr( $key, 0, 120 ) ] = $value;
+				}
+			}
+			$rendered = [];
+			foreach ( is_array( $entry['rendered'] ?? null ) ? array_slice( $entry['rendered'], 0, 200, true ) : [] as $key => $value ) {
+				if ( is_string( $key ) && '' !== $key && is_scalar( $value ) ) {
+					$rendered[ substr( $key, 0, 120 ) ] = mb_substr( sanitize_text_field( (string) $value ), 0, 300 );
+				}
+			}
+			$applied[] = [
+				'id'          => self::report_id( $entry['id'] ),
+				'attributes'  => $attributes,
+				'rendered'    => $rendered,
+				'stored_only' => self::report_keys( $entry['stored_only'] ?? [] ),
+			];
+		}
+
+		$styles     = $this->get_param( 'styles', [], null );
+		$styles     = is_array( $styles ) ? $styles : [];
+		$order      = [];
+		$raw_order  = $this->get_param( 'order', [], null );
+		foreach ( is_array( $raw_order ) ? array_slice( $raw_order, 0, 100, true ) : [] as $parent => $children ) {
+			if ( is_string( $parent ) && '' !== $parent && is_array( $children ) ) {
+				$order[ self::report_id( $parent ) ] = self::report_ids( $children );
+			}
+		}
+
+		$rejected = [];
+		$raw      = $this->get_param( 'rejected', [], null );
+		foreach ( is_array( $raw ) ? array_slice( $raw, 0, 50 ) : [] as $entry ) {
+			if ( is_array( $entry ) && ! empty( $entry['reason'] ) && is_string( $entry['reason'] ) ) {
+				$rejected[] = [
+					'id'     => isset( $entry['id'] ) && is_string( $entry['id'] ) ? self::report_id( $entry['id'] ) : null,
+					'key'    => isset( $entry['key'] ) && is_string( $entry['key'] ) ? substr( sanitize_text_field( $entry['key'] ), 0, 120 ) : null,
+					'reason' => sanitize_key( $entry['reason'] ),
+				];
+			}
+		}
+
+		$errors = [];
+		$raw    = $this->get_param( 'errors', [], null );
+		foreach ( is_array( $raw ) ? array_slice( $raw, 0, 50 ) : [] as $entry ) {
+			if ( is_array( $entry ) && ! empty( $entry['reason'] ) && is_string( $entry['reason'] ) ) {
+				$errors[] = [
+					'id'     => isset( $entry['id'] ) && is_string( $entry['id'] ) ? self::report_id( $entry['id'] ) : null,
+					'reason' => sanitize_key( $entry['reason'] ),
+				];
+			}
+		}
+
+		return [
+			'conversation_id' => $conversation_id,
+			'turn_id'         => $turn_id,
+			'post_id'         => $post_id,
+			'platform'        => $platform,
+			'retry'           => (bool) $this->get_param( 'retry', false, 'rest_sanitize_boolean' ),
+			'applied'         => $applied,
+			'styles'          => [
+				'settled'   => self::report_ids( $styles['settled'] ?? [] ),
+				'refreshed' => self::report_ids( $styles['refreshed'] ?? [] ),
+				'unchanged' => self::report_ids( $styles['unchanged'] ?? [] ),
+			],
+			'order'           => $order,
+			'invalid_blocks'  => self::report_ids( $this->get_param( 'invalid_blocks', [], null ) ),
+			'rejected'        => $rejected,
+			'errors'          => $errors,
+		];
+	}
+
+	/** One element id in a report, cut to 64 characters. */
+	private static function report_id( string $id ): string {
+		return substr( sanitize_text_field( $id ), 0, 64 );
+	}
+
+	/**
+	 * A list of element ids in a report: strings only, at most 500.
+	 *
+	 * @param mixed $ids
+	 * @return string[]
+	 */
+	private static function report_ids( $ids ): array {
+		return is_array( $ids ) ? array_values( array_map( [ self::class, 'report_id' ], array_slice( array_filter( $ids, 'is_string' ), 0, 500 ) ) ) : [];
+	}
+
+	/**
+	 * A list of attribute keys in a report: strings only, at most 200.
+	 *
+	 * @param mixed $keys
+	 * @return string[]
+	 */
+	private static function report_keys( $keys ): array {
+		if ( ! is_array( $keys ) ) {
+			return [];
+		}
+		return array_values( array_map(
+			static function ( $key ) {
+				return substr( sanitize_text_field( $key ), 0, 120 );
+			},
+			array_slice( array_filter( $keys, 'is_string' ), 0, 200 )
+		) );
 	}
 
 	/**
@@ -219,6 +541,12 @@ class AIEditor extends API {
 			'elementor-pro'                       => 'ELEMENTOR_PRO_VERSION',
 			'essential-addons-for-elementor-lite' => 'EAEL_PLUGIN_VERSION',
 			'essential-addons-elementor'          => 'EAEL_PRO_PLUGIN_VERSION',
+			// Families the attribute bank also holds: a plugin not reported here is
+			// never served from the bank, so its widgets would miss coverage.
+			'templately'                          => 'TEMPLATELY_VERSION',
+			'embedpress'                          => 'EMBEDPRESS_VERSION',
+			'fluentform'                          => 'FLUENTFORM_VERSION',
+			'notificationx'                       => 'NOTIFICATIONX_VERSION',
 		];
 		foreach ( $constants as $slug => $constant ) {
 			if ( defined( $constant ) && is_scalar( constant( $constant ) ) ) {
@@ -297,6 +625,17 @@ class AIEditor extends API {
 		}
 		$payload['sections'] = $sections;
 
+		// tree (contract 2): every element of the page, one line each, for the
+		// app's per-clause targeting. Optional, so a malformed entry is dropped
+		// rather than failing the turn.
+		$tree = $this->get_param( 'tree', null, null );
+		if ( is_array( $tree ) ) {
+			$clean_tree = self::sanitize_tree( $tree );
+			if ( $clean_tree ) {
+				$payload['tree'] = $clean_tree;
+			}
+		}
+
 		$confirm = $this->get_param( 'confirm', null, null );
 		if ( is_array( $confirm ) && isset( $confirm['proposal_id'] ) ) {
 			$payload['confirm'] = [
@@ -328,6 +667,30 @@ class AIEditor extends API {
 						'handle' => is_string( $prev_handle ) ? sanitize_text_field( $prev_handle ) : '',
 					];
 				}
+			}
+			// Response types this plugin can answer beyond the four (attribute bank
+			// v2): `need_settings` asks for section settings a page-wide edit needs.
+			if ( ! empty( $context['supports'] ) && is_array( $context['supports'] ) ) {
+				$clean_context['supports'] = array_values( array_intersect( [ 'need_settings', 'tree', 'apply_report', 'plan' ], array_map( 'strval', $context['supports'] ) ) );
+			}
+			// Contract 3: the follow-up that runs a `plan` the app showed names it.
+			if ( ! empty( $context['plan_id'] ) && is_string( $context['plan_id'] ) ) {
+				$clean_context['plan_id'] = substr( sanitize_text_field( $context['plan_id'] ), 0, 64 );
+			}
+			// The follow-up that answers a `need_settings` reply names the
+			// conversation whose waiting edit it completes.
+			if ( ! empty( $context['settings_for'] ) && is_string( $context['settings_for'] ) ) {
+				$clean_context['settings_for'] = substr( sanitize_text_field( $context['settings_for'] ), 0, 64 );
+			}
+			// On that follow-up: the ids/handles the app asked for that the page
+			// no longer has (task 2b), so the app never waits on them.
+			if ( ! empty( $context['missing'] ) && is_array( $context['missing'] ) ) {
+				$clean_context['missing'] = array_values( array_map(
+					static function ( $ref ) {
+						return substr( sanitize_text_field( (string) $ref ), 0, 64 );
+					},
+					array_slice( array_filter( $context['missing'], 'is_string' ), 0, 100 )
+				) );
 			}
 			if ( $clean_context ) {
 				$payload['context'] = $clean_context;
@@ -421,6 +784,23 @@ class AIEditor extends API {
 			}
 		}
 
+		// theme_headings (Gutenberg): the px size the canvas draws for each bare h1–h6 —
+		// the theme's heading sizes, which a heading on global or theme typography renders
+		// at. Filed under global_settings.headings in the forward.
+		$theme_headings = $this->get_param( 'theme_headings', null, null );
+		if ( is_array( $theme_headings ) ) {
+			$clean_headings = [];
+			foreach ( [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ] as $tag ) {
+				$size = $theme_headings[ $tag ]['fontSize'] ?? null;
+				if ( is_numeric( $size ) && $size > 0 && $size <= 500 ) {
+					$clean_headings[ $tag ] = [ 'fontSize' => round( (float) $size, 2 ) ];
+				}
+			}
+			if ( $clean_headings ) {
+				$payload['theme_headings'] = $clean_headings;
+			}
+		}
+
 		return $payload;
 	}
 
@@ -471,6 +851,56 @@ class AIEditor extends API {
 			// Structural validation only — settings are the element's own values
 			// and must reach the cloud byte-faithful (base64/HTML included).
 			$clean['settings'] = $target['settings'];
+		}
+		return $clean;
+	}
+
+	/**
+	 * The page tree as sent (contract 2): `{id, type, parent, section, text?}` per
+	 * element, at most 3000. Ids and types are plain identifiers; `text` is the
+	 * element's own visible text, already cut client-side, kept to 60 characters.
+	 *
+	 * @param array $tree
+	 * @return array<int, array{id: string, type: string, parent: ?string, section: string, text?: string}>
+	 */
+	private static function sanitize_tree( array $tree ): array {
+		$clean = [];
+		foreach ( array_slice( $tree, 0, 3000 ) as $node ) {
+			if ( ! is_array( $node ) || empty( $node['id'] ) || ! is_string( $node['id'] ) ) {
+				continue;
+			}
+			$entry = [
+				'id'      => substr( sanitize_text_field( $node['id'] ), 0, 64 ),
+				'type'    => isset( $node['type'] ) && is_string( $node['type'] ) ? substr( sanitize_text_field( $node['type'] ), 0, 100 ) : '',
+				'parent'  => isset( $node['parent'] ) && is_string( $node['parent'] ) && '' !== $node['parent'] ? substr( sanitize_text_field( $node['parent'] ), 0, 64 ) : null,
+				'section' => isset( $node['section'] ) && is_string( $node['section'] ) ? substr( sanitize_text_field( $node['section'] ), 0, 64 ) : '',
+			];
+			if ( isset( $node['text'] ) && is_string( $node['text'] ) ) {
+				$text = mb_substr( sanitize_text_field( $node['text'] ), 0, 60 );
+				if ( '' !== $text ) {
+					$entry['text'] = $text;
+				}
+			}
+			// The element as the user would name it ("Heading \"About Us\""), for plans and replies.
+			if ( isset( $node['label'] ) && is_string( $node['label'] ) ) {
+				$label = mb_substr( sanitize_text_field( $node['label'] ), 0, 120 );
+				if ( '' !== $label ) {
+					$entry['label'] = $label;
+				}
+			}
+			// What the canvas draws (font size, a button's padding): CSS lengths only.
+			if ( isset( $node['drawn'] ) && is_array( $node['drawn'] ) ) {
+				$drawn = [];
+				foreach ( [ 'fontSize', 'padding' ] as $key ) {
+					if ( isset( $node['drawn'][ $key ] ) && is_string( $node['drawn'][ $key ] ) && preg_match( '/^(?:-?[0-9.]+(?:px|em|rem|%)?\s?){1,4}$/', trim( $node['drawn'][ $key ] ) ) ) {
+						$drawn[ $key ] = trim( $node['drawn'][ $key ] );
+					}
+				}
+				if ( $drawn ) {
+					$entry['drawn'] = $drawn;
+				}
+			}
+			$clean[] = $entry;
 		}
 		return $clean;
 	}
@@ -561,7 +991,7 @@ class AIEditor extends API {
 			return [
 				'success' => true,
 				'type'    => 'message',
-				'reply'   => __( 'Okay — I left your site-wide template unchanged.', 'templately' ),
+				'reply'   => __( 'Okay - I left your site-wide template unchanged.', 'templately' ),
 			];
 		}
 
@@ -596,7 +1026,7 @@ class AIEditor extends API {
 			'template_id' => $template_id,
 			'reply'       => sprintf(
 				/* translators: %s: "header" or "footer" */
-				__( 'Done — your site-wide %s was updated. This affects every page (reload the editor to see it here); it isn\'t covered by this page\'s undo.', 'templately' ),
+				__( 'Done - your site-wide %s was updated. This affects every page (reload the editor to see it here); it isn\'t covered by this page\'s undo.', 'templately' ),
 				$proposal['location'] === 'footer' ? __( 'footer', 'templately' ) : __( 'header', 'templately' )
 			),
 		];
@@ -687,6 +1117,57 @@ class AIEditor extends API {
 	private function is_mock_mode(): bool {
 		$dev_mode = defined( 'TEMPLATELY_DEVELOPER_MODE' ) && TEMPLATELY_DEVELOPER_MODE;
 		return (bool) apply_filters( 'templately_ai_editor_mock', $dev_mode );
+	}
+
+	/**
+	 * Mock eligibility: eligible until this user claims once (then `already_claimed`).
+	 */
+	private function mock_free_credit_offer(): array {
+		$claimed = (bool) get_transient( self::MOCK_CLAIMED_TRANSIENT . get_current_user_id() );
+		$amount  = 50;
+		/* translators: %d: number of free AI credits */
+		$message = sprintf( __( 'Claim %d free AI credits to try the AI Editor.', 'templately' ), $amount );
+
+		return [
+			'status' => 'success',
+			'data'   => [
+				'offer'    => [ 'active' => true, 'amount' => $amount, 'ends_at' => null ],
+				'eligible' => ! $claimed,
+				'reason'   => $claimed ? 'already_claimed' : 'eligible',
+				'message'  => $claimed ? __( 'You\'ve already claimed this offer.', 'templately' ) : $message,
+			],
+		];
+	}
+
+	/**
+	 * Mock claim: the first claim succeeds, every later one is the app's 409.
+	 */
+	private function mock_free_credit_claim(): WP_REST_Response {
+		$key = self::MOCK_CLAIMED_TRANSIENT . get_current_user_id();
+
+		if ( get_transient( $key ) ) {
+			return new WP_REST_Response(
+				[
+					'success'    => false,
+					'code'       => 'already_claimed',
+					'message'    => __( 'You\'ve already claimed this offer.', 'templately' ),
+					'status'     => 'error',
+					'statusText' => 'already_claimed',
+					'data'       => [ 'claimed' => false, 'reason' => 'already_claimed', 'available_credit' => null ],
+				],
+				409
+			);
+		}
+
+		set_transient( $key, 1, DAY_IN_SECONDS );
+		$amount = 50;
+
+		return $this->success( [
+			'status'  => 'success',
+			/* translators: %d: number of free AI credits */
+			'message' => sprintf( __( '%d free AI credits added to your account.', 'templately' ), $amount ),
+			'data'    => [ 'claimed' => true, 'amount' => $amount, 'available_credit' => 200, 'reason' => 'claimed' ],
+		] );
 	}
 
 	/**
@@ -804,7 +1285,7 @@ class AIEditor extends API {
 			if ( $element_id ) {
 				return $base + [
 					'type'    => 'edit',
-					'reply'   => __( 'Done — I updated it.', 'templately' ),
+					'reply'   => __( 'Done - I updated it.', 'templately' ),
 					'changes' => [ [ 'id' => $element_id, 'attributes' => [ $m[1] => $m[2] ] ] ],
 					'credits' => [ 'cost' => 1, 'remaining' => 149 ],
 				];
@@ -854,7 +1335,7 @@ class AIEditor extends API {
 			}
 			return $base + [
 				'type'    => 'edit',
-				'reply'   => __( 'Done — I updated the text.', 'templately' ),
+				'reply'   => __( 'Done - I updated the text.', 'templately' ),
 				'changes' => $changes,
 				'credits' => [ 'cost' => $targeted ? 1 : 2, 'remaining' => $targeted ? 149 : 148 ],
 			];

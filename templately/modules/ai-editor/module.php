@@ -37,6 +37,7 @@ namespace Templately\Modules\AiEditor;
 
 use Templately\Core\Module_Base;
 use Templately\Modules\AiEditor\REST\AIEditor;
+use Templately\Utils\Options;
 
 class Module extends Module_Base {
 
@@ -45,11 +46,17 @@ class Module extends Module_Base {
 	}
 
 	/**
-	 * Held back from the 3.8.0 release (2026-09-23) — see Module_Base::deferred_module_enabled().
-	 * Delete this override to release it.
+	 * On for every site for the alpha test (2026-10-05). Set to false to hold the editor
+	 * back again; it then boots only where deferred modules are switched on
+	 * (see Module_Base::deferred_module_enabled()).
+	 */
+	const ENABLED = true;
+
+	/**
+	 * Held back from the 3.8.0 release (2026-09-23); released for the alpha by ENABLED.
 	 */
 	public function is_active(): bool {
-		return Module_Base::deferred_module_enabled( $this->get_name() );
+		return self::ENABLED || Module_Base::deferred_module_enabled( $this->get_name() );
 	}
 
 	/**
@@ -81,6 +88,75 @@ class Module extends Module_Base {
 
 		add_action( 'elementor/editor/after_enqueue_scripts', [ $this, 'enqueue_elementor' ] );
 		add_action( 'enqueue_block_editor_assets', [ $this, 'enqueue_gutenberg' ] );
+		add_filter( 'wp_client_side_media_processing_enabled', [ $this, 'no_isolation_when_hosted' ] );
+		add_filter( 'elementor/editor/use_document_isolation_policy', [ $this, 'no_isolation_when_hosted' ] );
+		add_filter( 'elementor/document/urls/preview', [ $this, 'keep_host_flag_in_preview' ] );
+		add_filter( 'templately_admin_localized_data', [ $this, 'localize_offer_dismissed' ] );
+	}
+
+	/**
+	 * Tell the library page whether this WP user closed the free-credit alert.
+	 *
+	 * Localized from here rather than from core's Admin.php so the flag exists
+	 * only while this module runs: the alert renders only when the key is
+	 * present and false, so a held-back AI editor shows no offer for it.
+	 *
+	 * @param array $data the `window.templately` payload
+	 * @return array
+	 */
+	public function localize_offer_dismissed( $data ) {
+		if ( ! is_array( $data ) ) {
+			return $data;
+		}
+
+		$data['ai_editor_offer_dismissed'] = (bool) Options::get_instance()->get( AIEditor::OFFER_DISMISSED_KEY, false, get_current_user_id() );
+		// Keys the alert's local copy of the dismissal per WP user, so a failed or
+		// slow dismiss request cannot bring it back on this browser.
+		$data['ai_editor_offer_user_id'] = get_current_user_id();
+
+		return $data;
+	}
+
+	/**
+	 * Let the "Edit with Templately AI" page host the editor on WordPress 7.1+.
+	 *
+	 * WordPress 7.1 sends `Document-Isolation-Policy: isolate-and-credentialless` on
+	 * editor screens in Chromium 137+ (client-side media processing). The isolated editor
+	 * renders blank inside the host page's iframe, so every HTTPS site showed "Your site
+	 * blocks embedded editing" (2026-10-05). Core skips the isolation for page builders
+	 * for the same reason; this does so only for the hosted request (`templately_host=1`),
+	 * where uploads fall back to server-side image processing. The editor opened directly
+	 * keeps it. Approved by the owner, 2026-10-05.
+	 *
+	 * Elementor 4.1+ sends the same header itself on its editor and its preview iframe
+	 * (they must match, or the editor loses its preview), through its own filter.
+	 *
+	 * @param bool $enabled Whether WordPress would process media in the browser.
+	 * @return bool
+	 */
+	public function no_isolation_when_hosted( $enabled ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display flag.
+		if ( isset( $_GET['templately_host'] ) && '1' === $_GET['templately_host'] ) {
+			return false;
+		}
+
+		return $enabled;
+	}
+
+	/**
+	 * Carry `templately_host=1` onto the Elementor preview iframe of a hosted editor, so
+	 * the preview drops the isolation too and stays reachable from the editor.
+	 *
+	 * @param string $url The preview URL.
+	 * @return string
+	 */
+	public function keep_host_flag_in_preview( $url ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display flag.
+		if ( isset( $_GET['templately_host'] ) && '1' === $_GET['templately_host'] ) {
+			return add_query_arg( 'templately_host', 1, $url );
+		}
+
+		return $url;
 	}
 
 	public function register_rest_routes(): void {

@@ -52,6 +52,6 @@ abstract class Platform extends Base {
 			return $map[ $template_type ];
 		}
 
-		throw new \InvalidArgumentException( "Unknown template_type '{$template_type}' — no matching Builder type." );
+		throw new \InvalidArgumentException( "Unknown template_type '{$template_type}' - no matching Builder type." );
 	}
 }

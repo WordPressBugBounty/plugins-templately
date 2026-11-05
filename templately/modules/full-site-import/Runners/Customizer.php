@@ -99,7 +99,7 @@ class Customizer extends BaseRunner {
 				0,
 				sprintf(
 					/* translators: %s: the customizer field name, e.g. "site title" */
-					__( 'Could not fully apply the %s — a plugin hooked to that change failed. The rest of the pack was imported.', 'templately' ),
+					__( 'Could not fully apply the %s - a plugin hooked to that change failed. The rest of the pack was imported.', 'templately' ),
 					$label
 				),
 				'eventLog'
